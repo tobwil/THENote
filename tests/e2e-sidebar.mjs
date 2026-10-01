@@ -36,13 +36,15 @@ const check = (cond, label) => {
 
 // Seed localStorage settings before the app boots so initSettings picks them up.
 await page.addInitScript(() => {
-  localStorage.setItem("sarala.settings", JSON.stringify({
+  localStorage.setItem("the-note.settings", JSON.stringify({
     recentFiles: ["/v/README.md", "/v/aws/README.md", "/v/notes/todo.md"],
     openFolders: [],
   }));
 });
 await page.goto(`http://localhost:${PORT}`);
-await page.waitForSelector(".sidebar");
+await page.getByRole("heading", { name: "Gedanken, die etwas bewegen." }).waitFor();
+// The welcome note starts in Outline; tree checks must select Files explicitly.
+await page.getByRole("tab", { name: "Files", exact: true }).click();
 
 /** Install a synthetic file tree via the app's own store setter. */
 async function seedTree(tree) {
@@ -85,7 +87,7 @@ check(
   check(titles.length === 3, `the header offers open, new note and close (${titles.length})`);
   check(
     titles.some((t) => /Ordner öffnen/.test(t)) && titles.some((t) => /Neue Notiz/.test(t)) && titles.some((t) => /Ordner schließen/.test(t)),
-    `both actions say what they do (${JSON.stringify(titles)})`,
+    `header actions say what they do (${JSON.stringify(titles)})`,
   );
 }
 // The name must not fall back to the app name, which read as branding and hid
@@ -133,7 +135,7 @@ check(
   "expansion survives a full tree refresh (the Save As / Rename / Delete bug)",
 );
 check(
-  JSON.parse(await page.evaluate(() => localStorage.getItem("sarala.settings"))).openFolders
+  JSON.parse(await page.evaluate(() => localStorage.getItem("the-note.settings"))).openFolders
     .includes("/v/aws"),
   "expansion is written to settings for the next launch",
 );
