@@ -2,7 +2,7 @@ import { openNameDialog } from "./components/NameDialog";
 import { requestInlineFocus } from "./ai/focus";
 import {
   doc, fullText, fileName, retargetTabPath, cycleTab, setHeading,
-  setTabDraftName, setFolderOpen, activeTabId, openDocument, findTabByPath, switchTab, removeTab, getTabDocument, markTabSaved, replaceTabDocument,
+  setTabDraftName, setFolderOpen, openTabs, activeTabId, openDocument, findTabByPath, switchTab, removeTab, getTabDocument, markTabSaved, replaceTabDocument,
   sourceMode, setSourceMode, sidebarOpen, setSidebarOpen,
   theme, setTheme, THEMES, setFileTree, setFolderName,
   folderPath, setFolderPath, setQuickOpenVisible, setCommandPaletteVisible,
@@ -52,7 +52,7 @@ import { shadowFor, restoreSession, keyForPath, discardShadowFor } from "./autos
 import { stripControlChars } from "./richpaste";
 import {
   recentFiles, addRecentFile, clearRecentFiles, removeRecentFile, pinnedFiles,
-  lastExport, setLastExport, exportPresets, pdfOptions, setSetting,
+  lastExport, setLastExport, exportPresets, pdfOptions, setSetting, getSetting, saveOpenFolders,
 } from "./settings";
 import {
   buildExportHtml, pageCss, readExportOverrides, pandocFlagsFor, resolveOutputPath,
@@ -133,6 +133,69 @@ async function openWorkspace(path: string) {
   setSidebarTab("files");
   setFolderName(path.replace(/\\/g, "/").split("/").pop() ?? path);
   setFileTree(tree);
+  // Remembered until closed, so the notes folder is there again on the next start.
+  await setSetting("workspace", path);
+}
+
+/** Close the notes folder; files stay where they are, only the sidebar lets go. */
+export async function closeWorkspace() {
+  setFolderPath(null);
+  setFolderName(null);
+  setFileTree([]);
+  await setSetting("workspace", null);
+}
+
+/** Reopen the folder that was open when the app last quit, if it still exists. */
+export async function restoreWorkspace() {
+  const path = getSetting<string | null>("workspace", null);
+  if (!isTauri || !path || folderPath()) return;
+  try { if (await pathExists(path)) await openWorkspace(path); else await setSetting("workspace", null); }
+  catch { /* An unreadable folder simply is not reopened. */ }
+}
+
+/**
+ * The folder notes go into when none is open: Documents/THE Note, created on
+ * first use. Lets "＋ Ordner" and "＋ Notiz" work without choosing a place first.
+ */
+export async function ensureNotebook(): Promise<string | null> {
+  const open = folderPath();
+  if (open) return open;
+  if (!isTauri) return null;
+  const { documentDir, join } = await import("@tauri-apps/api/path");
+  const documents = await documentDir();
+  const path = await join(documents, "THE Note");
+  if (!(await pathExists(path))) await createEntry(documents, "THE Note", true);
+  await openWorkspace(path);
+  return path;
+}
+
+const parentOf = (path: string) => path.slice(0, Math.max(path.lastIndexOf("/"), path.lastIndexOf("\\")));
+const baseOf = (path: string) => path.slice(Math.max(path.lastIndexOf("/"), path.lastIndexOf("\\")) + 1);
+const separatorOf = (path: string) => (path.includes("\\") && !path.includes("/") ? "\\" : "/");
+
+/** Move a note or folder into `folder`; open tabs follow their files. */
+export async function moveIntoFolder(path: string, folder: string): Promise<boolean> {
+  const sep = separatorOf(path);
+  if (parentOf(path) === folder || folder === path || folder.startsWith(path + sep)) return false;
+  const to = folder + sep + baseOf(path);
+  const inside = (p: string | null) => !!p && (p === path || p.startsWith(path + sep));
+  const moved = openTabs().filter(tab => inside(tab.filePath)).map(tab => tab.filePath!);
+  if (moved.some(p => findTabByPath(to + p.slice(path.length)) !== undefined)) { await alertDialog("Am Ziel ist bereits eine Datei mit diesem Namen geöffnet."); return false; }
+  try {
+    await renameFile(path, to);
+  } catch (e) {
+    await alertDialog(String(e));
+    return false;
+  }
+  for (const from of moved) {
+    const target = to + from.slice(path.length);
+    retargetTabPath(from, target);
+    await watchFile(target);
+    await removeRecentFile(from); await addRecentFile(target);
+  }
+  setFolderOpen(folder, true); void saveOpenFolders();
+  await refreshTree();
+  return true;
 }
 
 // ---------- File ----------
@@ -1032,23 +1095,19 @@ export async function newFileNear(nearPath: string, isDir: boolean) {
 
 const noteName = (name: string) => /\.(md|markdown|mdown|txt)$/i.test(name) ? name : `${name}.md`;
 export function createNoteIn(parent = folderPath()) {
-  if (!parent) { openDocument("", null); return; }
+  if (!parent) {
+    if (!isTauri) { openDocument("", null); return; }
+    void ensureNotebook().then(root => root ? createNoteIn(root) : openDocument("", null));
+    return;
+  }
   openNameDialog({ title: "Neue Notiz", initial: "Neue Notiz.md", description: `In ${parent}`, submit: async name => {
     const path = await createEntry(parent, noteName(name), false);
     setFolderOpen(parent, true); setSidebarTab("files");
     await refreshTree(); await openFile(path);
   } });
 }
-export async function createProject() {
-  const parent = await pickFolder();
-  if (!parent) return;
-  openNameDialog({ title: "Projekt erstellen", initial: "Mein Projekt", description: `Neuer Projektordner in ${parent}`, submit: async name => {
-    const path = await createEntry(parent, name, true);
-    await openWorkspace(path);
-  } });
-}
 export function createFolderIn(parent = folderPath()) {
-  if (!parent) { void createProject(); return; }
+  if (!parent) { void ensureNotebook().then(root => { if (root) createFolderIn(root); }); return; }
   openNameDialog({ title: "Ordner erstellen", initial: "Neuer Ordner", description: `In ${parent}`, submit: async name => {
     await createEntry(parent, name, true); setFolderOpen(parent, true); setSidebarTab("files"); await refreshTree();
   } });

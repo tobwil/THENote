@@ -4,7 +4,7 @@
 
 ![THE Note: die Notiz „Lissabon im Mai“ mit Ideen, Checkliste und einer kleinen Kostenrechnung samt Ausgabe](docs/screenshots/note-light.png)
 
-Ein lokales Notizbuch für Gedanken, Pläne und Projekte. Du schreibst in Markdown, ordnest Notizen in Projekten und Ordnern, und wenn eine Notiz etwas rechnen, prüfen oder ausprobieren soll, läuft der Codeblock direkt darin.
+Ein lokales Notizbuch für Gedanken, Pläne und Projekte. Du schreibst in Markdown, ordnest Notizen in Ordnern, und wenn eine Notiz etwas rechnen, prüfen oder ausprobieren soll, läuft der Codeblock direkt darin.
 
 THE Note verbindet **Saralas Live-Markdown-Editor** mit **Ledges ausführbaren Notizen**. Native macOS-App auf Tauri 2 und SolidJS. Aktueller Stand: **0.2.5, funktionale Entwicklungsversion**.
 
@@ -60,9 +60,9 @@ Zuerst Ideen, Checkliste und offene Fragen; ein kleiner Codeblock rechnet nebenb
 
 ![Dieselbe Notiz im dunklen Waldgrün](docs/screenshots/note-dark.png)
 
-### Projekte, verschachtelte Notizen und Datum inline
+### Ordner, verschachtelte Notizen und Datum inline
 
-![THE Note: Projektordner, Markdown-Notizen und ein Datumspicker an der Schreibstelle](docs/screenshots/projects-and-date.png)
+![THE Note: Ordner, Markdown-Notizen und ein Datumspicker an der Schreibstelle](docs/screenshots/projects-and-date.png)
 
 ### Änderungen vor dem Speichern
 
@@ -79,7 +79,7 @@ Die Screenshots zeigen Beispiel- und Testnotizen. Alle Code-Ausgaben wurden loka
 - **Schreiben:** Live-Markdown, Quelltextmodus, Tabs mit eigenem Undo, Gliederung, Suche, Tabellen, Formeln, Mermaid/D2, Fokusmodus und vorhandene Exportfunktionen aus Sarala.
 - **Tabellen, die rechnen:** `/formel` (oder `/tabelle`, `/excel`) fügt eine Tabelle mit Formeln wie `=SUMME(D2:D4)` ein. Die Datei behält die Formel, die Notiz zeigt das Ergebnis; siehe [Tabellen mit Formeln](#tabellen-mit-formeln).
 - **Diagramme vergrößern:** Über einem Mermaid- oder D2-Diagramm erscheint **⤢ Vergrößern**. Das Vollbild zoomt per Pinch oder ⌘/Strg + Scrollen, verschiebt per Ziehen oder Scrollen und kennt `+`, `−`, `0` (Einpassen), `1` (100 %) und Esc. Auch über die Befehlspalette: „Diagramm vergrößern“.
-- **Projekte und Ordner:** In der Seitenleiste über **＋ Projekt** einen neuen Projektordner anlegen (zuerst den übergeordneten Speicherort wählen), über **＋ Ordner** einen Unterordner. Rechtsklick auf einen Ordner → **Neue Notiz hier …** oder **Unterordner erstellen …**. Das Datei-Plus im Kopf der Seitenleiste legt eine Notiz im Projekt an. Leere Ordner bleiben sichtbar.
+- **Ordner für deine Notizen:** Alle Notizen sind .md-Dateien in einem Notizordner. **＋ Notiz** und **＋ Ordner** funktionieren sofort: Ist noch kein Ordner offen, legt THE Note *Dokumente/THE Note* an. Alternativ öffnest du über das Ordnersymbol einen eigenen Ordner. Notizen gruppierst du in Unterordnern (z. B. Rezepte, Meeting-Protokolle): eine Notiz auf einen Ordner **ziehen** oder per Rechtsklick **In Ordner verschieben …**; offene Tabs wandern mit. Rechtsklick auf einen Ordner → **Neue Notiz hier …** oder **Unterordner erstellen …**. Der Ordner bleibt nach einem Neustart offen; **×** im Kopf der Seitenleiste schließt ihn wieder, die Dateien bleiben unverändert. Leere Ordner bleiben sichtbar.
 - **Tabnamen:** Doppelklick, Rechtsklick oder F2 auf einem Tab öffnet **Datei umbenennen**. Gespeicherte Dateien werden im gleichen Ordner umbenannt; ungespeicherte Notizen erhalten zunächst einen Namen für das spätere Speichern. Text und Undo bleiben erhalten.
 - **Datum:** `/date` oder `/datum` öffnet an der Schreibstelle einen Datumspicker mit Heute/Morgen und deutschem oder ISO-Format. Das Ergebnis bleibt normaler Markdown-Text.
 - **Änderungen vor dem Speichern:** Über **± Änderungen** den aktuellen Markdown-Entwurf mit dem zuletzt geladenen/gespeicherten Stand vergleichen. Ergänzungen und Löschungen mit Zeilennummern, pro Tab; neue Notizen werden mit einem leeren Dokument verglichen. Zeilenenden und die Normalisierung des Editors sind kein Byte-Diff.

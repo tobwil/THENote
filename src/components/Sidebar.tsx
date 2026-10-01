@@ -11,10 +11,11 @@ import {
   pinnedFiles, isPinned, togglePin, clearPinned,
 } from "../settings";
 import {
-  createProject, createFolderIn, createNoteIn, renamePath, deletePath, revealPath, copyPath, newFileNear,
+  createFolderIn, createNoteIn, closeWorkspace, ensureNotebook, moveIntoFolder, renamePath, deletePath, revealPath, copyPath, newFileNear,
   validateRecentPaths,
 } from "../commands";
 import SearchPanel from "./SearchPanel";
+import { openMoveDialog } from "./MoveDialog";
 
 interface Props {
   tree: FileNode[];
@@ -190,6 +191,36 @@ const OVERSCAN = 12;
 
 export default function Sidebar(props: Props) {
   const [activeHeading, setActiveHeading] = createSignal(-1);
+  // Drag a note or folder onto another folder (or the folder header) to move it.
+  // Pointer-based, so the native file-drop handling of the window stays untouched.
+  const [dragging, setDragging] = createSignal<{ path: string; name: string; x: number; y: number } | null>(null);
+  const [dropTarget, setDropTarget] = createSignal<string | null>(null);
+  let suppressClick = false;
+  const startDrag = (e: PointerEvent, path: string, name: string) => {
+    if (e.button !== 0 || !folderPath()) return;
+    const start = { x: e.clientX, y: e.clientY };
+    const move = (ev: PointerEvent) => {
+      if (!dragging() && Math.hypot(ev.clientX - start.x, ev.clientY - start.y) < 6) return;
+      setDragging({ path, name, x: ev.clientX, y: ev.clientY });
+      const under = document.elementFromPoint(ev.clientX, ev.clientY);
+      const folder = under?.closest<HTMLElement>(".tree-item.dir")?.dataset.path
+        ?? (under?.closest(".side-ws-head") ? folderPath() : null);
+      setDropTarget(folder && folder !== path ? folder : null);
+    };
+    const end = () => {
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", end);
+      window.removeEventListener("pointercancel", cancel);
+      const target = dropTarget(), was = dragging();
+      setDragging(null); setDropTarget(null);
+      if (was) { suppressClick = true; setTimeout(() => { suppressClick = false; }); }
+      if (was && target) void moveIntoFolder(path, target);
+    };
+    const cancel = () => { setDropTarget(null); end(); };
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", end);
+    window.addEventListener("pointercancel", cancel);
+  };
   const [filter, setFilter] = createSignal("");
   const [recentOpen, setRecentOpen] = createSignal(getSetting("recentOpen", true));
   const [scrollTop, setScrollTop] = createSignal(0);
@@ -441,7 +472,7 @@ export default function Sidebar(props: Props) {
           the New-file button, which is a real control. On macOS the sidebar is
           padded down past the traffic lights, which must stay outside any drag
           region or they stop receiving their own clicks. */}
-      <div class="side-ws-head" data-tauri-drag-region="deep">
+      <div class="side-ws-head" classList={{ "drop-target": !!dropTarget() && dropTarget() === folderPath() }} data-tauri-drag-region="deep">
         <SidebarIcon name="folder" class="side-ws-glyph" />
         <span
           class="side-ws-name"
@@ -452,22 +483,25 @@ export default function Sidebar(props: Props) {
         >
           {/* Falling back to the app name read as branding and hid the fact
               that nothing is open. Name the actual state instead. */}
-          {props.folderName ?? "No folder open"}
+          {props.folderName ?? "Kein Ordner offen"}
         </span>
         <button
           class="side-icon-btn"
-          title={props.folderName ? "Open a different folder…" : "Open folder…"}
+          title={props.folderName ? "Anderen Ordner öffnen …" : "Ordner öffnen …"}
           aria-label="Open folder"
           onClick={() => props.onOpenFolder()}
         >
           <SidebarIcon name="open" />
         </button>
-        <button class="side-icon-btn" title="New file" aria-label="New file" onClick={() => createNoteIn(folderPath())}>
+        <button class="side-icon-btn" title="Neue Notiz" aria-label="Neue Notiz" onClick={() => createNoteIn(folderPath())}>
           <SidebarIcon name="new" />
         </button>
+        <Show when={folderPath()}>
+          <button class="side-icon-btn side-close-folder" title="Ordner schließen (Dateien bleiben erhalten)" aria-label="Ordner schließen" onClick={() => void closeWorkspace()}>×</button>
+        </Show>
       </div>
 
-      <div class="workspace-create"><button onClick={() => void createProject()}>＋ Projekt</button><Show when={folderPath()}><button onClick={() => createFolderIn()}>＋ Ordner</button></Show></div>
+      <div class="workspace-create"><button onClick={() => createNoteIn()}>＋ Notiz</button><button onClick={() => createFolderIn()}>＋ Ordner</button></div>
       {/* ===== sidebar views ===== */}
       <div class="side-tabs" role="tablist" aria-label="Sidebar views">
         <Tab id="files" icon={() => <TabFilesIcon />} label="Files" />
@@ -607,8 +641,15 @@ export default function Sidebar(props: Props) {
               when={props.tree.length > 0}
               fallback={
                 <div class="sidebar-empty">
-                  <p>{folderPath() ? "Dein Projekt ist noch leer." : "Noch kein Projekt geöffnet."}</p>
-                  <Show when={folderPath()} fallback={<button class="ghost-btn" onClick={props.onOpenFolder}>Ordner öffnen …</button>}><button class="ghost-btn" onClick={() => createNoteIn()}>Erste Notiz erstellen</button></Show>
+                  <Show when={folderPath()} fallback={<>
+                    <p>Deine Notizen sind normale .md-Dateien in einem Ordner. Darin kannst du Unterordner anlegen, z. B. für Rezepte oder Meeting-Protokolle.</p>
+                    <Show when={isTauri}><button class="ghost-btn" onClick={() => void ensureNotebook()}>Notizbuch in „Dokumente“ anlegen</button></Show>
+                    <button class="ghost-btn" onClick={props.onOpenFolder}>Vorhandenen Ordner öffnen …</button>
+                  </>}>
+                    <p>Dieser Ordner ist noch leer.</p>
+                    <button class="ghost-btn" onClick={() => createNoteIn()}>Erste Notiz erstellen</button>
+                    <button class="ghost-btn" onClick={() => createFolderIn()}>Ordner anlegen</button>
+                  </Show>
                 </div>
               }
             >
@@ -627,6 +668,8 @@ export default function Sidebar(props: Props) {
                       classList={{
                         dir: row.node.is_dir,
                         file: !row.node.is_dir,
+                        "drop-target": dropTarget() === row.node.path,
+                        dragging: dragging()?.path === row.node.path,
                         open: row.node.is_dir && isFolderOpen(row.node.path),
                         current: !row.node.is_dir && doc.filePath === row.node.path,
                       }}
@@ -639,7 +682,9 @@ export default function Sidebar(props: Props) {
                       aria-selected={!row.node.is_dir && doc.filePath === row.node.path}
                       aria-expanded={row.node.is_dir ? isFolderOpen(row.node.path) : undefined}
                       style={{ "padding-left": `${8 + row.depth * 16}px` }}
+                      onPointerDown={(e) => startDrag(e, row.node.path, row.node.name)}
                       onClick={() => {
+                        if (suppressClick) { suppressClick = false; return; }
                         if (row.node.is_dir) { toggleFolder(row.node.path); void saveOpenFolders(); }
                         else props.onOpenFile(row.node.path);
                       }}
@@ -698,6 +743,9 @@ export default function Sidebar(props: Props) {
         </Show>
       </div>
 
+      <Show when={dragging()}>
+        {(d) => <div class="tree-drag-ghost" style={{ left: `${d().x + 12}px`, top: `${d().y + 8}px` }} aria-hidden="true">{d().name}</div>}
+      </Show>
       {/* ===== pin/unpin context menu ===== */}
       <Show when={pinMenu()}>
         {(m) => (
@@ -727,6 +775,11 @@ export default function Sidebar(props: Props) {
               </button>
             </Show>
             <div class="ctx-sep" />
+            <Show when={folderPath() && !m().recent}>
+              <button class="ctx-item" onMouseDown={(e) => { e.preventDefault(); openMoveDialog(m().path); setPinMenu(null); }}>
+                <span class="ctx-label">In Ordner verschieben …</span>
+              </button>
+            </Show>
             <button
               class="ctx-item"
               onMouseDown={(e) => { e.preventDefault(); void renamePath(m().path); setPinMenu(null); }}
