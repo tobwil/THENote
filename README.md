@@ -1,10 +1,14 @@
 # THE Note
 
+**Deutsch** · [English](README.en.md)
+
+![THE Note im dunklen Waldgrün: der Spielplatz mit Würfelorakel, Code und echter Ausgabe](docs/screenshots/playground-dark.png)
+
 Ein lokales Arbeitsbuch, das **Saralas Live-Markdown-Editor** mit **Ledges ausführbaren Notizen** verbindet. Native macOS-App auf Tauri 2 und SolidJS. Aktueller Stand: **0.2.3, funktionale Entwicklungsversion**.
 
 ## Website und Installation
 
-[**THE Note entdecken und installieren →**](https://tobwil.github.io/THENote/) · [Download v0.2.3](https://github.com/tobwil/THENote/releases/tag/v0.2.3) · [Changelog](CHANGELOG.md)
+[**THE Note entdecken, im Browser ausprobieren und installieren →**](https://tobwil.github.io/THENote/) ([English](https://tobwil.github.io/THENote/en/)) · [Download v0.2.3](https://github.com/tobwil/THENote/releases/tag/v0.2.3) · [Changelog](CHANGELOG.md)
 
 Aktuell für **macOS 11+ auf Apple Silicon**. Drei Wege führen zur gleichen App:
 
@@ -46,6 +50,12 @@ Das Gesamtprojekt ist **GPL-3.0-or-later**. Der Ledge-Parser behält **Apache-2.
 
 ## Einblicke
 
+### Spielplatz und Werkzeugkasten: Code zum Anfassen
+
+| Verspielt, im dunklen Thema | Nützlich, im hellen Thema |
+| :--- | :--- |
+| ![Mandelbrot-Menge als ASCII-Kunst, ausgegeben von einem JavaScript-Block](docs/screenshots/mandelbrot-dark.png) | ![Werkzeugkasten mit Kalender-Rechner und Ausgabe](docs/screenshots/toolbox-light.png) |
+
 ### Projekte, verschachtelte Notizen und Datum inline
 
 ![THE Note: Projektordner, Markdown-Notizen und ein Datumspicker an der Schreibstelle](docs/screenshots/projects-and-date.png)
@@ -58,7 +68,16 @@ Das Gesamtprojekt ist **GPL-3.0-or-later**. Der Ledge-Parser behält **Apache-2.
 
 ![Inline-KI mit Prompt und Markdown-Entwurf](docs/screenshots/inline-ai.png)
 
-Die Screenshots zeigen Testnotizen. Die KI-Antwort im Bild ist eine reproduzierbare Demo; dafür wurde kein externer Anbieter kontaktiert.
+Die Screenshots zeigen Beispiel- und Testnotizen. Alle Code-Ausgaben wurden lokal mit `bash`, `python3` und `node` erzeugt; die KI-Antwort ist eine reproduzierbare Demo, dafür wurde kein externer Anbieter kontaktiert. Neu erzeugen: `node scripts/screenshots.mjs`.
+
+## Ausprobieren: Spielplatz und Werkzeugkasten
+
+Unter **＋ Neue Notiz** liegen zwei fertige Notizen, die zeigen, was ausführbare Notizen können. Jeder Block **liest nur** und verändert nichts; Zahlen und Texte im Code lassen sich direkt anpassen.
+
+- **[Spielplatz](examples/Spielplatz.md)** (verspielt): 🚀 Countdown mit Live-Ausgabe, 🎲 Würfelorakel, ✦ Sierpinski-Dreieck aus `x & y`, 🌀 Mandelbrot in Zeichen und 🐟 ein Aquarium, das eine Minute läuft und sich mit **■ Stoppen** anhalten lässt.
+- **[Werkzeugkasten](examples/Werkzeugkasten.md)** (nützlich): installierte Laufzeiten prüfen, Ordner nach Dateitypen auswerten, Git auf einen Blick, Kalenderwoche und Tage bis zu einem Datum, Ausgaben aus CSV auswerten, JSON prüfen, Passphrase und UUID erzeugen.
+
+Wer die App nicht installiert hat, kann drei der Blöcke [auf der Website](https://tobwil.github.io/THENote/#try) direkt im Browser nachgestellt ausführen.
 
 ## Was zusammengeführt wurde
 
@@ -69,7 +88,7 @@ Die Screenshots zeigen Testnotizen. Die KI-Antwort im Bild ist eine reproduzierb
 - **Änderungen vor dem Speichern:** Über **± Änderungen** den aktuellen Markdown-Entwurf mit dem zuletzt geladenen/gespeicherten Stand vergleichen. Ergänzungen und Löschungen mit Zeilennummern, pro Tab; neue Notizen werden mit einem leeren Dokument verglichen. Zeilenenden und die Normalisierung des Editors sind kein Byte-Diff.
 - **Ausführen:** Shell, Bash, Zsh, Python und JavaScript/Node direkt im Codeblock; Live-Ausgabe, Exit-Code, Laufzeit, Stop und ein Aktivitätsverlauf.
 - **Kontext:** Ledges Frontmatter-Parser liefert `cwd`, `env` und `confirm`. Relative Arbeitsverzeichnisse werden gegen den offenen Workspace, sonst den Notizordner, sonst das Home-Verzeichnis aufgelöst.
-- **Oberfläche:** eigenes THE-Note-Design, heller/dunkler Modus, Vorlagen für Gedankenbuch, Runbook und Diagramme. Bestehende Editor-Menüs sind teilweise Englisch.
+- **Oberfläche:** eigenes THE-Note-Design hell und **THE Note Dark** (Waldgrün mit Limette); beim ersten Start folgt die App dem Systemschema, danach gilt die eigene Wahl über **◐**. Vorlagen für Gedankenbuch, Runbook, Diagramme sowie Spielplatz und Werkzeugkasten. Bestehende Editor-Menüs sind teilweise Englisch.
 - **Optionaler KI-Assistent:** **/ai direkt im Dokument**, OpenAI/Claude/Gemini/interne APIs mit geladenen Modelllisten, eigener API-Key, macOS-Schlüsselbund, Streaming und bewusst freigegebener Dokumentkontext. Einrichtung: [docs/AI-PLUGIN.md](docs/AI-PLUGIN.md).
 - **Eigene Identität:** App-ID, Einstellungen, Icon und Paketname sind getrennt von Sarala. Der fremde Updatekanal ist deaktiviert.
 
@@ -124,6 +143,8 @@ npm run package:macos    # App-Bundle signieren, prüfen und als ZIP ablegen
 
 Der Paketierungsbefehl legt App und ZIP lokal unter `release/` ab. Mit `THE_NOTE_RELEASE_DIR=release/v0.2.3` lässt sich ein separater Zielordner wählen. Build-Ausgaben gehören nicht in den Quellcode-Commit.
 
+Die Website liegt in `site/`: eine HTML-Vorlage, Texte pro Sprache in `site/i18n.mjs`. `npm run build:site` erzeugt Deutsch unter `/` und Englisch unter `/en/`.
+
 ## Prüfen
 
 ```sh
@@ -134,7 +155,7 @@ npm run test:notebook
 npm run test:ai:ui      # UI mit simuliertem nativen IPC; HTTP-Tests in Rust
 npm run test:diff:ui
 npm run test:workspace:ui
-npm run test:site       # Website, Installationstabs und mobile Darstellung
+npm run test:site       # Website DE/EN, Live-Zelle, Installationstabs und mobile Darstellung
 cargo test --manifest-path src-tauri/Cargo.toml
 ```
 

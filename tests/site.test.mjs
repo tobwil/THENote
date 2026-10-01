@@ -5,13 +5,15 @@ import { resolve, extname, join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { chromium } from 'playwright';
 const root = resolve('dist-site');
-const types = { '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript', '.svg': 'image/svg+xml', '.png': 'image/png', '.sh': 'text/plain' };
+import { stat } from 'node:fs/promises';
+const types = { '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript', '.svg': 'image/svg+xml', '.png': 'image/png', '.sh': 'text/plain', '.woff2': 'font/woff2' };
 const server = createServer(async (req, res) => {
   try {
     const url = new URL(req.url, 'http://localhost');
     if (!url.pathname.startsWith('/THENote/')) throw new Error('Incorrect base path');
-    const path = resolve(root, url.pathname.slice('/THENote/'.length) || 'index.html');
-    if (!path.startsWith(root + '/')) throw new Error('Invalid path');
+    let path = resolve(root, url.pathname.slice('/THENote/'.length) || 'index.html');
+    if (path !== root && !path.startsWith(root + '/')) throw new Error('Invalid path');
+    if ((await stat(path)).isDirectory()) path = join(path, 'index.html');
     res.setHeader('Content-Type', types[extname(path)] || 'text/plain'); res.end(await readFile(path));
   } catch { res.writeHead(404); res.end('Not found'); }
 });
@@ -44,7 +46,37 @@ try {
   assert.match(await page.getByRole('status').innerText(), /Befehl markiert/);
   const d = JSON.parse(await readFile('distribution.json', 'utf8'));
   assert.equal(await page.getByRole('link', { name: 'ZIP direkt herunterladen' }).getAttribute('href'), `https://github.com/${d.repository}/releases/download/v${d.version}/${d.asset}`);
-  for (const path of ['install.sh', 'assets/inline-ai.png', 'assets/projects-and-date.png', 'assets/unsaved-diff.png', 'assets/the-note.svg', 'sitemap.xml']) assert.equal((await page.request.get('http://127.0.0.1:1454/THENote/' + path)).status(), 200);
+  for (const path of ['install.sh', 'assets/inline-ai.png', 'assets/projects-and-date.png', 'assets/unsaved-diff.png', 'assets/playground-dark.png', 'assets/toolbox-light.png', 'assets/mandelbrot-dark.png', 'assets/the-note.svg', 'fonts/inter-latin-400-normal.woff2', 'sitemap.xml', 'en/']) assert.equal((await page.request.get('http://127.0.0.1:1454/THENote/' + path)).status(), 200);
+
+  // The live cell runs its demos in the browser and can be stopped.
+  await page.setViewportSize({ width: 1440, height: 1050 });
+  await page.getByRole('button', { name: /Mandelbrot/ }).click();
+  await page.getByRole('button', { name: 'Ausführen', exact: false }).first().click();
+  await page.waitForFunction(() => /Erfolgreich/.test(document.querySelector('[data-status]').textContent), null, { timeout: 10000 });
+  assert.ok((await page.locator('[data-output]').textContent()).split('\n').length > 20, 'Mandelbrot prints every row');
+  await page.getByRole('button', { name: /Countdown/ }).click();
+  await page.locator('[data-run]').click();
+  await page.locator('[data-run]').click();
+  assert.match(await page.locator('[data-status]').innerText(), /Gestoppt/);
+  // Day/night preview swaps the screenshot.
+  await page.getByRole('button', { name: /Tag/ }).click();
+  assert.equal(await page.locator('[data-stage]').evaluate(el => el.classList.contains('is-light')), true);
+
+  // English page: own copy, own canonical URL, links back to German.
+  await page.goto('http://127.0.0.1:1454/THENote/en/');
+  await page.getByRole('heading', { name: 'Write. Think. Try it.' }).waitFor();
+  assert.equal(await page.evaluate(() => document.documentElement.lang), 'en');
+  assert.equal(await page.locator('link[rel=canonical]').getAttribute('href'), d.site + 'en/');
+  assert.equal(await page.getByRole('link', { name: 'EN', exact: true }).getAttribute('aria-current'), 'page');
+  await page.getByRole('button', { name: 'Copy', exact: false }).filter({ visible: true }).click();
+  assert.match(await page.getByRole('status').innerText(), /Copied/);
+  for (const width of [1440, 375]) {
+    await page.setViewportSize({ width, height: 1050 });
+    assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `No horizontal overflow on /en/ at ${width}`);
+  }
+  await page.locator('[data-run]').click();
+  await page.waitForFunction(() => /Succeeded/.test(document.querySelector('[data-status]').textContent), null, { timeout: 10000 });
+  assert.match(await page.locator('[data-output]').innerText(), /The oracle rolls/);
   assert.deepEqual(errors, []); assert.deepEqual(failed, []);
-  console.log('PASS website: subpath assets, mobile/tablet/desktop layout, keyboard tabs, copy and fallback, release link and installer.');
+  console.log('PASS website: German and English pages, subpath assets, mobile/tablet/desktop layout, keyboard tabs, copy and fallback, live cell, day/night preview, release link and installer.');
 } finally { await browser?.close(); await new Promise(resolve => server.close(resolve)); }

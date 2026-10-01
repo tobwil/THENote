@@ -1,31 +1,108 @@
 <!doctype html>
-<html lang="de">
+<html lang="{{lang}}">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>THE Note — Gedanken, die etwas bewegen.</title>
-  <meta name="description" content="Dein lokales Markdown-Arbeitsbuch: schreiben, Code ausführen und KI direkt im Dokument nutzen. Open Source. Für macOS auf Apple Silicon.">
-  <meta name="theme-color" content="#f5f3eb"><link rel="icon" href="assets/the-note.svg" type="image/svg+xml">
-  <meta property="og:title" content="THE Note — Gedanken, die etwas bewegen."><meta property="og:description" content="Markdown. Ausführbare Notizen. KI genau dort, wo deine Idee entsteht."><meta property="og:type" content="website"><meta property="og:url" content="%%SITE%%"><meta property="og:image" content="%%SITE%%assets/inline-ai.png">
-  <link rel="canonical" href="%%SITE%%"><link rel="stylesheet" href="style.css"><script src="main.js" defer></script>
+  <title>{{meta.title}}</title>
+  <meta name="description" content="{{meta.description}}">
+  <meta name="theme-color" content="#101712"><link rel="icon" href="{{root}}assets/the-note.svg" type="image/svg+xml">
+  <link rel="canonical" href="{{url}}">
+  <link rel="alternate" hreflang="de" href="%%SITE%%"><link rel="alternate" hreflang="en" href="%%SITE%%en/"><link rel="alternate" hreflang="x-default" href="%%SITE%%">
+  <meta property="og:title" content="{{meta.title}}"><meta property="og:description" content="{{meta.og}}"><meta property="og:type" content="website"><meta property="og:locale" content="{{meta.locale}}"><meta property="og:url" content="{{url}}"><meta property="og:image" content="%%SITE%%assets/playground-dark.png"><meta name="twitter:card" content="summary_large_image">
+  <link rel="preload" href="{{root}}fonts/inter-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="{{root}}style.css"><script>document.documentElement.classList.add('js')</script><script src="{{root}}main.js" defer></script>
 </head>
 <body>
-<a class="skip" href="#main">Zum Inhalt</a>
-<header class="site-header wrap"><a class="brand" href="./" aria-label="THE Note Startseite"><img src="assets/the-note.svg" width="42" height="42" alt=""><span>THE Note<small>THINK IT. WRITE IT. RUN IT.</small></span></a><nav aria-label="Hauptnavigation"><a href="#features">Entdecken</a><a href="#install">Installieren</a><a href="https://github.com/tobwil/THENote" class="github-link">GitHub <span aria-hidden="true">↗</span></a></nav></header>
+<a class="skip" href="#main">{{skip}}</a>
+<aside class="lang-hint" data-lang-hint data-for="{{hint.for}}" hidden><span>{{hint.text}}</span><a href="{{hint.href}}" hreflang="{{hint.for}}" lang="{{hint.for}}">{{hint.link}}</a><button type="button" data-lang-hint-close aria-label="{{hint.close}}">×</button></aside>
+<header class="site-header">
+  <div class="wrap header-inner">
+    <a class="brand" href="{{home}}" aria-label="{{nav.home}}"><img src="{{root}}assets/the-note.svg" width="38" height="38" alt=""><span>THE Note<small>THINK IT. WRITE IT. RUN IT.</small></span></a>
+    <nav aria-label="{{nav.label}}">
+      <a href="#features" class="nav-optional">{{nav.features}}</a><a href="#try" class="nav-optional">{{nav.try}}</a><a href="#install">{{nav.install}}</a>
+      <span class="lang-switch" role="group" aria-label="{{nav.language}}"><a href="%%SITE_PATH%%" hreflang="de" lang="de" {{current.de}}>DE</a><a href="%%SITE_PATH%%en/" hreflang="en" lang="en" {{current.en}}>EN</a></span>
+      <a href="https://github.com/tobwil/THENote" class="github-link">GitHub <span aria-hidden="true">↗</span></a>
+    </nav>
+  </div>
+</header>
 <main id="main">
-  <section class="hero wrap">
-    <div class="hero-copy"><div class="eyebrow"><span class="live-dot"></span> DEIN LOKALES ARBEITSBUCH</div><h1>Schreiben.<br>Denken.<br><em>Ausprobieren.</em></h1><p class="lead">Ein ruhiger Ort für Gedanken. Mit Markdown, ausführbaren Codezellen und KI direkt an der Stelle, an der deine Idee entsteht.</p><div class="hero-actions"><a class="button primary" href="#install">THE Note installieren <span aria-hidden="true">↗</span></a><a class="text-link" href="https://github.com/tobwil/THENote">Quellcode ansehen</a></div><p class="release-line">v%%VERSION%% Preview <span>·</span> macOS Apple Silicon <span>·</span> Open Source</p></div>
-    <div class="hero-art"><div class="art-note"><span>01 / VON DER IDEE ZUM ERGEBNIS</span><i aria-hidden="true">✦</i></div><a href="assets/inline-ai.png" aria-label="Screenshot der Inline-KI in voller Größe öffnen"><img class="app-shot hero-shot" src="assets/inline-ai.png" width="1380" height="1000" alt="THE Note mit Projektordner, Markdown-Notiz und einem KI-Entwurf als Mermaid-Quelltext"></a><div class="art-caption"><span class="handwritten">Ein Gedanke weiter.</span><span>Deine Dateien.<br>Dein Arbeitsfluss.</span></div></div>
+  <section class="hero">
+    <div class="hero-bg" aria-hidden="true"><span class="orb orb-a"></span><span class="orb orb-b"></span><span class="grid-lines"></span></div>
+    <div class="wrap hero-grid">
+      <div class="hero-copy reveal">
+        <p class="eyebrow"><span class="live-dot"></span>{{hero.eyebrow}}</p>
+        <h1>{{hero.h1}}</h1>
+        <p class="lead">{{hero.lead}}</p>
+        <div class="hero-actions"><a class="button primary" href="#install">{{hero.cta}} <span aria-hidden="true">↓</span></a><a class="button ghost" href="#try" data-run-demo>{{hero.try}} <span aria-hidden="true">▶</span></a></div>
+        <p class="release-line">v%%VERSION%% Preview <span>·</span> macOS Apple Silicon <span>·</span> Open Source · GPL-3.0</p>
+      </div>
+      <div class="cell reveal" id="try" data-cell data-running="{{cell.running}}" data-done="{{cell.done}}" data-stopped="{{cell.stopped}}" data-idle="{{cell.idle}}">
+        <div class="cell-chrome"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="cell-file">{{cell.file}}</span><span class="cell-badge"><i></i> {{cell.local}}</span></div>
+        <div class="cell-demos" role="group" aria-label="{{cell.label}}">
+          <button type="button" data-demo="oracle" aria-pressed="true">🎲 {{cell.oracle}}</button><button type="button" data-demo="mandelbrot" aria-pressed="false">🌀 Mandelbrot</button><button type="button" data-demo="countdown" aria-pressed="false">🚀 Countdown</button>
+        </div>
+        <pre class="cell-code" tabindex="0" aria-label="{{cell.codeLabel}}"><code data-code></code></pre>
+        <div class="cell-bar"><span class="runtime"><i></i><span data-runtime>Python</span></span><span class="cell-status" data-status></span><button type="button" class="run" data-run><span aria-hidden="true">▶</span> <span data-run-label data-run-text="{{cell.run}}" data-stop-text="{{cell.stop}}">{{cell.run}}</span> <kbd>⌘↵</kbd></button></div>
+        <div class="cell-output"><span class="output-label">{{cell.output}}</span><pre data-output aria-live="polite" aria-label="{{cell.outputLabel}}">{{cell.idle}}</pre></div>
+        <p class="cell-note">{{cell.note}}</p>
+      </div>
+    </div>
+    <div class="marquee" aria-hidden="true"><div class="marquee-track"><span>{{marquee}}</span><span>{{marquee}}</span></div></div>
+    <ul class="sr-only">{{principles}}</ul>
   </section>
-  <div class="principles wrap"><span><i>01</i> Markdown bleibt Markdown</span><span><i>02</i> Dateien bleiben lokal</span><span><i>03</i> KI ist deine Entscheidung</span></div>
-  <section id="features" class="features wrap section"><div class="section-heading"><p class="eyebrow">PLATZ FÜR DEINEN NÄCHSTEN GEDANKEN</p><h2>Vom ersten Satz<br>zum nächsten Schritt.</h2></div><div class="feature-grid"><article><span class="feature-icon" aria-hidden="true">Aa</span><h3>Schreiben, wie du denkst.</h3><p>Live-Markdown, Tabs, Tabellen, Diagramme und Fokusmodus. Deine Notizen sind normale Textdateien, die du überall weiterverwenden kannst.</p></article><article><span class="feature-icon mono" aria-hidden="true">&gt;_</span><h3>Ideen ausprobieren.</h3><p>Shell, Python und JavaScript direkt im Codeblock ausführen. Mit Live-Ausgabe, Stop und einem klaren Ausführungskontext pro Notiz.</p></article><article><span class="feature-icon" aria-hidden="true">✦</span><h3>KI am richtigen Ort.</h3><p><code>/ai</code> öffnet einen Prompt direkt im Dokument. Verbinde OpenAI, Claude, Gemini oder eine interne API und übernimm den Entwurf, wenn er passt.</p></article></div></section>
-  <section class="showcase section"><div class="wrap showcase-grid"><div class="showcase-copy"><p class="eyebrow">EIN ORT FÜR ZUSAMMENHÄNGE</p><h2>Alles hat<br>seinen Platz.</h2><p>Organisiere Projekte, Ordner und Notizen. Benenne Tabs direkt um und füge mit <code>/date</code> ein Datum genau an der Schreibstelle ein.</p><a class="text-link" href="https://github.com/tobwil/THENote#was-zusammengeführt-wurde">Alle Funktionen entdecken <span aria-hidden="true">↗</span></a></div><a class="screen-link" href="assets/projects-and-date.png" aria-label="Screenshot der Projekte und Datumsauswahl öffnen"><img class="app-shot" src="assets/projects-and-date.png" width="1380" height="960" loading="lazy" alt="Projekt Kuchen mit Unterordnern und einem Datumspicker direkt im Text"></a></div></section>
-  <section class="wrap section diff-section"><a class="screen-link" href="assets/unsaved-diff.png" aria-label="Screenshot der Änderungen vor dem Speichern öffnen"><img class="app-shot" src="assets/unsaved-diff.png" width="1380" height="960" loading="lazy" alt="Diff-Ansicht mit grünen Ergänzungen, roten Löschungen und Zeilennummern"></a><div><p class="eyebrow">DEIN ENTWURF. DEIN ÜBERBLICK.</p><h2>Sehen, was<br>sich verändert.</h2><p>Vor dem Speichern zeigt <strong>± Änderungen</strong> den Unterschied zum letzten gespeicherten Stand. Pro Tab, mit Kontext und Zeilennummern.</p><span class="diff-example"><span>− vorher</span><span>+ weitergedacht</span></span></div></section>
-  <section id="install" class="install-section"><div class="wrap install-grid"><div><p class="eyebrow">BEREIT FÜR DEINE NÄCHSTE IDEE</p><h2>Ein kleiner Start.<br>Viel Platz danach.</h2><p>Installiere THE Note mit Homebrew, per Terminal oder als ZIP. Der aktuelle Build ist für <strong>macOS 11+ auf Apple Silicon</strong>.</p><a class="download-link" href="%%DOWNLOAD%%">ZIP direkt herunterladen <span aria-hidden="true">↓</span></a><p class="install-details">v%%VERSION%% · Entwicklungsversion<br>Lokal signiert, noch nicht Apple-notarisiert.</p></div><div class="install-card"><div class="install-tabs" role="tablist" aria-label="Installationsweg"><button type="button" role="tab" aria-selected="true" aria-controls="brew-panel" id="brew-tab" data-panel="brew-panel">Homebrew</button><button type="button" role="tab" aria-selected="false" aria-controls="curl-panel" id="curl-tab" tabindex="-1" data-panel="curl-panel">curl</button></div><div role="tabpanel" id="brew-panel" aria-labelledby="brew-tab" tabindex="0"><div class="code-heading"><span>TERMINAL</span><button type="button" class="copy" data-copy="brew-command">Kopieren <span aria-hidden="true">⧉</span></button></div><pre><code id="brew-command">brew tap tobwil/thenote https://github.com/tobwil/THENote
+
+  <section id="features" class="section stage-section">
+    <div class="wrap">
+      <div class="section-heading reveal"><p class="eyebrow">{{stage.eyebrow}}</p><h2>{{stage.h2}}</h2><p>{{stage.lead}}</p></div>
+      <div class="theme-switch reveal" role="group" aria-label="{{stage.switch}}"><button type="button" data-shot="dark" aria-pressed="true"><span aria-hidden="true">☾</span> {{stage.dark}}</button><button type="button" data-shot="light" aria-pressed="false"><span aria-hidden="true">☀</span> {{stage.light}}</button></div>
+      <figure class="stage reveal" data-stage>
+        <div class="stage-frame">
+          <img class="shot shot-dark" src="{{root}}assets/playground-dark.png" width="2760" height="1800" alt="{{stage.altDark}}">
+          <img class="shot shot-light" src="{{root}}assets/toolbox-light.png" width="2760" height="1800" loading="lazy" alt="{{stage.altLight}}">
+        </div>
+        <figcaption>{{stage.caption}}</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="section bento-section">
+    <div class="wrap">
+      <div class="section-heading reveal"><p class="eyebrow">{{bento.eyebrow}}</p><h2>{{bento.h2}}</h2></div>
+      <div class="bento">
+        <article class="tile tile-wide tile-dark reveal"><div class="tile-copy"><span class="tile-icon mono" aria-hidden="true">&gt;_</span><h3>{{bento.runH}}</h3><p>{{bento.runP}}</p><ul class="chips"><li>Shell</li><li>Bash</li><li>Zsh</li><li>Python</li><li>JavaScript</li></ul></div><a class="tile-shot" href="{{root}}assets/mandelbrot-dark.png" aria-label="{{bento.runOpen}}"><img src="{{root}}assets/mandelbrot-dark.png" width="2760" height="1800" loading="lazy" alt="{{bento.runAlt}}"></a></article>
+        <article class="tile reveal"><span class="tile-icon" aria-hidden="true">Aa</span><h3>{{bento.mdH}}</h3><p>{{bento.mdP}}</p><ul class="chips"><li>{{bento.mdChip1}}</li><li>KaTeX</li><li>Mermaid</li><li>D2</li><li>{{bento.mdChip2}}</li></ul></article>
+        <article class="tile tile-lime reveal"><span class="tile-icon" aria-hidden="true">✦</span><h3>{{bento.aiH}}</h3><p>{{bento.aiP}}</p><a class="tile-shot small" href="{{root}}assets/inline-ai.png" aria-label="{{bento.aiOpen}}"><img src="{{root}}assets/inline-ai.png" width="2760" height="1800" loading="lazy" alt="{{bento.aiAlt}}"></a></article>
+        <article class="tile reveal"><span class="tile-icon diff-icon" aria-hidden="true">±</span><h3>{{bento.diffH}}</h3><p>{{bento.diffP}}</p><span class="diff-example" aria-hidden="true"><span>− {{bento.diffOld}}</span><span>+ {{bento.diffNew}}</span></span><a class="tile-shot small" href="{{root}}assets/unsaved-diff.png" aria-label="{{bento.diffOpen}}"><img src="{{root}}assets/unsaved-diff.png" width="2760" height="1800" loading="lazy" alt="{{bento.diffAlt}}"></a></article>
+        <article class="tile reveal"><span class="tile-icon" aria-hidden="true">▧</span><h3>{{bento.projH}}</h3><p>{{bento.projP}}</p><a class="tile-shot small" href="{{root}}assets/projects-and-date.png" aria-label="{{bento.projOpen}}"><img src="{{root}}assets/projects-and-date.png" width="2760" height="1800" loading="lazy" alt="{{bento.projAlt}}"></a></article>
+        <article class="tile tile-local reveal"><span class="tile-icon" aria-hidden="true">⌂</span><h3>{{bento.localH}}</h3><p>{{bento.localP}}</p><ul class="chips"><li>{{bento.localChip1}}</li><li>{{bento.localChip2}}</li><li>{{bento.localChip3}}</li></ul></article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section examples-section">
+    <div class="wrap examples-grid">
+      <div class="reveal"><p class="eyebrow">{{ex.eyebrow}}</p><h2>{{ex.h2}}</h2><p class="section-lead">{{ex.lead}}</p></div>
+      <article class="example-card play reveal"><span class="example-tag">✦ {{ex.playTag}}</span><h3>{{ex.playH}}</h3><ul>{{ex.playList}}</ul><a href="https://github.com/tobwil/THENote/blob/main/examples/Spielplatz.md">{{ex.view}} ↗</a></article>
+      <article class="example-card tools reveal"><span class="example-tag">⌘ {{ex.toolTag}}</span><h3>{{ex.toolH}}</h3><ul>{{ex.toolList}}</ul><a href="https://github.com/tobwil/THENote/blob/main/examples/Werkzeugkasten.md">{{ex.view}} ↗</a></article>
+    </div>
+  </section>
+
+  <section id="install" class="install-section">
+    <div class="install-bg" aria-hidden="true"><span class="orb orb-c"></span></div>
+    <div class="wrap install-grid">
+      <div class="reveal"><p class="eyebrow">{{install.eyebrow}}</p><h2>{{install.h2}}</h2><p>{{install.lead}}</p><a class="download-link" href="%%DOWNLOAD%%">{{install.zip}} <span aria-hidden="true">↓</span></a><p class="install-details">v%%VERSION%% · {{install.dev}}<br>{{install.signed}}</p></div>
+      <div class="install-card reveal"><div class="install-tabs" role="tablist" aria-label="{{install.tabsLabel}}"><button type="button" role="tab" aria-selected="true" aria-controls="brew-panel" id="brew-tab" data-panel="brew-panel">Homebrew</button><button type="button" role="tab" aria-selected="false" aria-controls="curl-panel" id="curl-tab" tabindex="-1" data-panel="curl-panel">curl</button></div><div role="tabpanel" id="brew-panel" aria-labelledby="brew-tab" tabindex="0"><div class="code-heading"><span>TERMINAL</span><button type="button" class="copy" data-copy="brew-command">{{install.copy}} <span aria-hidden="true">⧉</span></button></div><pre><code id="brew-command">brew tap tobwil/thenote https://github.com/tobwil/THENote
 brew trust --cask tobwil/thenote/the-note
-brew install --cask tobwil/thenote/the-note</code></pre><p>Homebrew 6 benötigt den einmaligen <code>trust</code>-Schritt. Bei älteren Versionen diese Zeile auslassen.</p><p class="update-command">Updates: <code>brew upgrade --cask tobwil/thenote/the-note</code></p></div><div role="tabpanel" id="curl-panel" aria-labelledby="curl-tab" tabindex="0" hidden><div class="code-heading"><span>TERMINAL</span><button type="button" class="copy" data-copy="curl-command">Kopieren <span aria-hidden="true">⧉</span></button></div><pre><code id="curl-command">curl -fsSL https://tobwil.github.io/THENote/install.sh | bash</code></pre><p>Installiert nach <code>~/Applications</code>, ohne <code>sudo</code>. Prüft Download, SHA-256 und App-Signatur. Eine laufende App wird nicht ersetzt.</p><a href="install.sh">Installationsskript zuerst ansehen ↗</a></div><div class="copy-status" role="status" aria-live="polite"></div></div></div><div class="wrap install-footnote"><b>Beim ersten Start</b><p>Die Preview ist noch nicht notarisiert. Wenn macOS das Öffnen blockiert, prüfe THE Note unter <strong>Systemeinstellungen → Datenschutz & Sicherheit</strong>. Die Installationswege verändern diese Sicherheitsprüfung nicht. Vor Updates Notizen speichern und die App schließen. <a href="https://github.com/tobwil/THENote/blob/main/docs/INSTALLATION.md">Details zur Installation ↗</a></p></div></section>
-  <section class="wrap section values"><div><p class="eyebrow">OFFEN. LOKAL. NACHVOLLZIEHBAR.</p><h2>Deine Notizen<br>bleiben deine.</h2></div><div class="values-copy"><p>Kein App-Konto. Kein proprietäres Notizformat. Du entscheidest, welche Dateien du öffnest und ob du KI verwenden möchtest. Notizinhalt wird nur mit aktivierter Kontext-Option an deinen KI-Anbieter geschickt.</p><p>THE Note ist Open Source unter <strong>GPL-3.0-or-later</strong>. Die Entwicklung, der Gesprächsverlauf, Tests und bekannte Grenzen sind öffentlich dokumentiert.</p><p class="small">Codezellen laufen mit deinen lokalen Benutzerrechten. KI-Anbieter können API-Nutzung berechnen. Die Screenshots zeigen Testnotizen und eine simulierte KI-Antwort.</p><div class="values-links"><a href="https://github.com/tobwil/THENote/blob/main/CHANGELOG.md">Changelog ↗</a><a href="https://github.com/tobwil/THENote/tree/main/docs/history">Entstehung ↗</a></div></div></section>
-  <section class="credits wrap"><span class="credit-mark" aria-hidden="true">↳</span><div><h3>Auf guten Ideen aufgebaut.</h3><p>Danke an <a href="https://github.com/solancer/sarala">Sarala</a> von Srinivas Gowda für die Editorbasis und an <a href="https://github.com/ledgesh/ledge">Ledge</a> für ausführbare Notizen und den Frontmatter-Parser. THE Note ist ein unabhängiges Folgeprojekt. <a href="https://github.com/tobwil/THENote/blob/main/LICENSING.md">Herkunft & Lizenzen ↗</a></p></div></section>
+brew install --cask tobwil/thenote/the-note</code></pre><p>{{install.brewNote}}</p><p class="update-command">{{install.updates}}: <code>brew upgrade --cask tobwil/thenote/the-note</code></p></div><div role="tabpanel" id="curl-panel" aria-labelledby="curl-tab" tabindex="0" hidden><div class="code-heading"><span>TERMINAL</span><button type="button" class="copy" data-copy="curl-command">{{install.copy}} <span aria-hidden="true">⧉</span></button></div><pre><code id="curl-command">curl -fsSL https://tobwil.github.io/THENote/install.sh | bash</code></pre><p>{{install.curlNote}}</p><a href="{{root}}install.sh">{{install.script}} ↗</a></div><div class="copy-status" role="status" aria-live="polite" data-copied="{{install.copied}}" data-selected="{{install.selected}}"></div></div>
+    </div>
+    <div class="wrap install-footnote reveal"><b>{{install.firstH}}</b><p>{{install.firstP}} <a href="https://github.com/tobwil/THENote/blob/main/docs/INSTALLATION.md">{{install.details}} ↗</a></p></div>
+  </section>
+
+  <section class="wrap section values">
+    <div class="reveal"><p class="eyebrow">{{values.eyebrow}}</p><h2>{{values.h2}}</h2></div>
+    <div class="values-copy reveal"><p>{{values.p1}}</p><p>{{values.p2}}</p><p class="small">{{values.small}}</p><div class="values-links"><a href="https://github.com/tobwil/THENote/blob/main/CHANGELOG.md">Changelog ↗</a><a href="https://github.com/tobwil/THENote/tree/main/docs/history">{{values.history}} ↗</a><a href="https://github.com/tobwil/THENote{{readme}}">README ↗</a></div></div>
+  </section>
+  <section class="credits wrap reveal"><span class="credit-mark" aria-hidden="true">↳</span><div><h3>{{credits.h}}</h3><p>{{credits.p}}</p></div></section>
 </main>
-<footer class="wrap site-footer"><a class="brand" href="./"><img src="assets/the-note.svg" width="30" height="30" alt=""><span>THE Note</span></a><span>THINK IT. WRITE IT. RUN IT.</span><a href="https://github.com/tobwil/THENote">Mitmachen auf GitHub ↗</a></footer>
-<noscript><p class="wrap">Installation per curl: <code>curl -fsSL https://tobwil.github.io/THENote/install.sh | bash</code>. Das Skript steht unter <a href="install.sh">install.sh</a>.</p></noscript>
+<footer class="wrap site-footer"><a class="brand" href="{{home}}"><img src="{{root}}assets/the-note.svg" width="30" height="30" alt=""><span>THE Note</span></a><span>THINK IT. WRITE IT. RUN IT.</span><a href="https://github.com/tobwil/THENote">{{footer.contribute}} ↗</a></footer>
+<noscript><p class="wrap">{{noscript}}</p></noscript>
 </body></html>
