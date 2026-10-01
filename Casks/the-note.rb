@@ -1,6 +1,6 @@
 cask "the-note" do
-  version "0.2.3"
-  sha256 "920824d10a714d297631515ba95d67ee3e6083af9f2091308cd8e343ffd02472"
+  version "0.2.4"
+  sha256 "cf48ca5f359a1e8086cf116a8667547940c72abe76d4f6d0cdcc5865c0ed629e"
 
   url "https://github.com/tobwil/THENote/releases/download/v#{version}/THE.Note-macOS-arm64.zip"
   name "THE Note"
@@ -17,8 +17,7 @@ cask "the-note" do
   app "THE Note.app"
 
   caveats <<~EOS
-    This is a preview for Apple Silicon, ad-hoc signed and not Apple-notarized.
-    If macOS blocks opening, review THE Note in System Settings > Privacy & Security.
+    This is a preview for Apple Silicon, Developer ID signed and Apple-notarized.
     Save your notes and quit THE Note before upgrading. Note files are not removed.
   EOS
 end
