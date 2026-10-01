@@ -129,7 +129,7 @@ Im Ordner [`examples/`](examples/) liegen Notizen zum Ausprobieren. Jeder Codebl
 | :--- | :--- |
 | ![Werkzeugkasten mit Kalender-Rechner und Ausgabe](docs/screenshots/toolbox-light.png) | ![Mandelbrot-Menge als ASCII-Kunst, ausgegeben von einem JavaScript-Block](docs/screenshots/mandelbrot-dark.png) |
 
-Ohne installierte App lassen sich drei kleine Beispielnotizen [auf der Website](https://tobwil.github.io/THENote/#try) im Browser nachgestellt ausführen.
+Ohne installierte App lässt sich THE Note [auf der Website](https://tobwil.github.io/THENote/#try) in einem nachgebauten Fenster ausprobieren: Absätze anklicken und ihr Markdown bearbeiten, Aufgaben abhaken, zwischen Notizen wechseln und die kleine Kostenrechnung ausführen.
 
 ## Bewusste Grenzen dieser Version
 

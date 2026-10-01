@@ -18,7 +18,7 @@
   <div class="wrap header-inner">
     <a class="brand" href="{{home}}" aria-label="{{nav.home}}"><img src="{{root}}assets/the-note.svg" width="38" height="38" alt=""><span>THE Note<small>THINK IT. WRITE IT. RUN IT.</small></span></a>
     <nav aria-label="{{nav.label}}">
-      <a href="#features" class="nav-optional">{{nav.features}}</a><a href="#try" class="nav-optional">{{nav.try}}</a><a href="#install">{{nav.install}}</a>
+      <a href="#try" class="nav-optional">{{nav.try}}</a><a href="#features" class="nav-optional">{{nav.features}}</a><a href="#install">{{nav.install}}</a>
       <span class="lang-switch" role="group" aria-label="{{nav.language}}"><a href="%%SITE_PATH%%" hreflang="de" lang="de" {{current.de}}>DE</a><a href="%%SITE_PATH%%en/" hreflang="en" lang="en" {{current.en}}>EN</a></span>
       <a href="https://github.com/tobwil/THENote" class="github-link">GitHub <span aria-hidden="true">↗</span></a>
     </nav>
@@ -27,54 +27,75 @@
 <main id="main">
   <section class="hero">
     <div class="hero-bg" aria-hidden="true"><span class="orb orb-a"></span><span class="orb orb-b"></span><span class="grid-lines"></span></div>
-    <div class="wrap hero-grid">
-      <div class="hero-copy reveal">
-        <p class="eyebrow"><span class="live-dot"></span>{{hero.eyebrow}}</p>
-        <h1>{{hero.h1}}</h1>
-        <p class="lead">{{hero.lead}}</p>
-        <div class="hero-actions"><a class="button primary" href="#install">{{hero.cta}} <span aria-hidden="true">↓</span></a><a class="button ghost" href="#try" data-run-demo>{{hero.try}} <span aria-hidden="true">▶</span></a></div>
-        <p class="release-line">v%%VERSION%% Preview <span>·</span> macOS Apple Silicon <span>·</span> Open Source · GPL-3.0</p>
-      </div>
-      <div class="cell reveal" id="try" data-cell data-running="{{cell.running}}" data-done="{{cell.done}}" data-stopped="{{cell.stopped}}" data-idle="{{cell.idle}}">
-        <div class="cell-chrome"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="cell-file" data-file>{{cell.file}}</span><span class="cell-badge"><i></i> {{cell.local}}</span></div>
-        <div class="cell-demos" role="group" aria-label="{{cell.label}}">
-          <button type="button" data-demo="trip" aria-pressed="true">✈ {{cell.trip}}</button><button type="button" data-demo="week" aria-pressed="false">✓ {{cell.week}}</button><button type="button" data-demo="oracle" aria-pressed="false">🎲 {{cell.oracle}}</button>
+    <div class="wrap hero-copy reveal">
+      <p class="eyebrow"><span class="live-dot"></span>{{hero.eyebrow}}</p>
+      <h1>{{hero.h1}}</h1>
+      <p class="lead">{{hero.lead}}</p>
+      <div class="hero-actions"><a class="button primary" href="#install">{{hero.cta}} <span aria-hidden="true">↓</span></a><a class="button ghost" href="#features">{{hero.more}} <span aria-hidden="true">→</span></a></div>
+      <p class="release-line">v%%VERSION%% Preview <span>·</span> macOS Apple Silicon <span>·</span> Open Source · GPL-3.0</p>
+    </div>
+
+    <div class="wrap window-wrap" id="try">
+      <div class="window-tilt" data-tilt>
+        <div class="app" data-app data-theme="light" role="region" aria-label="{{app.label}}" data-saved="{{app.saved}}" data-unsaved="{{app.unsaved}}" data-words="{{app.words}}" data-run-text="{{app.run}}" data-running="{{app.running}}" data-done="{{app.done}}" data-output="{{app.output}}">
+          <aside class="app-side">
+            <div class="app-brand"><span class="app-mono">N<i>·</i></span><span>THE Note<small>THINK IT. WRITE IT. RUN IT.</small></span></div>
+            <div class="app-ws"><span aria-hidden="true">▤</span> {{app.workspace}}</div>
+            <div class="app-sidetabs" aria-hidden="true"><span class="on">{{app.files}}</span><span>{{app.outline}}</span></div>
+            <nav class="app-tree" data-tree aria-label="{{app.files}}"></nav>
+          </aside>
+          <div class="app-main">
+            <div class="app-tabs"><span class="app-dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="app-tab" data-tab></span><span class="app-plus" aria-hidden="true">＋</span><span class="app-mode" aria-hidden="true"><b>Live</b><span>Source</span></span></div>
+            <div class="app-toolbar"><span class="app-crumb"><span aria-hidden="true">▧</span> {{app.workspace}} <i>/</i> <b data-crumb></b></span><span class="app-tools"><button type="button" class="app-btn" data-theme-toggle aria-label="{{app.theme}}" title="{{app.theme}}">◐</button><span class="app-btn" data-changes>{{app.changes}}</span><button type="button" class="app-btn" data-save>{{app.save}} <kbd>⌘S</kbd></button></span></div>
+            <div class="app-context"><span class="app-local"><i></i> {{app.local}}</span></div>
+            <article class="app-page" data-page></article>
+            <footer class="app-status"><span data-wordcount></span><span class="app-saved" data-status-saved></span><span>Markdown · UTF-8</span></footer>
+          </div>
         </div>
-        <div class="cell-note-body" data-note></div>
-        <pre class="cell-code" tabindex="0" aria-label="{{cell.codeLabel}}"><code data-code></code></pre>
-        <div class="cell-bar"><span class="runtime"><i></i><span data-runtime>Python</span></span><span class="cell-status" data-status></span><button type="button" class="run" data-run><span aria-hidden="true">▶</span> <span data-run-label data-run-text="{{cell.run}}" data-stop-text="{{cell.stop}}">{{cell.run}}</span> <kbd>⌘↵</kbd></button></div>
-        <div class="cell-output"><span class="output-label">{{cell.output}}</span><pre data-output aria-live="polite" aria-label="{{cell.outputLabel}}">{{cell.idle}}</pre></div>
-        <p class="cell-note">{{cell.note}}</p>
       </div>
+      <ul class="window-hints" aria-label="{{app.hints}}">
+        <li><span>1</span>{{app.hint1}}</li><li><span>2</span>{{app.hint2}}</li><li><span>3</span>{{app.hint3}}</li>
+      </ul>
     </div>
     <div class="marquee" aria-hidden="true"><div class="marquee-track"><span>{{marquee}}</span><span>{{marquee}}</span></div></div>
     <ul class="sr-only">{{principles}}</ul>
   </section>
 
-  <section id="features" class="section stage-section">
+  <section id="features" class="section story-section">
     <div class="wrap">
-      <div class="section-heading reveal"><p class="eyebrow">{{stage.eyebrow}}</p><h2>{{stage.h2}}</h2><p>{{stage.lead}}</p></div>
-      <div class="theme-switch reveal" role="group" aria-label="{{stage.switch}}"><button type="button" data-shot="light" aria-pressed="true"><span aria-hidden="true">☀</span> {{stage.light}}</button><button type="button" data-shot="dark" aria-pressed="false"><span aria-hidden="true">☾</span> {{stage.dark}}</button></div>
-      <figure class="stage reveal" data-stage>
-        <div class="stage-frame">
-          <img class="shot" src="{{root}}assets/note-light.png" width="2760" height="2600" alt="{{stage.altLight}}">
-          <img class="shot shot-dark" src="{{root}}assets/note-dark.png" width="2760" height="2600" loading="lazy" alt="{{stage.altDark}}">
+      <div class="section-heading reveal"><p class="eyebrow">{{story.eyebrow}}</p><h2>{{story.h2}}</h2></div>
+      <div class="story" data-story>
+        <div class="story-media" aria-hidden="true">
+          <div class="story-frame">
+            <img class="is-active" data-story-shot="1" src="{{root}}assets/note-light.png" width="2760" height="2600" alt="">
+            <img data-story-shot="2" src="{{root}}assets/projects-and-date.png" width="2760" height="1800" alt="">
+            <img data-story-shot="3" src="{{root}}assets/unsaved-diff.png" width="2760" height="1800" alt="">
+            <img data-story-shot="4" src="{{root}}assets/inline-ai.png" width="2760" height="1800" alt="">
+            <img data-story-shot="5" src="{{root}}assets/note-dark.png" width="2760" height="2600" alt="">
+          </div>
+          <div class="story-progress"><i data-story-dot="1" class="is-active"></i><i data-story-dot="2"></i><i data-story-dot="3"></i><i data-story-dot="4"></i><i data-story-dot="5"></i></div>
         </div>
-        <figcaption>{{stage.caption}}</figcaption>
-      </figure>
+        <ol class="story-steps">
+          <li class="story-step is-active" data-step="1"><span class="step-no">01</span><h3>{{story.s1h}}</h3><p>{{story.s1p}}</p><ul class="chips">{{story.s1c}}</ul><img class="step-shot" src="{{root}}assets/note-light.png" width="2760" height="2600" loading="lazy" alt="{{story.s1alt}}"></li>
+          <li class="story-step" data-step="2"><span class="step-no">02</span><h3>{{story.s2h}}</h3><p>{{story.s2p}}</p><ul class="chips">{{story.s2c}}</ul><img class="step-shot" src="{{root}}assets/projects-and-date.png" width="2760" height="1800" loading="lazy" alt="{{story.s2alt}}"></li>
+          <li class="story-step" data-step="3"><span class="step-no">03</span><h3>{{story.s3h}}</h3><p>{{story.s3p}}</p><ul class="chips">{{story.s3c}}</ul><img class="step-shot" src="{{root}}assets/unsaved-diff.png" width="2760" height="1800" loading="lazy" alt="{{story.s3alt}}"></li>
+          <li class="story-step" data-step="4"><span class="step-no">04</span><h3>{{story.s4h}}</h3><p>{{story.s4p}}</p><ul class="chips">{{story.s4c}}</ul><img class="step-shot" src="{{root}}assets/inline-ai.png" width="2760" height="1800" loading="lazy" alt="{{story.s4alt}}"></li>
+          <li class="story-step" data-step="5"><span class="step-no">05</span><h3>{{story.s5h}}</h3><p>{{story.s5p}}</p><ul class="chips">{{story.s5c}}</ul><img class="step-shot" src="{{root}}assets/note-dark.png" width="2760" height="2600" loading="lazy" alt="{{story.s5alt}}"></li>
+        </ol>
+      </div>
     </div>
   </section>
 
-  <section class="section bento-section">
+  <section class="section grid-section">
     <div class="wrap">
-      <div class="section-heading reveal"><p class="eyebrow">{{bento.eyebrow}}</p><h2>{{bento.h2}}</h2></div>
-      <div class="bento">
-        <article class="tile tile-wide reveal"><div class="tile-copy"><span class="tile-icon" aria-hidden="true">Aa</span><h3>{{bento.mdH}}</h3><p>{{bento.mdP}}</p><ul class="chips"><li>{{bento.mdChip1}}</li><li>{{bento.mdChip3}}</li><li>KaTeX</li><li>Mermaid</li><li>D2</li><li>{{bento.mdChip2}}</li></ul></div><a class="tile-shot" href="{{root}}assets/note-light.png" aria-label="{{bento.mdOpen}}"><img src="{{root}}assets/note-light.png" width="2760" height="2600" loading="lazy" alt="{{bento.mdAlt}}"></a></article>
-        <article class="tile tile-dark reveal"><span class="tile-icon mono" aria-hidden="true">&gt;_</span><h3>{{bento.runH}}</h3><p>{{bento.runP}}</p><pre class="tile-output" aria-label="{{bento.runOutput}}">{{bento.runSample}}</pre><ul class="chips"><li>Shell</li><li>Python</li><li>JavaScript</li></ul></article>
-        <article class="tile tile-lime reveal"><span class="tile-icon" aria-hidden="true">✦</span><h3>{{bento.aiH}}</h3><p>{{bento.aiP}}</p><a class="tile-shot small" href="{{root}}assets/inline-ai.png" aria-label="{{bento.aiOpen}}"><img src="{{root}}assets/inline-ai.png" width="2760" height="1800" loading="lazy" alt="{{bento.aiAlt}}"></a></article>
-        <article class="tile reveal"><span class="tile-icon diff-icon" aria-hidden="true">±</span><h3>{{bento.diffH}}</h3><p>{{bento.diffP}}</p><span class="diff-example" aria-hidden="true"><span>− {{bento.diffOld}}</span><span>+ {{bento.diffNew}}</span></span><a class="tile-shot small" href="{{root}}assets/unsaved-diff.png" aria-label="{{bento.diffOpen}}"><img src="{{root}}assets/unsaved-diff.png" width="2760" height="1800" loading="lazy" alt="{{bento.diffAlt}}"></a></article>
-        <article class="tile reveal"><span class="tile-icon" aria-hidden="true">▧</span><h3>{{bento.projH}}</h3><p>{{bento.projP}}</p><a class="tile-shot small" href="{{root}}assets/projects-and-date.png" aria-label="{{bento.projOpen}}"><img src="{{root}}assets/projects-and-date.png" width="2760" height="1800" loading="lazy" alt="{{bento.projAlt}}"></a></article>
-        <article class="tile tile-local reveal"><span class="tile-icon" aria-hidden="true">⌂</span><h3>{{bento.localH}}</h3><p>{{bento.localP}}</p><ul class="chips"><li>{{bento.localChip1}}</li><li>{{bento.localChip2}}</li><li>{{bento.localChip3}}</li></ul></article>
+      <div class="section-heading reveal"><p class="eyebrow">{{grid.eyebrow}}</p><h2>{{grid.h2}}</h2></div>
+      <div class="detail-grid">
+        <article class="detail reveal"><span class="detail-icon" aria-hidden="true">⇄</span><h3>{{grid.t1h}}</h3><p>{{grid.t1p}}</p></article>
+        <article class="detail reveal"><span class="detail-icon" aria-hidden="true">↺</span><h3>{{grid.t2h}}</h3><p>{{grid.t2p}}</p></article>
+        <article class="detail reveal"><span class="detail-icon" aria-hidden="true">∑</span><h3>{{grid.t3h}}</h3><p>{{grid.t3p}}</p></article>
+        <article class="detail reveal"><span class="detail-icon" aria-hidden="true">◐</span><h3>{{grid.t4h}}</h3><p>{{grid.t4p}}</p></article>
+        <article class="detail reveal"><span class="detail-icon" aria-hidden="true">⇪</span><h3>{{grid.t5h}}</h3><p>{{grid.t5p}}</p></article>
+        <article class="detail detail-dark reveal"><span class="detail-icon" aria-hidden="true">⌂</span><h3>{{grid.t6h}}</h3><p>{{grid.t6p}}</p></article>
       </div>
     </div>
   </section>
