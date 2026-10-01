@@ -1,0 +1,17 @@
+import { cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+const d = JSON.parse(await readFile('distribution.json', 'utf8'));
+const replacements = { VERSION: d.version, SITE: d.site, DOWNLOAD: `https://github.com/${d.repository}/releases/download/v${d.version}/${d.asset}` };
+await rm('dist-site', { recursive: true, force: true });
+await mkdir('dist-site/assets', { recursive: true });
+let html = await readFile('site/index.html', 'utf8');
+for (const [key, value] of Object.entries(replacements)) html = html.replaceAll(`%%${key}%%`, value);
+if (/%%[A-Z]+%%/.test(html)) throw new Error('Unresolved website placeholder');
+await writeFile('dist-site/index.html', html);
+for (const file of ['style.css', 'main.js']) await cp(`site/${file}`, `dist-site/${file}`);
+for (const file of ['inline-ai.png', 'projects-and-date.png', 'unsaved-diff.png']) await cp(`docs/screenshots/${file}`, `dist-site/assets/${file}`);
+await cp('assets/the-note.svg', 'dist-site/assets/the-note.svg');
+await cp('install.sh', 'dist-site/install.sh');
+await writeFile('dist-site/.nojekyll', '');
+await writeFile('dist-site/robots.txt', `User-agent: *\nAllow: /\nSitemap: ${d.site}sitemap.xml\n`);
+await writeFile('dist-site/sitemap.xml', `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>${d.site}</loc></url></urlset>\n`);
+console.log(`Static website built for ${d.site}`);

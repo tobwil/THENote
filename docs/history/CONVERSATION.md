@@ -1,6 +1,6 @@
 # Gesprächsverlauf · THE Note
 
-Exportiert: 2026-10-01T15:06:22.831771+00:00. Zeiten unten: Europe/Berlin.
+Exportiert: 2026-10-01T15:27:19.047477+00:00. Zeiten unten: Europe/Berlin.
 
 Vollständiger sichtbarer Nutzer-/Assistenten-Dialog bis zum Exportzeitpunkt, einschließlich Zwischenständen. Lokale Benutzerpfade wurden neutralisiert; automatisch eingefügte Umgebungsdaten sowie interne System-, Werkzeug- und Denkprotokolle sind nicht enthalten. Die beiden Nutzer-Anhänge liegen unverändert unter `attachments/`. Historische Aussagen beschreiben ihren damaligen Stand; der aktuelle Funktionsumfang steht in README und Changelog.
 
@@ -275,4 +275,41 @@ README, Changelog, Gesprächsarchiv und die ersten Screenshots sind vorbereitet.
 ## 050 · Assistent · 2026-10-01 17:06:13 CEST · Zwischenstand
 
 Die Abschlussprüfung ist grün: Frontend-Prüfungen und alle 33 Rust-Tests bestehen. Im vorgesehenen Repository-Inhalt wurden keine privaten Benutzerpfade oder Zugangsdaten gefunden; das Download-ZIP enthält jetzt auch die Lizenztexte. Ich veröffentliche nun den Quellcode auf `main` und die App als Vorabversion `v0.2.3`.
+
+## 051 · Assistent · 2026-10-01 17:08:12 CEST · Zwischenstand
+
+Der Veröffentlichungs-Commit ist lokal fertig. Der Push hängt noch in der HTTPS-Verbindung zu GitHub. Ich prüfe den Remote-Stand und wiederhole ihn über die bereits angemeldete GitHub-CLI, ohne die bestehende Historie zu überschreiben.
+
+## 052 · Assistent · 2026-10-01 17:11:35 CEST · Antwort
+
+Veröffentlicht: **[tobwil/THENote](https://github.com/tobwil/THENote)** ✅
+
+- Sarala und Ledge deutlich gewürdigt; GPL-3.0-or-later für THE Note, Apache-2.0 für den Ledge-Parser.
+- Screenshots, Changelog und Lizenztexte enthalten.
+- [Gesprächsarchiv](https://github.com/tobwil/THENote/tree/main/docs/history): 50 sichtbare Nachrichten bis zum Export, inklusive Anhängen; lokale Benutzerpfade neutralisiert.
+- [macOS-Vorabversion 0.2.3](https://github.com/tobwil/THENote/releases/tag/v0.2.3) mit geprüfter Download-Prüfsumme.
+
+Frontend-Prüfungen und alle 33 Rust-Tests erfolgreich.
+
+## 053 · Nutzer · 2026-10-01 17:11:35 CEST · Nachricht
+
+können wir es dann auch via curl oder brew usw anbieten? so wie auf der seite von sarala? das fände ich top! die info dann auch in die readme. oder können wir hier sogar eine github pages draus machen?
+
+## 054 · Assistent · 2026-10-01 17:11:39 CEST · Zwischenstand
+
+Ich ergänze einen Installationsweg per `curl` und Homebrew sowie eine GitHub-Pages-Seite mit Screenshots, Download und Installationsanleitung. Dafür prüfe ich zuerst Saralas Lösung und unser Release-Paket.
+
+## 055 · Assistent · 2026-10-01 17:13:38 CEST · Zwischenstand
+
+Sarala nutzt einen eigenen Homebrew-Tap im App-Repository. Das geht hier ebenfalls, ohne zusätzliches Repository. Ich biete zunächst unseren geprüften Build für Apple Silicon an; beide Installationswege prüfen die SHA-256-Prüfsumme. Die Pages-Seite bekommt eine eigene Download- und Installationssektion.
+
+Die App bleibt vorerst nicht notarisiert. Ich weise darauf hin und lasse die macOS-Sicherheitsprüfung unverändert.
+
+## 056 · Assistent · 2026-10-01 17:21:20 CEST · Zwischenstand
+
+Der Installer prüft bereits das veröffentlichte ZIP erfolgreich – einschließlich Prüfsumme, Signatur und App-Version. Die Website enthält jetzt Screenshots und kopierbare Installationsbefehle. Ich teste noch die mobile Ansicht und die Homebrew-Definition, bevor ich Pages aktiviere.
+
+## 057 · Assistent · 2026-10-01 17:24:47 CEST · Zwischenstand
+
+Die Website funktioniert auf Desktop, Tablet und Smartphone; auch die kopierbaren Befehle und die Tastaturbedienung sind geprüft. Ich ergänze jetzt die Installations- und Update-Anleitung und veröffentliche die Seite über GitHub Pages.
 

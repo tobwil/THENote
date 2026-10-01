@@ -28,3 +28,7 @@ UI tests use Playwright Chromium or installed Google Chrome. Install Chromium wi
 Explain the problem, resulting behavior and validation in your pull request. Preserve Markdown portability, explicit AI-context opt-in, unsaved buffers and undo history. Update the changelog and relevant documentation when behavior changes.
 
 Read [LICENSING.md](LICENSING.md) before contributing. Preserve Sarala, Ledge and dependency attribution. New project code is contributed under GPL-3.0-or-later; the Ledge-derived parser retains its Apache-2.0 notices.
+
+## Website and distribution
+
+`site/` is the static GitHub Pages website. Run `npm run build:site` to generate `dist-site/` and `npm run test:site` for browser checks. Update release metadata in `distribution.json`, then run `node scripts/sync-distribution.mjs` to synchronize the installer and Homebrew cask. See [installation and release maintenance](docs/INSTALLATION.md). Never publish an unverified checksum or silently bypass macOS security controls.

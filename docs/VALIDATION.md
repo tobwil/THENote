@@ -81,3 +81,12 @@ Die anfängliche automatisierte AX-Wertzuweisung an das Passwortfeld löste kein
 - Repository-Kandidaten auf lokale Benutzerpfade, typische Zugangsdaten und private Schlüssel geprüft; keine Treffer. Sichtbarer Gesprächsverlauf separat exportiert, interne Protokolle ausgeschlossen.
 - Sarala-GPL und Ledge-Apache-Lizenz anhand der dokumentierten Upstream-Commits verglichen; Ledge-Parser unverändert bestätigt. Drittanbieter-Inventar mit 530 Abhängigkeiten und Lizenztexten erstellt.
 - macOS-ZIP um Lizenztexte und Herkunftshinweise ergänzt; App-Signatur weiterhin gültig, SHA256SUMS erneuert.
+
+## Installation und GitHub-Pages-Website (App unverändert: 0.2.3)
+
+- `npm run test:site` erfolgreich: Betrieb unter `/THENote/`, lokale Bilder und Installer erreichbar, kein horizontaler Überlauf bei 1440, 820 und 375 Pixeln, Installationstabs per Tastatur, Kopieren und Fallback bei verweigerter Zwischenablage, korrekter Release-Link, keine Browserfehler. Desktop- und Mobilansicht zusätzlich visuell geprüft.
+- `bash -n install.sh` und `node scripts/sync-distribution.mjs --check` erfolgreich. Installer und Homebrew-Cask enthalten dieselbe Version und SHA-256 aus `distribution.json`.
+- Installer mit `--check` gegen das tatsächlich veröffentlichte GitHub-ZIP sowie eine lokale Kopie erfolgreich: SHA-256, vollständige Bundle-Signatur, App-ID und Version stimmen.
+- Sechs Abbruchfälle geprüft: unbekannte Option, fehlendes Argument, relativer Installationspfad, Dateisystemwurzel als Ziel, fehlendes Archiv und falsche Prüfsumme. Installation bei laufender THE-Note-App wird vor dem Download abgewiesen.
+- Homebrews eigener Cask-Parser liest Version, Download-URL, Prüfsumme und Plattformanforderungen erfolgreich.
+- Die laufende App wurde für diese Prüfung nicht geschlossen oder ersetzt. Ein tatsächliches Installieren/Ersetzen durch den neuen Installer ist deshalb nicht als getestet ausgewiesen. Die Website ändert keine App-Funktion; die zuvor dokumentierten App-Tests wurden für dieses reine Distributionsupdate nicht wiederholt.

@@ -2,13 +2,41 @@
 
 Ein lokales Arbeitsbuch, das **Saralas Live-Markdown-Editor** mit **Ledges ausführbaren Notizen** verbindet. Native macOS-App auf Tauri 2 und SolidJS. Aktueller Stand: **0.2.3, funktionale Entwicklungsversion**.
 
-## Download und erster Start
+## Website und Installation
 
-[**macOS Apple Silicon · v0.2.3 herunterladen**](https://github.com/tobwil/THENote/releases/tag/v0.2.3) · [Changelog](CHANGELOG.md) · [Lizenz und Herkunft](LICENSING.md)
+[**THE Note entdecken und installieren →**](https://tobwil.github.io/THENote/) · [Download v0.2.3](https://github.com/tobwil/THENote/releases/tag/v0.2.3) · [Changelog](CHANGELOG.md)
 
-ZIP entpacken und **THE Note.app** öffnen. Vor einem Update offene Notizen speichern und die bisherige App beenden. Die Entwicklungsversion ist lokal/ad-hoc signiert und **nicht Apple-notarisiert**; macOS kann beim ersten Start eine Sicherheitsbestätigung verlangen. Windows-, Linux- und Intel-Mac-Pakete sind noch nicht verifiziert.
+Aktuell für **macOS 11+ auf Apple Silicon**. Drei Wege führen zur gleichen App:
 
-Node.js und Python werden nur für ihre jeweiligen Codeblöcke benötigt. Der Editor selbst läuft eigenständig. Alternativ lässt sich die App aus dem Quellcode bauen; siehe **Entwickeln** unten.
+### Homebrew
+
+```sh
+brew tap tobwil/thenote https://github.com/tobwil/THENote
+brew trust --cask tobwil/thenote/the-note
+brew install --cask tobwil/thenote/the-note
+```
+
+Der eigene Tap liegt in diesem Repository. `brew trust` wird ab Homebrew 6 benötigt; bei älteren Versionen diese Zeile auslassen. Updates: `brew update` und `brew upgrade --cask tobwil/thenote/the-note`.
+
+### Terminal mit curl
+
+```sh
+curl -fsSL https://tobwil.github.io/THENote/install.sh | bash
+```
+
+Installiert nach `~/Applications`, ohne `sudo`. Der Installer prüft SHA-256, App-Signatur, Kennung und Version. Vorhandene Apps werden nur mit `--replace` ersetzt; dabei bleibt eine Sicherung erhalten. Nur herunterladen und prüfen:
+
+```sh
+curl -fsSL https://tobwil.github.io/THENote/install.sh | bash -s -- --check
+```
+
+### ZIP herunterladen
+
+[ZIP für macOS Apple Silicon](https://github.com/tobwil/THENote/releases/download/v0.2.3/THE.Note-macOS-arm64.zip) entpacken, **THE Note.app** in den Programme-Ordner verschieben und öffnen.
+
+Vor Updates offene Notizen speichern und die App beenden. Diese Preview ist ad-hoc signiert und **nicht Apple-notarisiert**. Wenn macOS das Öffnen blockiert, THE Note unter **Systemeinstellungen → Datenschutz & Sicherheit** prüfen. Die Installationswege verändern keine Sicherheitseinstellungen. Windows-, Linux- und Intel-Mac-Pakete sind noch nicht verifiziert.
+
+Node.js und Python werden nur für ihre jeweiligen Codeblöcke benötigt. Der Editor selbst läuft eigenständig. [Installationsdetails, Updates und Deinstallation](docs/INSTALLATION.md) · [Lizenz und Herkunft](LICENSING.md).
 
 ## Danke, Sarala und Ledge
 
@@ -106,6 +134,7 @@ npm run test:notebook
 npm run test:ai:ui      # UI mit simuliertem nativen IPC; HTTP-Tests in Rust
 npm run test:diff:ui
 npm run test:workspace:ui
+npm run test:site       # Website, Installationstabs und mobile Darstellung
 cargo test --manifest-path src-tauri/Cargo.toml
 ```
 

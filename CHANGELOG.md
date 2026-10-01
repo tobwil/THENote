@@ -2,6 +2,16 @@
 
 The entries below reconstruct the development milestones from the conversation and validated local versions. Versions 0.1.0–0.2.3 were developed on 2026-10-01 before the first source publication; they are **not fabricated historical Git commits or previous GitHub releases**.
 
+## Distribution and website — 2026-10-01
+
+The application remains version 0.2.3; this update adds distribution and documentation.
+
+- Publish a GitHub Pages website with app screenshots, installation tabs, copy buttons and Sarala/Ledge credits.
+- Offer a Homebrew cask through the repository's own tap, with an explicit trust step for Homebrew 6.
+- Add a curl installer that verifies the pinned release checksum, bundle signature, identifier and version, supports verification-only runs and keeps a backup on explicit replacement.
+- Keep the website, installer and cask tied to `distribution.json`; deploy the static site through GitHub Actions.
+- Document macOS/Apple Silicon support, installation, updates, removal and the preview's notarization limits.
+
 ## 0.2.3 — 2026-10-01
 
 - Rename a saved or unsaved note through its tab: double-click, right-click or F2. Preserve unsaved content, undo history and per-tab state.

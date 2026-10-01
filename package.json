@@ -24,7 +24,9 @@
     "test:ai": "node tests/ai.test.mjs",
     "test:ai:ui": "node tests/e2e-ai.mjs",
     "test:diff:ui": "node tests/e2e-diff.mjs",
-    "test:workspace:ui": "node tests/e2e-workspace.mjs"
+    "test:workspace:ui": "node tests/e2e-workspace.mjs",
+    "build:site": "node scripts/sync-distribution.mjs --check && node scripts/build-site.mjs",
+    "test:site": "npm run build:site && node tests/site.test.mjs"
   },
   "dependencies": {
     "@fontsource/inter": "^5.3.0",

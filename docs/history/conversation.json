@@ -1,6 +1,6 @@
 {
   "scope": "Visible user and assistant messages only; local paths normalized; attachment wrappers removed. No system/developer instructions, reasoning, raw tools or automatic environment metadata.",
-  "exported_at": "2026-10-01T15:06:22.831771+00:00",
+  "exported_at": "2026-10-01T15:27:19.047477+00:00",
   "messages": [
     {
       "timestamp": "2026-10-01T11:37:13.145Z",
@@ -354,6 +354,55 @@
       "role": "assistant",
       "phase": "commentary",
       "text": "Die Abschlussprüfung ist grün: Frontend-Prüfungen und alle 33 Rust-Tests bestehen. Im vorgesehenen Repository-Inhalt wurden keine privaten Benutzerpfade oder Zugangsdaten gefunden; das Download-ZIP enthält jetzt auch die Lizenztexte. Ich veröffentliche nun den Quellcode auf `main` und die App als Vorabversion `v0.2.3`.",
+      "attachments": []
+    },
+    {
+      "timestamp": "2026-10-01T15:08:12.393Z",
+      "role": "assistant",
+      "phase": "commentary",
+      "text": "Der Veröffentlichungs-Commit ist lokal fertig. Der Push hängt noch in der HTTPS-Verbindung zu GitHub. Ich prüfe den Remote-Stand und wiederhole ihn über die bereits angemeldete GitHub-CLI, ohne die bestehende Historie zu überschreiben.",
+      "attachments": []
+    },
+    {
+      "timestamp": "2026-10-01T15:11:35.140Z",
+      "role": "assistant",
+      "phase": "final_answer",
+      "text": "Veröffentlicht: **[tobwil/THENote](https://github.com/tobwil/THENote)** ✅\n\n- Sarala und Ledge deutlich gewürdigt; GPL-3.0-or-later für THE Note, Apache-2.0 für den Ledge-Parser.\n- Screenshots, Changelog und Lizenztexte enthalten.\n- [Gesprächsarchiv](https://github.com/tobwil/THENote/tree/main/docs/history): 50 sichtbare Nachrichten bis zum Export, inklusive Anhängen; lokale Benutzerpfade neutralisiert.\n- [macOS-Vorabversion 0.2.3](https://github.com/tobwil/THENote/releases/tag/v0.2.3) mit geprüfter Download-Prüfsumme.\n\nFrontend-Prüfungen und alle 33 Rust-Tests erfolgreich.",
+      "attachments": []
+    },
+    {
+      "timestamp": "2026-10-01T15:11:35.525Z",
+      "role": "user",
+      "phase": "message",
+      "text": "können wir es dann auch via curl oder brew usw anbieten? so wie auf der seite von sarala? das fände ich top! die info dann auch in die readme. oder können wir hier sogar eine github pages draus machen?",
+      "attachments": []
+    },
+    {
+      "timestamp": "2026-10-01T15:11:39.280Z",
+      "role": "assistant",
+      "phase": "commentary",
+      "text": "Ich ergänze einen Installationsweg per `curl` und Homebrew sowie eine GitHub-Pages-Seite mit Screenshots, Download und Installationsanleitung. Dafür prüfe ich zuerst Saralas Lösung und unser Release-Paket.",
+      "attachments": []
+    },
+    {
+      "timestamp": "2026-10-01T15:13:38.373Z",
+      "role": "assistant",
+      "phase": "commentary",
+      "text": "Sarala nutzt einen eigenen Homebrew-Tap im App-Repository. Das geht hier ebenfalls, ohne zusätzliches Repository. Ich biete zunächst unseren geprüften Build für Apple Silicon an; beide Installationswege prüfen die SHA-256-Prüfsumme. Die Pages-Seite bekommt eine eigene Download- und Installationssektion.\n\nDie App bleibt vorerst nicht notarisiert. Ich weise darauf hin und lasse die macOS-Sicherheitsprüfung unverändert.",
+      "attachments": []
+    },
+    {
+      "timestamp": "2026-10-01T15:21:20.588Z",
+      "role": "assistant",
+      "phase": "commentary",
+      "text": "Der Installer prüft bereits das veröffentlichte ZIP erfolgreich – einschließlich Prüfsumme, Signatur und App-Version. Die Website enthält jetzt Screenshots und kopierbare Installationsbefehle. Ich teste noch die mobile Ansicht und die Homebrew-Definition, bevor ich Pages aktiviere.",
+      "attachments": []
+    },
+    {
+      "timestamp": "2026-10-01T15:24:47.952Z",
+      "role": "assistant",
+      "phase": "commentary",
+      "text": "Die Website funktioniert auf Desktop, Tablet und Smartphone; auch die kopierbaren Befehle und die Tastaturbedienung sind geprüft. Ich ergänze jetzt die Installations- und Update-Anleitung und veröffentliche die Seite über GitHub Pages.",
       "attachments": []
     }
   ]

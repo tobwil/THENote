@@ -1,0 +1,9 @@
+{
+  "version": "0.2.3",
+  "repository": "tobwil/THENote",
+  "asset": "THE.Note-macOS-arm64.zip",
+  "sha256": "920824d10a714d297631515ba95d67ee3e6083af9f2091308cd8e343ffd02472",
+  "minimumMacOS": "11.0",
+  "preview": true,
+  "site": "https://tobwil.github.io/THENote/"
+}
