@@ -63,8 +63,8 @@ export const languages = {
     },
     install: {
       eyebrow: 'BEREIT FÜR DEINE NÄCHSTE IDEE', h2: 'Ein kleiner Start.<br>Viel Platz danach.',
-      lead: 'Installiere THE Note mit Homebrew, per Terminal oder als ZIP. Der aktuelle Build ist für <strong>macOS 11+ auf Apple Silicon</strong>.',
-      zip: 'ZIP direkt herunterladen', dev: 'Entwicklungsversion', signed: 'Lokal signiert, noch nicht Apple-notarisiert.',
+      lead: 'Installiere THE Note als DMG, mit Homebrew oder per Terminal. Der aktuelle Build ist für <strong>macOS 11+ auf Apple Silicon</strong>.',
+      dmg: 'DMG für macOS herunterladen', dmgNote: 'DMG öffnen und THE Note in den Programme-Ordner ziehen.', zip: 'Alternativ als ZIP', dev: 'Entwicklungsversion', signed: 'Lokal signiert, noch nicht Apple-notarisiert.',
       tabsLabel: 'Installationsweg', copy: 'Kopieren',
       brewNote: 'Homebrew 6 benötigt den einmaligen <code>trust</code>-Schritt. Bei älteren Versionen diese Zeile auslassen.', updates: 'Updates',
       curlNote: 'Installiert nach <code>~/Applications</code>, ohne <code>sudo</code>. Prüft Download, SHA-256 und App-Signatur. Eine laufende App wird nicht ersetzt.',
@@ -148,8 +148,8 @@ export const languages = {
     },
     install: {
       eyebrow: 'READY FOR YOUR NEXT IDEA', h2: 'A small start.<br>Lots of room after.',
-      lead: 'Install THE Note with Homebrew, from the terminal or as a ZIP. The current build is for <strong>macOS 11+ on Apple Silicon</strong>.',
-      zip: 'Download the ZIP', dev: 'Development version', signed: 'Ad-hoc signed, not yet notarised by Apple.',
+      lead: 'Install THE Note as a DMG, with Homebrew or from the terminal. The current build is for <strong>macOS 11+ on Apple Silicon</strong>.',
+      dmg: 'Download DMG for macOS', dmgNote: 'Open the DMG and drag THE Note to Applications.', zip: 'ZIP alternative', dev: 'Development version', signed: 'Ad-hoc signed, not yet notarised by Apple.',
       tabsLabel: 'Installation method', copy: 'Copy',
       brewNote: 'Homebrew 6 needs the one-time <code>trust</code> step. Skip that line on older versions.', updates: 'Updates',
       curlNote: 'Installs to <code>~/Applications</code> without <code>sudo</code>. Verifies the download, SHA-256 and app signature. A running app is never replaced.',

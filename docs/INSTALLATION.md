@@ -6,6 +6,16 @@ Das veröffentlichte Paket ist **v0.2.3 für Apple Silicon (arm64), macOS 11 ode
 
 Die Preview ist lokal/ad-hoc signiert und **nicht Apple-notarisiert**. Eine gültige Ad-hoc-Signatur ist keine Apple-Freigabe. Falls macOS die App blockiert, nach dem ersten Öffnungsversuch **Systemeinstellungen → Datenschutz & Sicherheit** prüfen. Kein Installationsweg deaktiviert Gatekeeper oder entfernt Quarantäneattribute ausdrücklich.
 
+## DMG herunterladen
+
+[DMG für macOS Apple Silicon herunterladen](https://github.com/tobwil/THENote/releases/download/v0.2.3/THE.Note-macOS-arm64.dmg), öffnen und **THE Note.app** auf **Applications** ziehen. Danach das Image auswerfen und THE Note im Programme-Ordner öffnen. Vor dem Ersetzen einer vorhandenen App offene Notizen speichern und die App beenden.
+
+Das DMG enthält dieselbe ad-hoc signierte App wie ZIP, Homebrew und curl sowie die Lizenztexte. Es ist ebenfalls **nicht Apple-notarisiert**. Für v0.2.3 steht die zusätzliche DMG-Prüfsumme im Release unter `SHA256SUMS-DMG`; das bestehende ZIP und dessen `SHA256SUMS` bleiben unverändert. Beide Dateien in denselben Ordner laden und dort prüfen:
+
+```sh
+shasum -a 256 -c SHA256SUMS-DMG
+```
+
 ## Homebrew
 
 Voraussetzung ist [Homebrew](https://brew.sh). Dieser eigene Tap liegt im THE-Note-Repository; der Cask gehört nicht zum offiziellen Homebrew-Cask-Katalog.
@@ -87,9 +97,9 @@ Pro Mac am besten einen Installationsweg verwenden. Homebrew nutzt normalerweise
 
 ## Für Maintainer: neues Release und Website
 
-1. App-Versionen aktualisieren, relevante App-Tests ausführen und mit `npm run package:macos` ein separates Paket bauen. Signatur und Lizenzbeilagen prüfen.
-2. ZIP und `SHA256SUMS` zum neuen GitHub-Release hochladen. Den tatsächlichen Assetnamen prüfen: GitHub ersetzt Leerzeichen beim Upload. Releases nicht nachträglich mit anderen Bytes unter derselben Version überschreiben.
-3. In `distribution.json` Version, Assetnamen und SHA-256 aktualisieren. `node scripts/sync-distribution.mjs` schreibt die Daten in `install.sh` und `Casks/the-note.rb`.
+1. App-Versionen aktualisieren, relevante App-Tests ausführen und mit `npm run package:macos -- --preview` ZIP und DMG bauen; für Apple-notarisierte Pakete [SIGNING.md](SIGNING.md) beachten. Signatur und Lizenzbeilagen prüfen.
+2. ZIP, DMG und `SHA256SUMS` zum neuen GitHub-Release hochladen. Den tatsächlichen Assetnamen prüfen: GitHub ersetzt Leerzeichen beim Upload. Releases nicht nachträglich mit anderen Bytes unter derselben Version überschreiben.
+3. In `distribution.json` Version, ZIP-Assetnamen und SHA-256 sowie `dmg.asset` und `dmg.sha256` aktualisieren. `node scripts/sync-distribution.mjs` schreibt die Daten in `install.sh` und `Casks/the-note.rb`.
 4. `bash install.sh --check` gegen das veröffentlichte Paket ausführen. `npm run test:site` prüft die Website unter ihrem GitHub-Pages-Unterpfad. Versionsgebundene Links in README und dieser Anleitung aktualisieren.
 5. Änderungen nach `main` pushen. `.github/workflows/pages.yml` baut die Website ohne App-Build und veröffentlicht `dist-site/` über GitHub Pages. Homebrew erhält die neue Definition beim nächsten `brew update`.
 

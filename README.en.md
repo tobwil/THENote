@@ -38,9 +38,11 @@ Installs into `~/Applications` without `sudo`. The installer verifies the SHA-25
 curl -fsSL https://tobwil.github.io/THENote/install.sh | bash -s -- --check
 ```
 
-### Download the ZIP
+### Download the DMG
 
-Unpack the [ZIP for macOS Apple Silicon](https://github.com/tobwil/THENote/releases/download/v0.2.3/THE.Note-macOS-arm64.zip), move **THE Note.app** to your Applications folder and open it.
+Open the [DMG for macOS Apple Silicon](https://github.com/tobwil/THENote/releases/download/v0.2.3/THE.Note-macOS-arm64.dmg) and drag **THE Note.app** to **Applications**. Eject the disk image, then open the app from Applications.
+
+Alternatively: [download the ZIP](https://github.com/tobwil/THENote/releases/download/v0.2.3/THE.Note-macOS-arm64.zip).
 
 Save open notes and quit the app before updating. This preview is ad-hoc signed and **not notarised by Apple**. If macOS blocks it, review THE Note under **System Settings → Privacy & Security**. None of the install methods change security settings. Windows, Linux and Intel Mac packages are not verified yet.
 
@@ -166,7 +168,7 @@ Requirements: Node.js 22.12+ (Node 24+ recommended), npm, stable Rust and the Ta
 npm ci
 npm run dev             # Browser editor at http://localhost:1420
 npm run desktop         # Native app in development mode
-npm run package:macos    # Sign, verify and zip the app bundle
+npm run package:macos    # Sign and verify the preview; create ZIP + DMG
 ```
 
 The packaging command places the app and ZIP under `release/`. `THE_NOTE_RELEASE_DIR=release/v0.2.3` picks a separate target folder. Build output does not belong in source commits.
