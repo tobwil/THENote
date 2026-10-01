@@ -131,7 +131,7 @@ The [`examples/`](examples/) folder holds notes to try out (in German for now). 
 | :--- | :--- |
 | ![The toolbox with a calendar calculator and its output](docs/screenshots/toolbox-light.png) | ![The Mandelbrot set as ASCII art, printed by a JavaScript block](docs/screenshots/mandelbrot-dark.png) |
 
-No app installed yet? Three small example notes run, recreated in your browser, [on the website](https://tobwil.github.io/THENote/en/#try).
+No app installed yet? Try THE Note [on the website](https://tobwil.github.io/THENote/en/#try) in a recreated window: click a paragraph and edit its Markdown, tick off tasks, switch notes and run the small cost calculation.
 
 ## Deliberate limits of this version
 

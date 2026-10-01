@@ -21,7 +21,8 @@ let browser;
 try {
   await new Promise(resolve => server.listen(1454, '127.0.0.1', resolve));
   try { browser = await chromium.launch(); } catch { browser = await chromium.launch({ channel: 'chrome' }); }
-  const page = await browser.newPage({ viewport: { width: 1440, height: 1050 } });
+  // Reduced motion skips the self-typing intro so the test drives the window alone.
+  const page = await browser.newPage({ viewport: { width: 1440, height: 1050 }, reducedMotion: 'reduce' });
   const errors = []; page.on('pageerror', e => errors.push(e.message));
   const failed = []; page.on('response', r => { if (r.status() >= 400) failed.push(r.url()); });
   await page.addInitScript(() => { Object.defineProperty(navigator, 'clipboard', { value: { async writeText(text) { window.__copied = text; } } }); });
@@ -48,24 +49,32 @@ try {
   assert.equal(await page.getByRole('link', { name: 'ZIP direkt herunterladen' }).getAttribute('href'), `https://github.com/${d.repository}/releases/download/v${d.version}/${d.asset}`);
   for (const path of ['install.sh', 'assets/inline-ai.png', 'assets/projects-and-date.png', 'assets/unsaved-diff.png', 'assets/note-light.png', 'assets/note-dark.png', 'assets/the-note.svg', 'fonts/inter-latin-400-normal.woff2', 'sitemap.xml', 'en/']) assert.equal((await page.request.get('http://127.0.0.1:1454/THENote/' + path)).status(), 200);
 
-  // The live cell shows a small note around one runnable block; runs can be stopped.
+  // The notebook window: live Markdown, tasks, sidebar, theme and a small runnable block.
   await page.setViewportSize({ width: 1440, height: 1050 });
-  assert.match(await page.locator('[data-note]').innerText(), /Lissabon im Mai/);
-  await page.locator('[data-run]').click();
-  await page.waitForFunction(() => /Erfolgreich/.test(document.querySelector('[data-status]').textContent), null, { timeout: 10000 });
-  assert.match(await page.locator('[data-output]').innerText(), /Gesamt 1320 € · pro Person 440 €/);
-  await page.getByRole('button', { name: /Wochenrückblick/ }).click();
-  assert.match(await page.locator('[data-note]').innerText(), /Woche 40/);
-  await page.locator('[data-run]').click();
-  await page.waitForFunction(() => /Erfolgreich/.test(document.querySelector('[data-status]').textContent), null, { timeout: 10000 });
-  assert.match(await page.locator('[data-output]').innerText(), /60% erledigt/);
-  await page.getByRole('button', { name: /Würfelorakel/ }).click();
-  await page.locator('[data-run]').click();
-  await page.locator('[data-run]').click();
-  assert.match(await page.locator('[data-status]').innerText(), /Gestoppt/);
-  // Day/night preview swaps the same note's screenshot.
-  await page.getByRole('button', { name: /Nacht/ }).click();
-  assert.equal(await page.locator('[data-stage]').evaluate(el => el.classList.contains('is-dark')), true);
+  const app = page.locator('[data-app]');
+  await app.getByRole('heading', { name: 'Lissabon im Mai' }).waitFor();
+  await app.getByText(/Vier Tage, drei Leute/).click();
+  const source = app.locator('textarea');
+  assert.match(await source.inputValue(), /^Vier Tage, drei Leute/);
+  await source.press('End'); await source.type(' Mit Fähre.'); await source.press('Escape');
+  await app.getByText(/Mit Fähre\./).waitFor();
+  assert.match(await app.locator('[data-status-saved]').innerText(), /Ungespeichert/);
+  const sintra = app.getByRole('checkbox', { name: /Sintra/ });
+  assert.equal(await sintra.getAttribute('aria-checked'), 'false');
+  await sintra.click();
+  assert.equal(await app.getByRole('checkbox', { name: /Sintra/ }).getAttribute('aria-checked'), 'true');
+  await app.getByRole('button', { name: /Ausführen/ }).click();
+  await app.locator('.run-output').getByText(/Gesamt 1320 € · pro Person 440 €/).waitFor();
+  await app.locator('.code-cell > pre').click();
+  await app.locator('textarea').fill((await app.locator('textarea').inputValue()).replace('"Flüge": 420', '"Flüge": 480'));
+  await app.locator('textarea').press('Escape');
+  await app.getByRole('button', { name: /Ausführen/ }).click();
+  await app.locator('.run-output').getByText(/Gesamt 1380 € · pro Person 460 €/).waitFor();
+  await app.getByRole('button', { name: 'Hell oder dunkel' }).click();
+  assert.equal(await app.getAttribute('data-theme'), 'dark');
+  await app.getByRole('button', { name: /Packliste\.md/ }).click();
+  await app.getByRole('heading', { name: 'Packliste' }).waitFor();
+  assert.equal(await app.locator('[data-tab]').innerText(), 'Packliste.md');
 
   // English page: own copy, own canonical URL, links back to German.
   await page.goto('http://127.0.0.1:1454/THENote/en/');
@@ -79,10 +88,10 @@ try {
     await page.setViewportSize({ width, height: 1050 });
     assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `No horizontal overflow on /en/ at ${width}`);
   }
-  await page.locator('[data-run]').click();
-  await page.waitForFunction(() => /Succeeded/.test(document.querySelector('[data-status]').textContent), null, { timeout: 10000 });
-  assert.match(await page.locator('[data-output]').innerText(), /Total 1320 € · per person 440 €/);
-  assert.match(await page.locator('[data-code]').innerText(), /^costs = \{/);
+  await page.locator('[data-app]').getByRole('heading', { name: 'Lisbon in May' }).waitFor();
+  assert.match(await page.locator('.code-cell > pre').innerText(), /^costs = \{/);
+  await page.locator('[data-app]').getByRole('button', { name: /Run/ }).click();
+  await page.locator('.run-output').getByText(/Total 1320 € · per person 440 €/).waitFor();
   assert.deepEqual(errors, []); assert.deepEqual(failed, []);
-  console.log('PASS website: German and English pages, subpath assets, mobile/tablet/desktop layout, keyboard tabs, copy and fallback, live note cell, day/night preview, release link and installer.');
+  console.log('PASS website: German and English pages, subpath assets, mobile/tablet/desktop layout, keyboard tabs, copy and fallback, interactive notebook window (live Markdown, tasks, run, theme, sidebar), release link and installer.');
 } finally { await browser?.close(); await new Promise(resolve => server.close(resolve)); }
