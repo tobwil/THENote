@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
-import { resolve, extname } from 'node:path';
+import { resolve, extname, join } from 'node:path';
+import { tmpdir } from 'node:os';
 import { chromium } from 'playwright';
 const root = resolve('dist-site');
 const types = { '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript', '.svg': 'image/svg+xml', '.png': 'image/png', '.sh': 'text/plain' };
@@ -35,7 +36,7 @@ try {
     assert.equal(await page.getByRole('tab', { name: 'Homebrew', exact: true }).evaluate(el => el === document.activeElement), true);
     await page.getByRole('button', { name: 'Kopieren' }).filter({ visible: true }).click();
     assert.match(await page.evaluate(() => window.__copied), /brew trust --cask tobwil\/thenote\/the-note/);
-    await page.screenshot({ path: `/private/tmp/the-note-site-${width}.png`, fullPage: true });
+    await page.screenshot({ path: join(tmpdir(), `the-note-site-${width}.png`), fullPage: true });
   }
   // Clipboard failure falls back to a selected command and an accessible hint.
   await page.evaluate(() => { navigator.clipboard.writeText = async () => { throw new Error('Denied'); }; });

@@ -1,6 +1,6 @@
 # Gesprächsverlauf · THE Note
 
-Exportiert: 2026-10-01T15:27:19.047477+00:00. Zeiten unten: Europe/Berlin.
+Exportiert: 2026-10-01T15:30:04.702262+00:00. Zeiten unten: Europe/Berlin.
 
 Vollständiger sichtbarer Nutzer-/Assistenten-Dialog bis zum Exportzeitpunkt, einschließlich Zwischenständen. Lokale Benutzerpfade wurden neutralisiert; automatisch eingefügte Umgebungsdaten sowie interne System-, Werkzeug- und Denkprotokolle sind nicht enthalten. Die beiden Nutzer-Anhänge liegen unverändert unter `attachments/`. Historische Aussagen beschreiben ihren damaligen Stand; der aktuelle Funktionsumfang steht in README und Changelog.
 
@@ -312,4 +312,12 @@ Der Installer prüft bereits das veröffentlichte ZIP erfolgreich – einschlie�
 ## 057 · Assistent · 2026-10-01 17:24:47 CEST · Zwischenstand
 
 Die Website funktioniert auf Desktop, Tablet und Smartphone; auch die kopierbaren Befehle und die Tastaturbedienung sind geprüft. Ich ergänze jetzt die Installations- und Update-Anleitung und veröffentliche die Seite über GitHub Pages.
+
+## 058 · Assistent · 2026-10-01 17:27:44 CEST · Zwischenstand
+
+GitHub Pages ist aktiviert. Der Installer weist beschädigte Downloads und ungültige Ziele ab; auch der Schutz der laufenden App funktioniert. Ich pushe jetzt Website, Homebrew-Cask, Anleitung und aktualisiertes Gesprächsarchiv und prüfe anschließend die öffentlichen Links.
+
+## 059 · Assistent · 2026-10-01 17:29:10 CEST · Zwischenstand
+
+Die Seite ist erfolgreich veröffentlicht. Auch der echte Homebrew-Test gegen GitHub ist durch: Tap einbinden, Cask laden und Download mit Prüfsumme prüfen funktioniert. Ich kontrolliere noch die live ausgelieferten Dateien; deine laufende App wurde dabei nicht verändert.
 
