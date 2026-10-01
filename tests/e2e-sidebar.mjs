@@ -82,9 +82,9 @@ check(
   const titles = await page
     .locator(".side-ws-head .side-icon-btn")
     .evaluateAll((els) => els.map((e) => e.title));
-  check(titles.length === 2, `the header offers two labelled actions (${titles.length})`);
+  check(titles.length === 3, `the header offers open, new note and close (${titles.length})`);
   check(
-    titles.some((t) => /folder/i.test(t)) && titles.some((t) => /new file/i.test(t)),
+    titles.some((t) => /Ordner öffnen/.test(t)) && titles.some((t) => /Neue Notiz/.test(t)) && titles.some((t) => /Ordner schließen/.test(t)),
     `both actions say what they do (${JSON.stringify(titles)})`,
   );
 }
@@ -96,7 +96,7 @@ await page.evaluate(async () => {
 });
 await page.waitForTimeout(300);
 check(
-  await page.locator(".side-ws-name").textContent() === "No folder open",
+  await page.locator(".side-ws-name").textContent() === "Kein Ordner offen",
   "with no folder open the header names that state, not the app",
 );
 check(

@@ -137,3 +137,15 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 /* Mermaid measures its HTML labels with its own line height; the note's roomy
    paragraph rhythm must not leak into them, or multi-line labels get clipped. */
 .mermaid-block foreignObject div,.mermaid-block foreignObject span,.mermaid-block foreignObject p{line-height:1.5!important;margin:0!important;color:inherit}
+
+/* Notes folder: close button, drag a note onto a folder, move dialog. */
+.side-close-folder{font-size:17px;line-height:1}
+.tree-item.drop-target,.side-ws-head.drop-target{background:var(--accent-soft)!important;box-shadow:inset 0 0 0 1.5px var(--accent);border-radius:7px}
+.tree-item.dragging{opacity:.45}
+.tree-drag-ghost{position:fixed;z-index:1300;pointer-events:none;padding:5px 10px;border-radius:7px;background:var(--bg-page);border:1px solid var(--rule);box-shadow:var(--shadow);font:500 12px var(--font-ui);color:var(--ink);white-space:nowrap}
+.sidebar-empty .ghost-btn+.ghost-btn{margin-top:6px}
+.move-dialog .move-list{display:flex;flex-direction:column;gap:2px;max-height:min(50vh,360px);overflow:auto;margin:6px 0;padding:4px;border:1px solid var(--rule);border-radius:8px}
+.move-dialog .move-target{display:block;width:100%;text-align:left;border:0!important;border-radius:6px;padding:8px 12px;background:transparent!important;color:var(--ink);cursor:pointer}
+.move-dialog .move-target:hover:not(:disabled){background:var(--tint)!important}
+.move-dialog .move-target:disabled{opacity:.45;cursor:default}
+.move-dialog .move-target small{color:var(--ink-soft)}

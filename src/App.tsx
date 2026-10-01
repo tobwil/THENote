@@ -2,6 +2,7 @@ import DatePicker from "./components/DatePicker";
 import NameDialog from "./components/NameDialog";
 import ChangesModal from "./components/ChangesModal";
 import DiagramViewer from "./components/DiagramViewer";
+import MoveDialog from "./components/MoveDialog";
 import AiSettings from "./components/AiSettings";
 import { Show, createEffect, onMount, onCleanup, untrack } from "solid-js";
 import Editor from "./components/Editor";
@@ -47,7 +48,7 @@ import {
   onExternalChange,
 } from "./platform";
 import {
-  executeCommand, openFile, openFolder, insertImageFromPath,
+  executeCommand, openFile, openFolder, insertImageFromPath, restoreWorkspace,
 } from "./commands";
 import { BLOCK_TARGETED_IDS } from "./menudata";
 import { makeMenuKeyHandler } from "./shortcuts";
@@ -117,7 +118,7 @@ export default function App() {
       window.removeEventListener("keydown", tabKeys, true);
       window.removeEventListener("beforeunload", beforeUnload);
     });
-    void initSettings().then(initializeNotebook);
+    void initSettings().then(() => { initializeNotebook(); void restoreWorkspace(); });
     // Command palette (Cmd/Ctrl+K). Bound globally on every platform — it isn't
     // a menu accelerator, so there's no native-menu double-fire to avoid.
     const onPaletteKey = (e: KeyboardEvent) => {
@@ -433,6 +434,7 @@ export default function App() {
       <AiSettings />
       <ChangesModal />
       <DiagramViewer />
+      <MoveDialog />
       <NameDialog />
       <DatePicker />
       <ThemeEditor />
