@@ -42,6 +42,7 @@ export const SLASH_ITEMS = [
   // ---- Insert ----
   { id: "date", label: "Datum einfügen", group: "Insert", icon: "table", aliases: ["date", "datum", "calendar", "kalender"], hint: "/date" },
   { id: "table", label: "Table", group: "Insert", icon: "table", aliases: ["grid"] },
+  { id: "formulaTable", label: "Tabelle mit Formeln", group: "Insert", icon: "table", aliases: ["formel", "formeln", "formula", "rechnen", "excel", "summe", "sum", "kalkulation", "spreadsheet", "tabelle"], hint: "=SUMME" },
   { id: "image", label: "Image", group: "Insert", icon: "image", aliases: ["picture", "photo", "img"] },
   { id: "link", label: "Link", group: "Insert", icon: "link", aliases: ["url", "href", "hyperlink"] },
   { id: "divider", label: "Divider", group: "Insert", icon: "hr", aliases: ["hr", "rule", "separator", "line"], hint: "---" },

@@ -7,6 +7,7 @@ import { slugBase } from "./slug";
 import { parseLegacyDiagram } from "./legacydiagrams";
 import { emojiFor, emojiShortcode, loadEmojiCatalog } from "./emoji";
 import { assetsReady, whenIdle } from "./assets";
+import { evaluateTable, formulaSource } from "./tableformula";
 
 const escapeHtml = (s: string) =>
   s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -645,6 +646,27 @@ function transformAlerts(html: string): string {
   return root.innerHTML;
 }
 
+/* ---------- spreadsheet formulas in tables ---------- */
+
+/**
+ * Show the results of `=` formula cells; the Markdown keeps the formulas.
+ * The formula stays reachable as the cell's tooltip, and an active (edited)
+ * table shows its source, so formulas are edited like a spreadsheet's input line.
+ */
+function applyTableFormulas(table: Tokens.Table) {
+  const grid = [table.header, ...table.rows];
+  if (!grid.some(row => row.some(cell => formulaSource(cell.text) !== null))) return;
+  const results = evaluateTable(grid.map(row => row.map(cell => cell.text)));
+  grid.forEach((row, r) => row.forEach((cell, c) => {
+    const result = results[r]?.[c];
+    if (!result) return;
+    const bold = /^\*\*=.+\*\*$/.test(cell.text.trim());
+    const value = escapeHtml(result.display);
+    const html = `<span class="md-formula${result.error ? " md-formula-error" : ""}" title="${escapeAttr(cell.text.trim().replace(/^\*\*|\*\*$/g, ""))}">${bold ? `<strong>${value}</strong>` : value}</span>`;
+    cell.tokens = [{ type: "html", raw: html, text: html, block: false, pre: false } as Tokens.HTML];
+  }));
+}
+
 /* ---------- heading anchor ids ---------- */
 
 const decodeEntities = (s: string) =>
@@ -735,6 +757,7 @@ export function renderMarkdown(md: string, blockKey?: string): string {
   const tokens = lexer.lex(src);
   if (marked.defaults.walkTokens) marked.walkTokens(tokens, marked.defaults.walkTokens);
   marked.walkTokens(tokens, token => {
+    if (token.type === "table") applyTableFormulas(token as Tokens.Table);
     if (token.type === "paragraph" && /^(?:\[TOC\]|\[\[_TOC_\]\])$/i.test(token.text.trim())) {
       const t = token as Tokens.Generic;
       t.type = "html"; t.text = toc(); t.tokens = undefined;

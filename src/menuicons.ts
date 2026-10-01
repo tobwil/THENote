@@ -108,6 +108,7 @@ export const MENU_ICONS: Record<string, string> = {
   "paragraph.heading.0": "type",
   "paragraph.table": "table",
   "paragraph.table.insert": "table",
+  "paragraph.table.formula": "table",
   "paragraph.math_block": "math",
   "paragraph.code_fences": "code",
   "paragraph.quote": "quote",

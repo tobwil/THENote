@@ -77,6 +77,7 @@ import {
   skeletonTable, editTable, resizeTable, prettifyTable, parseTable, cellRanges, columnAtOffset, lineAtOffset,
   appendTableRow, appendTableColumn, type TableAppend, type TableEdit, type Align,
 } from "./tabletools";
+import { FORMULA_TABLE_EXAMPLE } from "./tableformula";
 
 
 
@@ -668,6 +669,11 @@ function growActiveTable(grow: (text: string) => TableAppend | null) {
 export const appendRowToActiveTable = () => growActiveTable(appendTableRow);
 export const appendColumnToActiveTable = () => growActiveTable(appendTableColumn);
 
+/** Slash menu: a small priced list whose totals are spreadsheet formulas. */
+export function insertFormulaTable() {
+  insertBlock(FORMULA_TABLE_EXAMPLE, FORMULA_TABLE_EXAMPLE.indexOf("|") + 2);
+}
+
 /** Called by the TableDialog overlay with the chosen dimensions. */
 export function insertTable(rows: number, cols: number) {
   const md = skeletonTable(rows, cols);
@@ -1251,6 +1257,7 @@ const registry: Record<string, Command> = {
   "paragraph.heading_up": () => shiftHeading(1),
   "paragraph.heading_down": () => shiftHeading(-1),
   "paragraph.table.insert": () => openTableDialog(),
+  "paragraph.table.formula": insertFormulaTable,
   "paragraph.table.row_above": () => applyTableEdit({ kind: "row_above" }),
   "paragraph.table.row_below": () => applyTableEdit({ kind: "row_below" }),
   "paragraph.table.move_row_up": () => applyTableEdit({ kind: "move_row", direction: -1 }),

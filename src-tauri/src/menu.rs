@@ -462,6 +462,7 @@ pub fn build_menu(app: &AppHandle) -> tauri::Result<Menu<Wry>> {
             "Insert Table…",
             Some("Alt+CmdOrCtrl+T"),
         )?)
+        .item(&mi(app, "paragraph.table.formula", "Tabelle mit Formeln", None)?)
         .separator()
         .item(&mi(
             app,

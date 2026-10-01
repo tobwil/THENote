@@ -31,6 +31,7 @@ export const SLASH_ACTIONS: Record<SlashItemId, () => void> = {
   code: block("code"),
 
   table: cmd("paragraph.table.insert"),
+  formulaTable: cmd("paragraph.table.formula"),
   image: cmd("format.image.insert"),
   link: cmd("format.hyperlink"),
   divider: cmd("paragraph.hr"),

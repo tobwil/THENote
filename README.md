@@ -75,6 +75,7 @@ Die Screenshots zeigen Beispiel- und Testnotizen. Alle Code-Ausgaben wurden loka
 ## Was zusammengeführt wurde
 
 - **Schreiben:** Live-Markdown, Quelltextmodus, Tabs mit eigenem Undo, Gliederung, Suche, Tabellen, Formeln, Mermaid/D2, Fokusmodus und vorhandene Exportfunktionen aus Sarala.
+- **Tabellen, die rechnen:** `/formel` (oder `/tabelle`, `/excel`) fügt eine Tabelle mit Formeln wie `=SUMME(D2:D4)` ein. Die Datei behält die Formel, die Notiz zeigt das Ergebnis; siehe [Tabellen mit Formeln](#tabellen-mit-formeln).
 - **Projekte und Ordner:** In der Seitenleiste über **＋ Projekt** einen neuen Projektordner anlegen (zuerst den übergeordneten Speicherort wählen), über **＋ Ordner** einen Unterordner. Rechtsklick auf einen Ordner → **Neue Notiz hier …** oder **Unterordner erstellen …**. Das Datei-Plus im Kopf der Seitenleiste legt eine Notiz im Projekt an. Leere Ordner bleiben sichtbar.
 - **Tabnamen:** Doppelklick, Rechtsklick oder F2 auf einem Tab öffnet **Datei umbenennen**. Gespeicherte Dateien werden im gleichen Ordner umbenannt; ungespeicherte Notizen erhalten zunächst einen Namen für das spätere Speichern. Text und Undo bleiben erhalten.
 - **Datum:** `/date` oder `/datum` öffnet an der Schreibstelle einen Datumspicker mit Heute/Morgen und deutschem oder ISO-Format. Das Ergebnis bleibt normaler Markdown-Text.
@@ -86,6 +87,24 @@ Die Screenshots zeigen Beispiel- und Testnotizen. Alle Code-Ausgaben wurden loka
 - **Eigene Identität:** App-ID, Einstellungen, Icon und Paketname sind getrennt von Sarala. Der fremde Updatekanal ist deaktiviert.
 
 Die Architekturentscheidungen und Unterschiede stehen in [docs/REENGINEERING.md](docs/REENGINEERING.md). Herkunft und Lizenzen: [NOTICE.md](NOTICE.md).
+
+## Tabellen mit Formeln
+
+Eine Zelle, die mit `=` beginnt, ist eine Formel. Im Markdown bleibt die Formel stehen, die Notiz zeigt das Ergebnis; die Formel erscheint als Tooltip. Wer in die Tabelle klickt, sieht und bearbeitet die Formeln wie in einer Tabellenkalkulation. Einfügen über **/formel** im Text, die Befehlspalette (⌘K) oder **Paragraph ▸ Table ▸ Tabelle mit Formeln**.
+
+```markdown
+| Posten | Menge | Preis | Summe |
+| :--- | ---: | ---: | ---: |
+| Kaffee | 2 | 3,50 € | =B2*C2 |
+| Kuchen | 3 | 2,80 € | =B3*C3 |
+| **Gesamt** | =SUMME(B2:B3) | | **=SUMME(D2:D3)** |
+```
+
+- **Adressen wie in Excel:** Spalten A, B, C …; die Kopfzeile ist Zeile 1, die erste Datenzeile Zeile 2. Bereiche wie `B2:B5`.
+- **Rechnen:** `+ - * / ^`, Klammern, Prozent (`20%`), Vergleiche (`= <> < > <= >=`), Text in `"…"` und `&` zum Verbinden.
+- **Funktionen**, deutsch oder englisch: `SUMME`/`SUM`, `MITTELWERT`/`AVERAGE`, `MIN`, `MAX`, `ANZAHL`/`COUNT`, `ANZAHL2`/`COUNTA`, `PRODUKT`/`PRODUCT`, `RUNDEN`/`ROUND`, `ABS`, `WENN`/`IF`. Argumente mit `;` oder `,` trennen; Dezimalzahlen in Formeln mit Punkt.
+- **Zahlen in Zellen** dürfen deutsch oder englisch geschrieben sein (`1.234,50 €`, `3.5`) und eine Währung tragen; Ergebnisse übernehmen die Währung und erscheinen im deutschen Format.
+- **Fehler** werden wie in Tabellenkalkulationen angezeigt: `#DIV/0!`, `#WERT!`, `#BEZUG!`, `#NAME?`, `#ZYKLUS!`.
 
 ## Codeblöcke in Notizen ausführen
 
