@@ -5,5 +5,9 @@
   "sha256": "920824d10a714d297631515ba95d67ee3e6083af9f2091308cd8e343ffd02472",
   "minimumMacOS": "11.0",
   "preview": true,
-  "site": "https://tobwil.github.io/THENote/"
+  "site": "https://tobwil.github.io/THENote/",
+  "dmg": {
+    "asset": "THE.Note-macOS-arm64.dmg",
+    "sha256": "b87cb4abbe25f462641d792b466a9105681ccda88f0ddd8910b16ab8ed40fd40"
+  }
 }

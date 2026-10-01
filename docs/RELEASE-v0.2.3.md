@@ -12,7 +12,9 @@ Ein lokales Markdown-Arbeitsbuch mit ausführbaren Codezellen und optionaler KI 
 
 ## Download
 
-`THE Note-macOS-arm64.zip` ist für **macOS auf Apple Silicon**. Entpacken und THE Note.app öffnen. Vor dem Update offene Notizen speichern und die bisherige App schließen. `SHA256SUMS` enthält die Prüfsumme.
+[DMG für macOS Apple Silicon herunterladen](https://github.com/tobwil/THENote/releases/download/v0.2.3/THE.Note-macOS-arm64.dmg), öffnen und **THE Note.app** auf **Applications** ziehen. Das Image danach auswerfen und die App im Programme-Ordner öffnen. Alternativ bleibt `THE.Note-macOS-arm64.zip` verfügbar; Homebrew und curl verwenden weiterhin dieses ZIP.
+
+Vor dem Update offene Notizen speichern und die bisherige App schließen. `SHA256SUMS` enthält die ZIP-Prüfsumme, `SHA256SUMS-DMG` die Prüfsumme des ergänzten DMGs. Das DMG enthält dieselbe unveränderte App wie das ursprüngliche ZIP, einschließlich Lizenzbeilagen.
 
 Die App ist lokal/ad-hoc signiert, **nicht Apple-notarisiert** und eine Entwicklungsversion. Keine verifizierten Windows-/Linux-/Intel-Mac-Builds. KI-Oberfläche und Providerprotokolle wurden mit simuliertem IPC bzw. lokalen HTTP-Testdiensten geprüft, nicht mit bezahlten Produktivkonten. Codeblöcke laufen mit den Rechten des lokalen Benutzerkontos.
 
