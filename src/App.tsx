@@ -1,6 +1,7 @@
 import DatePicker from "./components/DatePicker";
 import NameDialog from "./components/NameDialog";
 import ChangesModal from "./components/ChangesModal";
+import DiagramViewer from "./components/DiagramViewer";
 import AiSettings from "./components/AiSettings";
 import { Show, createEffect, onMount, onCleanup, untrack } from "solid-js";
 import Editor from "./components/Editor";
@@ -431,6 +432,7 @@ export default function App() {
       <SettingsModal />
       <AiSettings />
       <ChangesModal />
+      <DiagramViewer />
       <NameDialog />
       <DatePicker />
       <ThemeEditor />

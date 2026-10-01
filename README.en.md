@@ -80,6 +80,7 @@ The screenshots show example and test notes. All code output was produced locall
 
 - **Writing:** live Markdown, source mode, tabs with their own undo, outline, search, tables, maths, Mermaid/D2, focus mode and Sarala's existing export features.
 - **Tables that calculate:** `/formel` (or `/formula`, `/excel`) inserts a table with formulas such as `=SUM(D2:D4)`. The file keeps the formula, the note shows the result; see [Tables with formulas](#tables-with-formulas).
+- **Zoom into diagrams:** hovering a Mermaid or D2 diagram shows **⤢ Vergrößern** (enlarge). The full-window view zooms with pinch or ⌘/Ctrl + scroll, pans by dragging or scrolling and knows `+`, `−`, `0` (fit), `1` (100 %) and Esc. Also in the command palette: "Diagramm vergrößern".
 - **Projects and folders:** in the sidebar, **＋ Projekt** creates a new project folder (pick the parent location first), **＋ Ordner** a sub folder. Right-click a folder → **Neue Notiz hier …** (new note here) or **Unterordner erstellen …** (create sub folder). The file plus in the sidebar header creates a note in the project. Empty folders stay visible.
 - **Tab names:** double-click, right-click or F2 on a tab opens **Datei umbenennen** (rename file). Saved files are renamed in place; unsaved notes get a name for their first save. Text and undo are preserved.
 - **Dates:** `/date` or `/datum` opens a date picker at the caret with today/tomorrow and German or ISO format. The result stays plain Markdown text.
