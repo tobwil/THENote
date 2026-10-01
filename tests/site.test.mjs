@@ -46,21 +46,26 @@ try {
   assert.match(await page.getByRole('status').innerText(), /Befehl markiert/);
   const d = JSON.parse(await readFile('distribution.json', 'utf8'));
   assert.equal(await page.getByRole('link', { name: 'ZIP direkt herunterladen' }).getAttribute('href'), `https://github.com/${d.repository}/releases/download/v${d.version}/${d.asset}`);
-  for (const path of ['install.sh', 'assets/inline-ai.png', 'assets/projects-and-date.png', 'assets/unsaved-diff.png', 'assets/playground-dark.png', 'assets/toolbox-light.png', 'assets/mandelbrot-dark.png', 'assets/the-note.svg', 'fonts/inter-latin-400-normal.woff2', 'sitemap.xml', 'en/']) assert.equal((await page.request.get('http://127.0.0.1:1454/THENote/' + path)).status(), 200);
+  for (const path of ['install.sh', 'assets/inline-ai.png', 'assets/projects-and-date.png', 'assets/unsaved-diff.png', 'assets/note-light.png', 'assets/note-dark.png', 'assets/the-note.svg', 'fonts/inter-latin-400-normal.woff2', 'sitemap.xml', 'en/']) assert.equal((await page.request.get('http://127.0.0.1:1454/THENote/' + path)).status(), 200);
 
-  // The live cell runs its demos in the browser and can be stopped.
+  // The live cell shows a small note around one runnable block; runs can be stopped.
   await page.setViewportSize({ width: 1440, height: 1050 });
-  await page.getByRole('button', { name: /Mandelbrot/ }).click();
-  await page.getByRole('button', { name: 'Ausführen', exact: false }).first().click();
+  assert.match(await page.locator('[data-note]').innerText(), /Lissabon im Mai/);
+  await page.locator('[data-run]').click();
   await page.waitForFunction(() => /Erfolgreich/.test(document.querySelector('[data-status]').textContent), null, { timeout: 10000 });
-  assert.ok((await page.locator('[data-output]').textContent()).split('\n').length > 20, 'Mandelbrot prints every row');
-  await page.getByRole('button', { name: /Countdown/ }).click();
+  assert.match(await page.locator('[data-output]').innerText(), /Gesamt 1320 € · pro Person 440 €/);
+  await page.getByRole('button', { name: /Wochenrückblick/ }).click();
+  assert.match(await page.locator('[data-note]').innerText(), /Woche 40/);
+  await page.locator('[data-run]').click();
+  await page.waitForFunction(() => /Erfolgreich/.test(document.querySelector('[data-status]').textContent), null, { timeout: 10000 });
+  assert.match(await page.locator('[data-output]').innerText(), /60% erledigt/);
+  await page.getByRole('button', { name: /Würfelorakel/ }).click();
   await page.locator('[data-run]').click();
   await page.locator('[data-run]').click();
   assert.match(await page.locator('[data-status]').innerText(), /Gestoppt/);
-  // Day/night preview swaps the screenshot.
-  await page.getByRole('button', { name: /Tag/ }).click();
-  assert.equal(await page.locator('[data-stage]').evaluate(el => el.classList.contains('is-light')), true);
+  // Day/night preview swaps the same note's screenshot.
+  await page.getByRole('button', { name: /Nacht/ }).click();
+  assert.equal(await page.locator('[data-stage]').evaluate(el => el.classList.contains('is-dark')), true);
 
   // English page: own copy, own canonical URL, links back to German.
   await page.goto('http://127.0.0.1:1454/THENote/en/');
@@ -76,7 +81,8 @@ try {
   }
   await page.locator('[data-run]').click();
   await page.waitForFunction(() => /Succeeded/.test(document.querySelector('[data-status]').textContent), null, { timeout: 10000 });
-  assert.match(await page.locator('[data-output]').innerText(), /The oracle rolls/);
+  assert.match(await page.locator('[data-output]').innerText(), /Total 1320 € · per person 440 €/);
+  assert.match(await page.locator('[data-code]').innerText(), /^costs = \{/);
   assert.deepEqual(errors, []); assert.deepEqual(failed, []);
-  console.log('PASS website: German and English pages, subpath assets, mobile/tablet/desktop layout, keyboard tabs, copy and fallback, live cell, day/night preview, release link and installer.');
+  console.log('PASS website: German and English pages, subpath assets, mobile/tablet/desktop layout, keyboard tabs, copy and fallback, live note cell, day/night preview, release link and installer.');
 } finally { await browser?.close(); await new Promise(resolve => server.close(resolve)); }

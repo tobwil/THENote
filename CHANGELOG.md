@@ -9,6 +9,7 @@ The entries below reconstruct the development milestones from the conversation a
 - Raise small interface text to readable sizes, align the run bar, keep the status bar on one line in narrow windows, show frontmatter as a labelled context card and close the template menu on outside click or Escape.
 - Redesign the website with a live cell that runs three demos in the browser, a day/night preview, a feature grid and self-hosted Inter; publish it in German (`/`) and English (`/en/`) with hreflang links.
 - Add an English README and refresh all screenshots with locally executed output.
+- Lead with the notebook: README, website and screenshots open with an ordinary note (`examples/Reiseplanung.md`) whose single code block does a small calculation; the website's live cell shows small notes around one runnable block, and code examples move further back.
 
 ## Distribution and website — 2026-10-01
 

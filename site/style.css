@@ -95,9 +95,17 @@ h1 em { font-style: italic; color: transparent; background: linear-gradient(100d
 .cell-demos button { border: 1px solid transparent; background: transparent; color: var(--night-muted); padding: 7px 13px; border-radius: 999px; font-size: 13px; cursor: pointer; white-space: nowrap; transition: background .2s, color .2s; }
 .cell-demos button:hover { color: var(--night-ink); background: #ffffff0c; }
 .cell-demos button[aria-pressed=true] { color: var(--night); background: var(--lime); font-weight: 600; }
-.cell-code { margin: 0; padding: 18px 24px 20px; font: 13px/1.75 var(--mono); color: #dfe6d3; overflow-x: auto; height: 268px; white-space: pre; }
+.cell-note-body { padding: 18px 24px 6px; }
+.cell-note-body h3 { font: 500 26px/1.15 var(--serif); letter-spacing: -.02em; margin-bottom: 8px; }
+.cell-note-body p { font-size: 14px; color: var(--night-muted); margin: 0 0 10px; }
+.cell-note-body ul { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 4px 18px; font-size: 13.5px; }
+.cell-note-body li { display: flex; align-items: center; gap: 8px; }
+.cell-note-body li span { display: inline-flex; align-items: center; justify-content: center; width: 15px; height: 15px; border-radius: 4px; border: 1.5px solid #5f7262; font-size: 10px; color: var(--night); }
+.cell-note-body li.done { color: var(--night-muted); }
+.cell-note-body li.done span { background: var(--lime); border-color: var(--lime); }
+.cell-code { margin: 14px 18px 0; padding: 14px 18px; border-radius: 12px 12px 0 0; background: #0f1712; border: 1px solid var(--night-line); border-bottom: 0; font: 12.5px/1.7 var(--mono); color: #dfe6d3; overflow-x: auto; height: 286px; white-space: pre; }
 .cell-code .k { color: #f08f9c; } .cell-code .s { color: #c6e08f; } .cell-code .n { color: #8fc7f0; } .cell-code .c { color: #7d8c7e; font-style: italic; } .cell-code .f { color: #b9a5f5; }
-.cell-bar { display: flex; align-items: center; gap: 12px; padding: 10px 14px 10px 20px; border-top: 1px solid var(--night-line); background: #ffffff05; font-size: 13px; color: var(--night-muted); }
+.cell-bar { display: flex; align-items: center; gap: 12px; margin: 0 18px; padding: 9px 12px 9px 18px; border: 1px solid var(--night-line); border-radius: 0 0 12px 12px; background: #ffffff05; font-size: 13px; color: var(--night-muted); }
 .runtime { display: inline-flex; align-items: center; gap: 8px; }
 .runtime i { width: 6px; height: 6px; border-radius: 50%; background: var(--lime); }
 .cell-status { margin-left: auto; color: var(--lime); font-variant-numeric: tabular-nums; }
@@ -106,9 +114,9 @@ h1 em { font-style: italic; color: transparent; background: linear-gradient(100d
 .run:hover { background: var(--lime-strong); transform: translateY(-1px); }
 .run.stop { background: var(--coral); }
 .run kbd { font: 11px var(--sans); opacity: .55; }
-.cell-output { border-top: 1px solid var(--night-line); background: #0b110d; padding: 12px 20px 16px; }
+.cell-output { margin-top: 14px; border-top: 1px solid var(--night-line); background: #0b110d; padding: 12px 20px 16px; }
 .output-label { display: block; font-size: 11px; font-weight: 600; letter-spacing: .14em; color: var(--night-muted); margin-bottom: 6px; }
-.cell-output pre { margin: 0; height: 236px; overflow: auto; font: 12px/1.5 var(--mono); color: var(--night-ink); white-space: pre; }
+.cell-output pre { margin: 0; height: 160px; overflow: auto; font: 12px/1.5 var(--mono); color: var(--night-ink); white-space: pre; }
 .cell-note { margin: 0; padding: 10px 20px 14px; font-size: 12px; color: var(--night-muted); background: #0b110d; border-top: 1px dashed var(--night-line); }
 
 .marquee { border-top: 1px solid var(--night-line); overflow: hidden; overflow: clip; padding-block: 18px; color: var(--night-muted); font: italic 20px var(--serif); }
@@ -126,8 +134,8 @@ h1 em { font-style: italic; color: transparent; background: linear-gradient(100d
 .stage-frame { position: relative; border-radius: 18px; overflow: hidden; border: 1px solid #00000014; box-shadow: 0 50px 120px #1d2e2533, 0 12px 30px #1d2e251a; transform: rotateX(8deg) scale(.96); transform-origin: 50% 0; transition: transform 1.2s var(--ease); background: var(--night); }
 .stage.is-visible .stage-frame, html:not(.js) .stage-frame { transform: rotateX(0) scale(1); }
 .shot { width: 100%; transition: opacity .6s var(--ease); }
-.shot-light { position: absolute; inset: 0; opacity: 0; }
-.stage.is-light .shot-light { opacity: 1; }
+.shot-dark { position: absolute; inset: 0; opacity: 0; }
+.stage.is-dark .shot-dark { opacity: 1; }
 .stage figcaption { margin-top: 20px; text-align: center; font-size: 14px; color: var(--muted); }
 
 /* ---------- bento ---------- */
@@ -160,8 +168,11 @@ h1 em { font-style: italic; color: transparent; background: linear-gradient(100d
 .tile-shot { display: block; border-radius: 12px; overflow: hidden; border: 1px solid #00000018; box-shadow: 0 18px 40px #0000002a; }
 .tile-shot img { width: 100%; aspect-ratio: 16 / 11; object-fit: cover; object-position: 60% 0; transition: transform .8s var(--ease); }
 .tile-shot:hover img { transform: scale(1.04); }
+.tile-wide .tile-shot img { aspect-ratio: 4 / 3; object-position: 30% 14%; }
 .tile-shot.small { margin-top: auto; }
 .tile-shot.small img { aspect-ratio: 16 / 9; object-position: 40% 25%; }
+.tile-output { margin: 0 0 20px; padding: 14px 16px; border-radius: 10px; background: #0b110d; border: 1px solid var(--night-line); font: 12px/1.6 var(--mono); color: var(--lime-strong); white-space: pre; overflow-x: auto; }
+.template-chips { margin-top: 8px; }
 .diff-example { display: flex; flex-wrap: wrap; gap: 8px; font: 13px var(--mono); margin-bottom: 20px; }
 .diff-example span { padding: 5px 11px; border-radius: 6px; background: #dbead3; }
 .diff-example span:first-child { background: #f3ddd6; text-decoration: line-through; text-decoration-color: #c0705f; }
@@ -262,8 +273,10 @@ h1 em { font-style: italic; color: transparent; background: linear-gradient(100d
   .hero-copy { min-width: 0; }
   .lead { font-size: 17px; }
   .hero-grid { padding-bottom: 64px; }
-  .cell-code { height: 230px; font-size: 12px; padding-inline: 18px; }
-  .cell-output pre { height: 210px; font-size: 10.5px; }
+  .cell-code { height: 190px; font-size: 11.5px; margin-inline: 12px; padding-inline: 14px; }
+  .cell-bar { margin-inline: 12px; }
+  .cell-note-body { padding-inline: 18px; }
+  .cell-output pre { height: 180px; font-size: 11px; }
   .run kbd { display: none; }
   .section { padding-block: 76px; }
   .bento, .examples-grid { grid-template-columns: 1fr; }
