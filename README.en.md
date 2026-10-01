@@ -2,9 +2,11 @@
 
 [Deutsch](README.md) · **English**
 
-![THE Note in dark forest green: the playground with a dice oracle, code and real output](docs/screenshots/playground-dark.png)
+![THE Note: the note “Lissabon im Mai” (Lisbon in May) with ideas, a checklist and a small cost calculation with its output](docs/screenshots/note-light.png)
 
-A local workbook that combines **Sarala's live Markdown editor** with **Ledge's executable notes**. A native macOS app built on Tauri 2 and SolidJS. Current state: **0.2.3, a functional development version**.
+A local notebook for thoughts, plans and projects. You write in Markdown, organise notes in projects and folders, and when a note needs to calculate, check or try something, its code block runs right inside it.
+
+THE Note combines **Sarala's live Markdown editor** with **Ledge's executable notes**. A native macOS app built on Tauri 2 and SolidJS. Current state: **0.2.3, a functional development version**.
 
 > The app interface and the bundled example notes are currently in German. Markdown files, code blocks and everything you write are, of course, in whatever language you like.
 
@@ -52,11 +54,11 @@ The project as a whole is **GPL-3.0-or-later**. The Ledge parser keeps **Apache-
 
 ## A look inside
 
-### Playground and toolbox: code you can touch
+### A note that does the maths
 
-| Playful, in the dark theme | Useful, in the light theme |
-| :--- | :--- |
-| ![The Mandelbrot set as ASCII art, printed by a JavaScript block](docs/screenshots/mandelbrot-dark.png) | ![The toolbox with a calendar calculator and its output](docs/screenshots/toolbox-light.png) |
+Ideas, a checklist and open questions come first; a small code block works out the costs on the side. The output appears below the block and is never written into the file. Here in the dark theme **THE Note Dark**, above in the light one.
+
+![The same note in dark forest green](docs/screenshots/note-dark.png)
 
 ### Projects, nested notes and inline dates
 
@@ -71,15 +73,6 @@ The project as a whole is **GPL-3.0-or-later**. The Ledge parser keeps **Apache-
 ![Inline AI with a prompt and a Markdown draft](docs/screenshots/inline-ai.png)
 
 The screenshots show example and test notes. All code output was produced locally with `bash`, `python3` and `node`; the AI answer is a reproducible demo, no external provider was contacted. Regenerate them with `node scripts/screenshots.mjs`.
-
-## Try it: playground and toolbox
-
-Under **＋ Neue Notiz** (new note) you will find two ready-made notes that show what executable notes can do. Every block **only reads** and changes nothing; numbers and strings in the code can be edited right away.
-
-- **[Spielplatz](examples/Spielplatz.md)** (playground, playful): 🚀 a countdown with live output, 🎲 a dice oracle, ✦ a Sierpinski triangle from `x & y`, 🌀 Mandelbrot in characters and 🐟 an aquarium that runs for a minute and can be halted with **■ Stoppen** (stop).
-- **[Werkzeugkasten](examples/Werkzeugkasten.md)** (toolbox, useful): check installed runtimes, summarise a folder by file type, Git at a glance, calendar week and days until a date, evaluate spending from CSV, validate JSON, generate a passphrase and a UUID.
-
-No app installed yet? Run three of these blocks, recreated in your browser, [on the website](https://tobwil.github.io/THENote/en/#try).
 
 ## What was merged
 
@@ -96,7 +89,7 @@ No app installed yet? Run three of these blocks, recreated in your browser, [on 
 
 The architecture decisions and differences are described in [docs/REENGINEERING.md](docs/REENGINEERING.md). Origin and licences: [NOTICE.md](NOTICE.md).
 
-## An executable workbook
+## Running code blocks in notes
 
 Open a folder, create a document via **Neue Notiz → Ausführbares Runbook** (new note → executable runbook) and save it as `.md`. A minimal example:
 
@@ -125,6 +118,20 @@ print(sum([12, 18, 24, 30]) / 4)
 Output is temporary and never written into the Markdown file. It survives switching tabs. Each run has a 120-second time limit and a 1 MB output limit; at most eight processes run at once. On macOS/Linux, stop also ends the process group.
 
 **Code runs with the permissions of your user account.** Process isolation is not a security sandbox. Only run code you trust.
+
+## Example notes
+
+The [`examples/`](examples/) folder holds notes to try out (in German for now). Every code block in them **only reads** and changes nothing; numbers and strings can be edited right away.
+
+- **[Lissabon im Mai](examples/Reiseplanung.md)** (Lisbon in May): an ordinary planning note with a small cost calculation, the note from the screenshots.
+- **[Werkzeugkasten](examples/Werkzeugkasten.md)** (toolbox, also under **＋ Neue Notiz**): check installed runtimes, summarise a folder by file type, Git at a glance, calendar week and days until a date, evaluate spending from CSV, validate JSON, generate a passphrase and a UUID.
+- **[Spielplatz](examples/Spielplatz.md)** (playground, also under **＋ Neue Notiz**): 🚀 a countdown with live output, 🎲 a dice oracle, ✦ a Sierpinski triangle from `x & y`, 🌀 Mandelbrot in characters and 🐟 an aquarium that runs for a minute and can be halted with **■ Stoppen** (stop).
+
+| Toolbox, light | Playground, dark |
+| :--- | :--- |
+| ![The toolbox with a calendar calculator and its output](docs/screenshots/toolbox-light.png) | ![The Mandelbrot set as ASCII art, printed by a JavaScript block](docs/screenshots/mandelbrot-dark.png) |
+
+No app installed yet? Three small example notes run, recreated in your browser, [on the website](https://tobwil.github.io/THENote/en/#try).
 
 ## Deliberate limits of this version
 

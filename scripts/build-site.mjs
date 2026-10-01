@@ -2,7 +2,7 @@ import { cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { languages } from '../site/i18n.mjs';
 const d = JSON.parse(await readFile('distribution.json', 'utf8'));
 const replacements = { VERSION: d.version, SITE: d.site, SITE_PATH: new URL(d.site).pathname, DOWNLOAD: `https://github.com/${d.repository}/releases/download/v${d.version}/${d.asset}` };
-const SCREENSHOTS = ['playground-dark.png', 'toolbox-light.png', 'mandelbrot-dark.png', 'inline-ai.png', 'projects-and-date.png', 'unsaved-diff.png'];
+const SCREENSHOTS = ['note-light.png', 'note-dark.png', 'inline-ai.png', 'projects-and-date.png', 'unsaved-diff.png'];
 await rm('dist-site', { recursive: true, force: true });
 await mkdir('dist-site/assets', { recursive: true });
 const template = await readFile('site/index.html', 'utf8');

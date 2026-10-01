@@ -74,7 +74,7 @@ try {
     await page.evaluate(text => {
       const panel = document.querySelector('#document-panel');
       const headings = [...panel.querySelectorAll('h2')];
-      const heading = headings.find(h => h.textContent.includes(text));
+      const heading = text && headings.find(h => h.textContent.includes(text));
       if (!heading) return;
       const top = panel.getBoundingClientRect().top;
       const output = [...panel.querySelectorAll('.run-output')].find(o => o.getBoundingClientRect().top > heading.getBoundingClientRect().top);
@@ -86,21 +86,27 @@ try {
   }
   const ran = (block, cwd) => { const r = execute(block, cwd); return { status: 'finished', output: r.output, exitCode: r.exitCode, durationMs: r.durationMs }; };
 
-  // 1 · Spielplatz at night: the oracle and a pattern drawn by x & y.
+  // 1 · The notebook first: a trip note with one small calculation, by day and by night.
+  const trip = await readFile('examples/Reiseplanung.md', 'utf8');
+  const tripRun = ran(blocksOf(trip)[0]);
+  await workspace('Reisen', [{ name: 'Lissabon im Mai.md', path: '/Users/demo/Reisen/Lissabon im Mai.md', is_dir: false }, { name: 'Packliste.md', path: '/Users/demo/Reisen/Packliste.md', is_dir: false }, { name: 'Fotos', path: '/Users/demo/Reisen/Fotos', is_dir: true, children: [] }]);
+  await page.setViewportSize({ width: 1380, height: 1300 });
+  for (const [theme, file] of [['sarala', 'note-light'], ['forest', 'note-dark']]) {
+    await setTheme(theme);
+    await showNote(trip, '/Users/demo/Reisen/Lissabon im Mai.md', [{ index: 0, ...tripRun }], null);
+    await page.evaluate(() => { document.querySelector('#document-panel').scrollTop = 0; });
+    await page.screenshot({ path: `${OUT}/${file}.png` });
+  }
+  await page.setViewportSize({ width: 1380, height: 900 });
+
+  // 2 · Playful code from the Spielplatz: Mandelbrot in characters.
   const playground = await readFile('examples/Spielplatz.md', 'utf8');
   const pBlocks = blocksOf(playground);
-  await setTheme('forest');
   await workspace('Spielplatz', [{ name: 'Spielplatz.md', path: '/Users/demo/Spielplatz/Spielplatz.md', is_dir: false }, { name: 'Werkzeugkasten.md', path: '/Users/demo/Spielplatz/Werkzeugkasten.md', is_dir: false }]);
-  const aquarium = execute(pBlocks[4], tmpdir(), 3000);
-  await showNote(playground, '/Users/demo/Spielplatz/Spielplatz.md', [
-    { index: 1, ...ran(pBlocks[1]) }, { index: 2, ...ran(pBlocks[2]) }, { index: 3, ...ran(pBlocks[3]) },
-    { index: 4, status: 'running', output: aquarium.output, exitCode: null, durationMs: 0 },
-  ], 'Würfelorakel');
-  await page.screenshot({ path: `${OUT}/playground-dark.png` });
   await showNote(playground, '/Users/demo/Spielplatz/Spielplatz.md', [{ index: 3, ...ran(pBlocks[3]) }], 'Mandelbrot', true);
   await page.screenshot({ path: `${OUT}/mandelbrot-dark.png` });
 
-  // 2 · Werkzeugkasten in daylight, run inside a neutral demo folder.
+  // 3 · Werkzeugkasten in daylight, run inside a neutral demo folder.
   const toolbox = await readFile('examples/Werkzeugkasten.md', 'utf8');
   const tBlocks = blocksOf(toolbox);
   const demo = await mkdtemp(join(tmpdir(), 'the-note-demo-'));
@@ -109,7 +115,7 @@ try {
   await showNote(toolbox, '/Users/demo/Haushalt/Werkzeugkasten.md', [{ index: 3, ...ran(tBlocks[3], demo) }, { index: 4, ...ran(tBlocks[4], demo) }], 'Kalender');
   await page.screenshot({ path: `${OUT}/toolbox-light.png` });
 
-  // 3 · Inline AI with a fixture answer: no API request is made.
+  // 4 · Inline AI with a fixture answer: no API request is made.
   await workspace('Ideenwerkstatt', [{ name: 'Ideenwerkstatt.md', path: '/Users/demo/Ideenwerkstatt/Ideenwerkstatt.md', is_dir: false }, { name: 'Projektnotizen', path: '/Users/demo/Ideenwerkstatt/Projektnotizen', is_dir: true, children: [] }]);
   await page.evaluate(async () => {
     const store = await import('/src/store.ts');
@@ -126,7 +132,7 @@ try {
   await page.evaluate(() => { document.querySelector('#document-panel').scrollTop = 0; return document.fonts.ready; });
   await page.screenshot({ path: `${OUT}/inline-ai.png` });
 
-  // 4 · Unsaved changes compared with the last saved state.
+  // 5 · Unsaved changes compared with the last saved state.
   await page.evaluate(async () => {
     const s = await import('/src/store.ts');
     s.loadDocument('# Besprechung\n\nAlter Absatz mit der ersten Idee.\n\nBleibt erhalten.', '/Users/demo/Ideenwerkstatt/Besprechung.md');
@@ -138,7 +144,7 @@ try {
   await page.screenshot({ path: `${OUT}/unsaved-diff.png` });
   await page.keyboard.press('Escape');
 
-  // 5 · Projects with nested folders and a date inserted at the caret.
+  // 6 · Projects with nested folders and a date inserted at the caret.
   await page.evaluate(async () => {
     const s = await import('/src/store.ts');
     s.setFolderPath('/Users/demo/Kuchen'); s.setFolderName('Kuchen'); s.setSidebarTab('files');

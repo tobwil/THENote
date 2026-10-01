@@ -2,9 +2,11 @@
 
 **Deutsch** · [English](README.en.md)
 
-![THE Note im dunklen Waldgrün: der Spielplatz mit Würfelorakel, Code und echter Ausgabe](docs/screenshots/playground-dark.png)
+![THE Note: die Notiz „Lissabon im Mai“ mit Ideen, Checkliste und einer kleinen Kostenrechnung samt Ausgabe](docs/screenshots/note-light.png)
 
-Ein lokales Arbeitsbuch, das **Saralas Live-Markdown-Editor** mit **Ledges ausführbaren Notizen** verbindet. Native macOS-App auf Tauri 2 und SolidJS. Aktueller Stand: **0.2.3, funktionale Entwicklungsversion**.
+Ein lokales Notizbuch für Gedanken, Pläne und Projekte. Du schreibst in Markdown, ordnest Notizen in Projekten und Ordnern, und wenn eine Notiz etwas rechnen, prüfen oder ausprobieren soll, läuft der Codeblock direkt darin.
+
+THE Note verbindet **Saralas Live-Markdown-Editor** mit **Ledges ausführbaren Notizen**. Native macOS-App auf Tauri 2 und SolidJS. Aktueller Stand: **0.2.3, funktionale Entwicklungsversion**.
 
 ## Website und Installation
 
@@ -50,11 +52,11 @@ Das Gesamtprojekt ist **GPL-3.0-or-later**. Der Ledge-Parser behält **Apache-2.
 
 ## Einblicke
 
-### Spielplatz und Werkzeugkasten: Code zum Anfassen
+### Eine Notiz, die mitrechnet
 
-| Verspielt, im dunklen Thema | Nützlich, im hellen Thema |
-| :--- | :--- |
-| ![Mandelbrot-Menge als ASCII-Kunst, ausgegeben von einem JavaScript-Block](docs/screenshots/mandelbrot-dark.png) | ![Werkzeugkasten mit Kalender-Rechner und Ausgabe](docs/screenshots/toolbox-light.png) |
+Zuerst Ideen, Checkliste und offene Fragen; ein kleiner Codeblock rechnet nebenbei die Kosten aus. Die Ausgabe erscheint unter dem Block und wird nicht in die Datei geschrieben. Hier im dunklen Thema **THE Note Dark**, oben im hellen.
+
+![Dieselbe Notiz im dunklen Waldgrün](docs/screenshots/note-dark.png)
 
 ### Projekte, verschachtelte Notizen und Datum inline
 
@@ -69,15 +71,6 @@ Das Gesamtprojekt ist **GPL-3.0-or-later**. Der Ledge-Parser behält **Apache-2.
 ![Inline-KI mit Prompt und Markdown-Entwurf](docs/screenshots/inline-ai.png)
 
 Die Screenshots zeigen Beispiel- und Testnotizen. Alle Code-Ausgaben wurden lokal mit `bash`, `python3` und `node` erzeugt; die KI-Antwort ist eine reproduzierbare Demo, dafür wurde kein externer Anbieter kontaktiert. Neu erzeugen: `node scripts/screenshots.mjs`.
-
-## Ausprobieren: Spielplatz und Werkzeugkasten
-
-Unter **＋ Neue Notiz** liegen zwei fertige Notizen, die zeigen, was ausführbare Notizen können. Jeder Block **liest nur** und verändert nichts; Zahlen und Texte im Code lassen sich direkt anpassen.
-
-- **[Spielplatz](examples/Spielplatz.md)** (verspielt): 🚀 Countdown mit Live-Ausgabe, 🎲 Würfelorakel, ✦ Sierpinski-Dreieck aus `x & y`, 🌀 Mandelbrot in Zeichen und 🐟 ein Aquarium, das eine Minute läuft und sich mit **■ Stoppen** anhalten lässt.
-- **[Werkzeugkasten](examples/Werkzeugkasten.md)** (nützlich): installierte Laufzeiten prüfen, Ordner nach Dateitypen auswerten, Git auf einen Blick, Kalenderwoche und Tage bis zu einem Datum, Ausgaben aus CSV auswerten, JSON prüfen, Passphrase und UUID erzeugen.
-
-Wer die App nicht installiert hat, kann drei der Blöcke [auf der Website](https://tobwil.github.io/THENote/#try) direkt im Browser nachgestellt ausführen.
 
 ## Was zusammengeführt wurde
 
@@ -94,7 +87,7 @@ Wer die App nicht installiert hat, kann drei der Blöcke [auf der Website](https
 
 Die Architekturentscheidungen und Unterschiede stehen in [docs/REENGINEERING.md](docs/REENGINEERING.md). Herkunft und Lizenzen: [NOTICE.md](NOTICE.md).
 
-## Ein ausführbares Arbeitsbuch
+## Codeblöcke in Notizen ausführen
 
 Öffne einen Ordner, erstelle über **Neue Notiz → Ausführbares Runbook** ein Dokument und speichere es als `.md`. Ein minimales Beispiel:
 
@@ -123,6 +116,20 @@ print(sum([12, 18, 24, 30]) / 4)
 Ausgaben sind temporär und werden nicht in die Markdown-Datei geschrieben. Sie bleiben beim Tabwechsel erhalten. Pro Lauf gilt ein Zeitlimit von 120 Sekunden und ein Ausgabelimit von 1 MB; maximal acht Prozesse gleichzeitig. Stop beendet unter macOS/Linux auch die Prozessgruppe.
 
 **Code läuft mit den Rechten deines Benutzerkontos.** Die Prozessisolierung ist keine Sicherheits-Sandbox. Nur Code starten, dem du vertraust.
+
+## Beispielnotizen
+
+Im Ordner [`examples/`](examples/) liegen Notizen zum Ausprobieren. Jeder Codeblock darin **liest nur** und verändert nichts; Zahlen und Texte lassen sich direkt anpassen.
+
+- **[Lissabon im Mai](examples/Reiseplanung.md):** eine ganz normale Planungsnotiz mit einer kleinen Kostenrechnung, die Notiz aus den Screenshots.
+- **[Werkzeugkasten](examples/Werkzeugkasten.md)** (auch unter **＋ Neue Notiz**): installierte Laufzeiten prüfen, Ordner nach Dateitypen auswerten, Git auf einen Blick, Kalenderwoche und Tage bis zu einem Datum, Ausgaben aus CSV auswerten, JSON prüfen, Passphrase und UUID erzeugen.
+- **[Spielplatz](examples/Spielplatz.md)** (auch unter **＋ Neue Notiz**): 🚀 Countdown mit Live-Ausgabe, 🎲 Würfelorakel, ✦ Sierpinski-Dreieck aus `x & y`, 🌀 Mandelbrot in Zeichen und 🐟 ein Aquarium, das eine Minute läuft und sich mit **■ Stoppen** anhalten lässt.
+
+| Werkzeugkasten, hell | Spielplatz, dunkel |
+| :--- | :--- |
+| ![Werkzeugkasten mit Kalender-Rechner und Ausgabe](docs/screenshots/toolbox-light.png) | ![Mandelbrot-Menge als ASCII-Kunst, ausgegeben von einem JavaScript-Block](docs/screenshots/mandelbrot-dark.png) |
+
+Ohne installierte App lassen sich drei kleine Beispielnotizen [auf der Website](https://tobwil.github.io/THENote/#try) im Browser nachgestellt ausführen.
 
 ## Bewusste Grenzen dieser Version
 

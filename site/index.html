@@ -7,7 +7,7 @@
   <meta name="theme-color" content="#101712"><link rel="icon" href="{{root}}assets/the-note.svg" type="image/svg+xml">
   <link rel="canonical" href="{{url}}">
   <link rel="alternate" hreflang="de" href="%%SITE%%"><link rel="alternate" hreflang="en" href="%%SITE%%en/"><link rel="alternate" hreflang="x-default" href="%%SITE%%">
-  <meta property="og:title" content="{{meta.title}}"><meta property="og:description" content="{{meta.og}}"><meta property="og:type" content="website"><meta property="og:locale" content="{{meta.locale}}"><meta property="og:url" content="{{url}}"><meta property="og:image" content="%%SITE%%assets/playground-dark.png"><meta name="twitter:card" content="summary_large_image">
+  <meta property="og:title" content="{{meta.title}}"><meta property="og:description" content="{{meta.og}}"><meta property="og:type" content="website"><meta property="og:locale" content="{{meta.locale}}"><meta property="og:url" content="{{url}}"><meta property="og:image" content="%%SITE%%assets/note-light.png"><meta name="twitter:card" content="summary_large_image">
   <link rel="preload" href="{{root}}fonts/inter-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="{{root}}style.css"><script>document.documentElement.classList.add('js')</script><script src="{{root}}main.js" defer></script>
 </head>
@@ -36,10 +36,11 @@
         <p class="release-line">v%%VERSION%% Preview <span>·</span> macOS Apple Silicon <span>·</span> Open Source · GPL-3.0</p>
       </div>
       <div class="cell reveal" id="try" data-cell data-running="{{cell.running}}" data-done="{{cell.done}}" data-stopped="{{cell.stopped}}" data-idle="{{cell.idle}}">
-        <div class="cell-chrome"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="cell-file">{{cell.file}}</span><span class="cell-badge"><i></i> {{cell.local}}</span></div>
+        <div class="cell-chrome"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="cell-file" data-file>{{cell.file}}</span><span class="cell-badge"><i></i> {{cell.local}}</span></div>
         <div class="cell-demos" role="group" aria-label="{{cell.label}}">
-          <button type="button" data-demo="oracle" aria-pressed="true">🎲 {{cell.oracle}}</button><button type="button" data-demo="mandelbrot" aria-pressed="false">🌀 Mandelbrot</button><button type="button" data-demo="countdown" aria-pressed="false">🚀 Countdown</button>
+          <button type="button" data-demo="trip" aria-pressed="true">✈ {{cell.trip}}</button><button type="button" data-demo="week" aria-pressed="false">✓ {{cell.week}}</button><button type="button" data-demo="oracle" aria-pressed="false">🎲 {{cell.oracle}}</button>
         </div>
+        <div class="cell-note-body" data-note></div>
         <pre class="cell-code" tabindex="0" aria-label="{{cell.codeLabel}}"><code data-code></code></pre>
         <div class="cell-bar"><span class="runtime"><i></i><span data-runtime>Python</span></span><span class="cell-status" data-status></span><button type="button" class="run" data-run><span aria-hidden="true">▶</span> <span data-run-label data-run-text="{{cell.run}}" data-stop-text="{{cell.stop}}">{{cell.run}}</span> <kbd>⌘↵</kbd></button></div>
         <div class="cell-output"><span class="output-label">{{cell.output}}</span><pre data-output aria-live="polite" aria-label="{{cell.outputLabel}}">{{cell.idle}}</pre></div>
@@ -53,11 +54,11 @@
   <section id="features" class="section stage-section">
     <div class="wrap">
       <div class="section-heading reveal"><p class="eyebrow">{{stage.eyebrow}}</p><h2>{{stage.h2}}</h2><p>{{stage.lead}}</p></div>
-      <div class="theme-switch reveal" role="group" aria-label="{{stage.switch}}"><button type="button" data-shot="dark" aria-pressed="true"><span aria-hidden="true">☾</span> {{stage.dark}}</button><button type="button" data-shot="light" aria-pressed="false"><span aria-hidden="true">☀</span> {{stage.light}}</button></div>
+      <div class="theme-switch reveal" role="group" aria-label="{{stage.switch}}"><button type="button" data-shot="light" aria-pressed="true"><span aria-hidden="true">☀</span> {{stage.light}}</button><button type="button" data-shot="dark" aria-pressed="false"><span aria-hidden="true">☾</span> {{stage.dark}}</button></div>
       <figure class="stage reveal" data-stage>
         <div class="stage-frame">
-          <img class="shot shot-dark" src="{{root}}assets/playground-dark.png" width="2760" height="1800" alt="{{stage.altDark}}">
-          <img class="shot shot-light" src="{{root}}assets/toolbox-light.png" width="2760" height="1800" loading="lazy" alt="{{stage.altLight}}">
+          <img class="shot" src="{{root}}assets/note-light.png" width="2760" height="2600" alt="{{stage.altLight}}">
+          <img class="shot shot-dark" src="{{root}}assets/note-dark.png" width="2760" height="2600" loading="lazy" alt="{{stage.altDark}}">
         </div>
         <figcaption>{{stage.caption}}</figcaption>
       </figure>
@@ -68,8 +69,8 @@
     <div class="wrap">
       <div class="section-heading reveal"><p class="eyebrow">{{bento.eyebrow}}</p><h2>{{bento.h2}}</h2></div>
       <div class="bento">
-        <article class="tile tile-wide tile-dark reveal"><div class="tile-copy"><span class="tile-icon mono" aria-hidden="true">&gt;_</span><h3>{{bento.runH}}</h3><p>{{bento.runP}}</p><ul class="chips"><li>Shell</li><li>Bash</li><li>Zsh</li><li>Python</li><li>JavaScript</li></ul></div><a class="tile-shot" href="{{root}}assets/mandelbrot-dark.png" aria-label="{{bento.runOpen}}"><img src="{{root}}assets/mandelbrot-dark.png" width="2760" height="1800" loading="lazy" alt="{{bento.runAlt}}"></a></article>
-        <article class="tile reveal"><span class="tile-icon" aria-hidden="true">Aa</span><h3>{{bento.mdH}}</h3><p>{{bento.mdP}}</p><ul class="chips"><li>{{bento.mdChip1}}</li><li>KaTeX</li><li>Mermaid</li><li>D2</li><li>{{bento.mdChip2}}</li></ul></article>
+        <article class="tile tile-wide reveal"><div class="tile-copy"><span class="tile-icon" aria-hidden="true">Aa</span><h3>{{bento.mdH}}</h3><p>{{bento.mdP}}</p><ul class="chips"><li>{{bento.mdChip1}}</li><li>{{bento.mdChip3}}</li><li>KaTeX</li><li>Mermaid</li><li>D2</li><li>{{bento.mdChip2}}</li></ul></div><a class="tile-shot" href="{{root}}assets/note-light.png" aria-label="{{bento.mdOpen}}"><img src="{{root}}assets/note-light.png" width="2760" height="2600" loading="lazy" alt="{{bento.mdAlt}}"></a></article>
+        <article class="tile tile-dark reveal"><span class="tile-icon mono" aria-hidden="true">&gt;_</span><h3>{{bento.runH}}</h3><p>{{bento.runP}}</p><pre class="tile-output" aria-label="{{bento.runOutput}}">{{bento.runSample}}</pre><ul class="chips"><li>Shell</li><li>Python</li><li>JavaScript</li></ul></article>
         <article class="tile tile-lime reveal"><span class="tile-icon" aria-hidden="true">✦</span><h3>{{bento.aiH}}</h3><p>{{bento.aiP}}</p><a class="tile-shot small" href="{{root}}assets/inline-ai.png" aria-label="{{bento.aiOpen}}"><img src="{{root}}assets/inline-ai.png" width="2760" height="1800" loading="lazy" alt="{{bento.aiAlt}}"></a></article>
         <article class="tile reveal"><span class="tile-icon diff-icon" aria-hidden="true">±</span><h3>{{bento.diffH}}</h3><p>{{bento.diffP}}</p><span class="diff-example" aria-hidden="true"><span>− {{bento.diffOld}}</span><span>+ {{bento.diffNew}}</span></span><a class="tile-shot small" href="{{root}}assets/unsaved-diff.png" aria-label="{{bento.diffOpen}}"><img src="{{root}}assets/unsaved-diff.png" width="2760" height="1800" loading="lazy" alt="{{bento.diffAlt}}"></a></article>
         <article class="tile reveal"><span class="tile-icon" aria-hidden="true">▧</span><h3>{{bento.projH}}</h3><p>{{bento.projP}}</p><a class="tile-shot small" href="{{root}}assets/projects-and-date.png" aria-label="{{bento.projOpen}}"><img src="{{root}}assets/projects-and-date.png" width="2760" height="1800" loading="lazy" alt="{{bento.projAlt}}"></a></article>
@@ -80,7 +81,7 @@
 
   <section class="section examples-section">
     <div class="wrap examples-grid">
-      <div class="reveal"><p class="eyebrow">{{ex.eyebrow}}</p><h2>{{ex.h2}}</h2><p class="section-lead">{{ex.lead}}</p></div>
+      <div class="reveal"><p class="eyebrow">{{ex.eyebrow}}</p><h2>{{ex.h2}}</h2><p class="section-lead">{{ex.lead}}</p><ul class="chips template-chips">{{ex.templates}}</ul></div>
       <article class="example-card play reveal"><span class="example-tag">✦ {{ex.playTag}}</span><h3>{{ex.playH}}</h3><ul>{{ex.playList}}</ul><a href="https://github.com/tobwil/THENote/blob/main/examples/Spielplatz.md">{{ex.view}} ↗</a></article>
       <article class="example-card tools reveal"><span class="example-tag">⌘ {{ex.toolTag}}</span><h3>{{ex.toolH}}</h3><ul>{{ex.toolList}}</ul><a href="https://github.com/tobwil/THENote/blob/main/examples/Werkzeugkasten.md">{{ex.view}} ↗</a></article>
     </div>
