@@ -271,6 +271,7 @@ export const MENUS: TopMenu[] = [
         label: "Table",
         items: [
           { id: "paragraph.table.insert", label: "Insert Table…", accel: "Alt+Ctrl+T" },
+          { id: "paragraph.table.formula", label: "Tabelle mit Formeln" },
           { sep: true },
           { id: "paragraph.table.row_above", label: "Add Row Above" },
           { id: "paragraph.table.row_below", label: "Add Row Below" },

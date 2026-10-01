@@ -77,6 +77,7 @@ The screenshots show example and test notes. All code output was produced locall
 ## What was merged
 
 - **Writing:** live Markdown, source mode, tabs with their own undo, outline, search, tables, maths, Mermaid/D2, focus mode and Sarala's existing export features.
+- **Tables that calculate:** `/formel` (or `/formula`, `/excel`) inserts a table with formulas such as `=SUM(D2:D4)`. The file keeps the formula, the note shows the result; see [Tables with formulas](#tables-with-formulas).
 - **Projects and folders:** in the sidebar, **＋ Projekt** creates a new project folder (pick the parent location first), **＋ Ordner** a sub folder. Right-click a folder → **Neue Notiz hier …** (new note here) or **Unterordner erstellen …** (create sub folder). The file plus in the sidebar header creates a note in the project. Empty folders stay visible.
 - **Tab names:** double-click, right-click or F2 on a tab opens **Datei umbenennen** (rename file). Saved files are renamed in place; unsaved notes get a name for their first save. Text and undo are preserved.
 - **Dates:** `/date` or `/datum` opens a date picker at the caret with today/tomorrow and German or ISO format. The result stays plain Markdown text.
@@ -88,6 +89,24 @@ The screenshots show example and test notes. All code output was produced locall
 - **Own identity:** app ID, settings, icon and package name are separate from Sarala. The upstream update channel is disabled.
 
 The architecture decisions and differences are described in [docs/REENGINEERING.md](docs/REENGINEERING.md). Origin and licences: [NOTICE.md](NOTICE.md).
+
+## Tables with formulas
+
+A cell that starts with `=` is a formula. The Markdown keeps the formula, the note shows the result, and the formula appears as a tooltip. Click into the table to see and edit the formulas, like in a spreadsheet. Insert one with **/formel** (or `/formula`) in the text, the command palette (⌘K) or **Paragraph ▸ Table ▸ Tabelle mit Formeln**.
+
+```markdown
+| Item | Qty | Price | Sum |
+| :--- | ---: | ---: | ---: |
+| Coffee | 2 | 3.50 € | =B2*C2 |
+| Cake | 3 | 2.80 € | =B3*C3 |
+| **Total** | =SUM(B2:B3) | | **=SUM(D2:D3)** |
+```
+
+- **Spreadsheet addresses:** columns A, B, C …; the header is row 1, the first body row is row 2. Ranges like `B2:B5`.
+- **Arithmetic:** `+ - * / ^`, parentheses, percent (`20%`), comparisons (`= <> < > <= >=`), text in `"…"` and `&` to join.
+- **Functions**, in English or German: `SUM`/`SUMME`, `AVERAGE`/`MITTELWERT`, `MIN`, `MAX`, `COUNT`/`ANZAHL`, `COUNTA`/`ANZAHL2`, `PRODUCT`/`PRODUKT`, `ROUND`/`RUNDEN`, `ABS`, `IF`/`WENN`. Separate arguments with `;` or `,`; decimals in formulas use a dot.
+- **Numbers in cells** may be written in German or English style (`1.234,50 €`, `3.5`) and carry a currency; results keep the currency and are shown in German number format, matching the app's interface.
+- **Errors** read like spreadsheet errors: `#DIV/0!`, `#WERT!` (value), `#BEZUG!` (reference), `#NAME?`, `#ZYKLUS!` (cycle).
 
 ## Running code blocks in notes
 

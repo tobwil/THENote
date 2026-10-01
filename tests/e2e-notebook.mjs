@@ -55,8 +55,25 @@ try {
   await page.getByRole('button', { name: /Eine Idee skizzieren/ }).click();
   await page.locator('.mermaid-block svg').waitFor({ timeout: 20000 });
   assert.equal(await page.getByRole('button', { name: /ausführen$/ }).count(), 0, 'diagram is not executable');
+  // Slash menu: a table with spreadsheet formulas; the file keeps the formulas, the page shows results.
+  await page.getByRole('button', { name: /Neue Notiz/ }).click();
+  await page.getByRole('button', { name: /Leere Notiz/ }).click();
+  await page.locator('.block').first().click();
+  await page.keyboard.type('/formel');
+  await page.locator('.slash-menu').getByText('Tabelle mit Formeln').waitFor();
+  await page.keyboard.press('Enter');
+  await page.locator('.block.active .md-table').waitFor();
+  assert.match(await page.locator('.block.active').innerText(), /=SUMME\(D2:D4\)/);
+  await page.keyboard.press('Escape');
+  const total = page.locator('.rendered td .md-formula').last();
+  await total.waitFor();
+  assert.equal(await total.innerText(), '17,30 €');
+  assert.equal(await total.getAttribute('title'), '=SUMME(D2:D4)');
+  await page.getByRole('button', { name: 'Source', exact: true }).click();
+  assert.match(await page.locator('.source-full').inputValue(), /\| Kaffee \| 2 \| 3,50 € \| =B2\*C2 \|/);
+  await page.getByRole('button', { name: 'Live', exact: true }).click();
   await page.setViewportSize({ width: 900, height: 740 });
   assert.ok(await page.locator('body').evaluate(el => el.scrollWidth <= innerWidth), 'no horizontal app overflow');
   assert.deepEqual(errors, []);
-  console.log('PASS notebook: templates, code actions, browser boundary, activity, Markdown integrity, tabs, edits, themes, export, Mermaid, responsive layout.');
+  console.log('PASS notebook: templates, code actions, browser boundary, activity, Markdown integrity, tabs, edits, themes, export, Mermaid, formula tables, responsive layout.');
 } finally { await browser?.close(); server.kill('SIGTERM'); }
