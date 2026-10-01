@@ -77,7 +77,7 @@ const enc = (label: string, text: string): MenuNode => ({
 
 // Display names for the themes (matches menu.rs; mostly a capitalized id).
 export const THEME_LABELS: Record<string, string> = {
-  sarala: "THE Note", pro: "Pro", octagon: "Octagon", machine: "Machine",
+  sarala: "THE Note", forest: "THE Note Dark", pro: "Pro", octagon: "Octagon", machine: "Machine",
   ristretto: "Ristretto", spectrum: "Spectrum", classic: "Classic",
   paper: "Paper", graphite: "Graphite", github: "GitHub", night: "Night",
   newsprint: "Newsprint", whitey: "Whitey",

@@ -2,6 +2,14 @@
 
 The entries below reconstruct the development milestones from the conversation and validated local versions. Versions 0.1.0–0.2.3 were developed on 2026-10-01 before the first source publication; they are **not fabricated historical Git commits or previous GitHub releases**.
 
+## Unreleased
+
+- Add **THE Note Dark**, a forest-green theme with a lime accent. The ◐ toggle switches between THE Note and THE Note Dark; first launch follows the system appearance.
+- Add the **Spielplatz** (countdown, dice oracle, Sierpinski triangle, Mandelbrot, stoppable aquarium) and **Werkzeugkasten** (runtimes, folder overview, Git, calendar, CSV, JSON, passphrase) notes as templates under ＋ Neue Notiz and in `examples/`. All blocks are read-only.
+- Raise small interface text to readable sizes, align the run bar, keep the status bar on one line in narrow windows, show frontmatter as a labelled context card and close the template menu on outside click or Escape.
+- Redesign the website with a live cell that runs three demos in the browser, a day/night preview, a feature grid and self-hosted Inter; publish it in German (`/`) and English (`/en/`) with hreflang links.
+- Add an English README and refresh all screenshots with locally executed output.
+
 ## Distribution and website — 2026-10-01
 
 The application remains version 0.2.3; this update adds distribution and documentation.

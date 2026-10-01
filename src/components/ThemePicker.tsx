@@ -22,7 +22,7 @@ import { luminance } from "../base16";
 import { openThemeEditor } from "./ThemeEditor";
 
 const LABELS: Record<string, string> = {
-  sarala: "Sarala", pro: "Pro", octagon: "Octagon", machine: "Machine",
+  sarala: "THE Note", forest: "THE Note Dark", pro: "Pro", octagon: "Octagon", machine: "Machine",
   ristretto: "Ristretto", spectrum: "Spectrum", classic: "Classic",
   paper: "Paper", graphite: "Graphite", github: "GitHub", night: "Night",
   newsprint: "Newsprint", whitey: "Whitey", custom: "Custom",

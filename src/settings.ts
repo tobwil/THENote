@@ -124,7 +124,9 @@ function hydrateStore() {
   setCopyImageToAssets(getSetting("copyImageToAssets", false));
   setCopyImagesToFolder(getSetting("copyImagesToFolder", "assets"));
   setTableFullWidth(getSetting("tableFullWidth", false));
-  const savedTheme = getSetting<string>("theme", "sarala");
+  // First launch follows the system appearance; an explicit choice always wins.
+  const systemDark = typeof matchMedia === "function" && matchMedia("(prefers-color-scheme: dark)").matches;
+  const savedTheme = getSetting<string>("theme", systemDark ? "forest" : "sarala");
   if ((THEMES as readonly string[]).includes(savedTheme)) setTheme(savedTheme as ThemeId);
   setZoom(clampZoom(getSetting("zoom", 100)));
   setSidebarWidth(clampSidebar(getSetting("sidebarWidth", 240)));

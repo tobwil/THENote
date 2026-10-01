@@ -7,7 +7,8 @@ import { openThemePicker } from "./ThemePicker";
 // One dot per theme — mirrors each theme's real signature --accent so the
 // popover is an honest preview of what you get. Kept in sync with app.css.
 export const DOTS: Record<string, string> = {
-  sarala: "#8e422c",    // terracotta
+  sarala: "#376348",    // THE Note forest green
+  forest: "#bcd889",    // THE Note lime on night green
   pro: "#ab9df2",       // lavender
   octagon: "#ffd76d",   // gold
   machine: "#7cd5f1",   // sky blue

@@ -1,14 +1,25 @@
 import { openChanges } from "./ChangesModal";
 import { openAiSettings } from '../ai';
-import { For, Show, createMemo, createSignal } from 'solid-js';
+import { For, Show, createEffect, createMemo, createSignal, onCleanup } from 'solid-js';
 import { activeTabId, doc, folderName, folderPath, fullText, appendBlock, theme, setTheme } from '../store';
 import { executeCommand, insertFencedBlock } from '../commands';
 import { runs, activityOpen, setActivityOpen, runLabel, stopRun, parseExecutable } from '../execution';
-import { newNotebook } from '../notebook';
+import { newNotebook, type TemplateId } from '../notebook';
 import { setSetting } from '../settings';
 import { isTauri } from '../platform';
 export default function Workbench() {
   const [templates, setTemplates] = createSignal(false);
+  let templateWrap: HTMLDivElement | undefined;
+  // The template menu closes like any popover: outside click or Escape.
+  createEffect(() => {
+    if (!templates()) return;
+    const close = (event: Event) => {
+      if (event instanceof KeyboardEvent ? event.key === 'Escape' : !templateWrap?.contains(event.target as Node)) setTemplates(false);
+    };
+    document.addEventListener('pointerdown', close, true);
+    document.addEventListener('keydown', close, true);
+    onCleanup(() => { document.removeEventListener('pointerdown', close, true); document.removeEventListener('keydown', close, true); });
+  });
   const blocks = createMemo(() => doc.blocks.filter(b => parseExecutable(b.text)).length);
   const ownRuns = createMemo(() => runs().filter(r => r.tabId === activeTabId()).slice().reverse());
   const active = createMemo(() => runs().filter(r => r.status === 'running').length);
@@ -18,7 +29,7 @@ export default function Workbench() {
       <div class="workbench-location"><span class="location-symbol">▧</span><span>{folderName() ?? 'Mein Arbeitsbuch'}</span><span class="location-divider">/</span><b>{doc.filePath?.split(/[\\/]/).pop() ?? (doc.draftName === 'Untitled.md' ? 'Neue Notiz' : doc.draftName)}</b></div>
       <div class="workbench-tools">
         <button class="workbench-button" title="Codeblock einfügen" onClick={() => appendBlock('```python\nprint("Hallo, THE Note!")\n```')}><span>⌘</span> Code</button>
-        <button class="workbench-button" aria-label="Farbschema wechseln" title="Hell / Dunkel" onClick={() => { const value = theme() === 'graphite' ? 'sarala' : 'graphite'; setTheme(value); void setSetting('theme', value); }}>◐</button>
+        <button class="workbench-button" aria-label="Farbschema wechseln" title="Hell / Dunkel" onClick={() => { const value = theme() === 'forest' ? 'sarala' : 'forest'; setTheme(value); void setSetting('theme', value); }}>◐</button>
         <button class="workbench-button" title="Entwurf mit dem zuletzt gespeicherten Stand vergleichen" onClick={openChanges}>± Änderungen{doc.dirty ? ' •' : ''}</button>
         <button class="workbench-button" onClick={() => executeCommand('file.save')}>Speichern <kbd>⌘S</kbd></button>
       </div>
@@ -26,12 +37,14 @@ export default function Workbench() {
     <div class="notebook-context">
       <div class="context-tags"><span class="local-badge"><i /> {isTauri ? 'LOKAL' : 'EDITOR-VORSCHAU'}</span><span>{context()}</span><span class="context-dot">·</span><span>{blocks()} ausführbare {blocks() === 1 ? 'Zelle' : 'Zellen'}</span></div>
       <div class="notebook-actions">
-        <div class="template-wrap"><button class="subtle-button" aria-expanded={templates()} onClick={() => setTemplates(!templates())}>＋ Neue Notiz <span>⌄</span></button><Show when={templates()}><div class="template-menu"><For each={[
+        <div class="template-wrap" ref={templateWrap}><button class="subtle-button" aria-haspopup="true" aria-expanded={templates()} onClick={() => setTemplates(!templates())}>＋ Neue Notiz <span>⌄</span></button><Show when={templates()}><div class="template-menu"><For each={[
           ['blank', 'Leere Notiz', 'Platz für deinen nächsten Gedanken'],
           ['journal', 'Gedankenbuch', 'Notizen und nächste Schritte'],
           ['runbook', 'Ausführbares Runbook', 'Kontext, Code und Ergebnisse'],
           ['diagram', 'Eine Idee skizzieren', 'Ein Ablauf als Mermaid-Diagramm'],
-        ]}>{([key, title, description]) => <button onClick={() => { newNotebook(key as 'blank' | 'journal' | 'runbook' | 'diagram'); setTemplates(false); }}><b>{title}</b><small>{description}</small></button>}</For></div></Show></div>
+          ['playground', '✦ Spielplatz', 'Würfelorakel, Mandelbrot, Aquarium: einfach drücken'],
+          ['toolbox', '⌘ Werkzeugkasten', 'Ordner, Git, Kalender, CSV und JSON auf Knopfdruck'],
+        ]}>{([key, title, description]) => <button classList={{ 'template-example': key === 'playground' || key === 'toolbox' }} onClick={() => { newNotebook(key as TemplateId); setTemplates(false); }}><b>{title}</b><small>{description}</small></button>}</For></div></Show></div>
         <button class="ai-toggle" title="KI-Prompt hier einfügen · /ai" onClick={() => insertFencedBlock('ai', '')}>✦ /ai</button><button class="subtle-button" aria-label="KI-Anbieter einrichten" onClick={() => void openAiSettings()}>⚙ KI</button>
         <button class="activity-toggle" classList={{ selected: activityOpen() }} aria-expanded={activityOpen()} onClick={() => setActivityOpen(!activityOpen())}>⌁ Aktivität <span>{active() || runs().length}</span></button>
       </div>
