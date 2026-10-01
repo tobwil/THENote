@@ -1,6 +1,6 @@
 # macOS: Developer ID und Notarisierung
 
-Die veröffentlichte **v0.2.3** ist ad-hoc signiert und **nicht Apple-notarisiert**. Das nachträglich ergänzte DMG enthält dieselbe unveränderte App wie das ZIP. Ein DMG allein ändert den Gatekeeper-Status nicht.
+Ab **v0.2.4** sind App und DMG mit Developer ID signiert und Apple-notarisiert; beide enthalten angeheftete Tickets. Die frühere **v0.2.3** bleibt eine ad-hoc signierte, nicht notarisierte Preview. Ihre ursprünglichen Dateien werden nicht ersetzt.
 
 ## Voraussetzungen für ein notarisiertes Release
 
@@ -50,11 +50,11 @@ Ohne Argument bleibt `--preview` der Standard.
 
 ## Veröffentlichen
 
-Eine bereits veröffentlichte Version nicht mit neu signierten Bytes überschreiben: Eine neue Versionsnummer verwenden, ZIP, DMG und `SHA256SUMS` hochladen und die tatsächlich veröffentlichten Prüfsummen in `distribution.json` übernehmen. Dann `node scripts/sync-distribution.mjs` ausführen und den curl-Prüflauf sowie Website-Tests gemäß [INSTALLATION.md](INSTALLATION.md) durchführen.
+Eine bereits veröffentlichte Version nicht mit neu signierten Bytes überschreiben: Eine neue Versionsnummer verwenden, ZIP, DMG und `SHA256SUMS` hochladen und die tatsächlich veröffentlichten Prüfsummen in `distribution.json` übernehmen. Nach erfolgreicher Notarisierung `notarized: true` setzen; daraus generiert `scripts/sync-distribution.mjs` den Installer- und Cask-Hinweis. Dann `node scripts/sync-distribution.mjs` ausführen und den curl-Prüflauf sowie Website-Tests gemäß [INSTALLATION.md](INSTALLATION.md) durchführen.
 
-Erst nach erfolgreicher Notarisierung des veröffentlichten Pakets den Status in beiden READMEs, `docs/INSTALLATION.md`, `site/i18n.mjs`, den Release-Notizen und `install.sh` anpassen. Den Cask-Hinweis an seiner Quelle in `scripts/sync-distribution.mjs` ändern und neu generieren. Der Preview-Status und Apple-Notarisierung sind unabhängig: Auch eine Entwicklungsversion kann notarisiert sein. Ein Membership-Abschluss oder erfolgreicher Build allein rechtfertigt noch keinen geänderten Hinweis.
+Erst nach erfolgreicher Notarisierung des veröffentlichten Pakets den Status in beiden READMEs, `docs/INSTALLATION.md`, `site/i18n.mjs` und den Release-Notizen anpassen. Installer und Cask mit `node scripts/sync-distribution.mjs` aus den Release-Metadaten neu generieren. Der Preview-Status und Apple-Notarisierung sind unabhängig: Auch eine Entwicklungsversion kann notarisiert sein. Ein Membership-Abschluss oder erfolgreicher Build allein rechtfertigt noch keinen geänderten Hinweis.
 
-Das heutige DMG wurde aus dem geprüften v0.2.3-ZIP mit `ditto -x -k` entpackt und über `bash scripts/create-dmg.sh RELEASE_FOLDER OUTPUT.dmg` erzeugt. Dieses Hilfsskript verändert und signiert die enthaltene App nicht neu. Die separate Datei `SHA256SUMS-DMG` ergänzt die ursprünglichen Release-Assets.
+Das ursprüngliche v0.2.3-DMG wurde aus dem geprüften v0.2.3-ZIP mit `ditto -x -k` entpackt und über `bash scripts/create-dmg.sh RELEASE_FOLDER OUTPUT.dmg` erzeugt. Dieses Hilfsskript verändert und signiert die enthaltene App nicht neu. Die separate Datei `SHA256SUMS-DMG` ergänzt die ursprünglichen Release-Assets.
 
 ## Referenzen
 

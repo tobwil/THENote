@@ -2,7 +2,9 @@
 
 The entries below reconstruct the development milestones from the conversation and validated local versions. Versions 0.1.0–0.2.3 were developed on 2026-10-01 before the first source publication; they are **not fabricated historical Git commits or previous GitHub releases**.
 
-## Unreleased
+## 0.2.4 — 2026-10-01
+
+- Sign the Apple Silicon app and DMG with Developer ID, notarize both with Apple and staple their tickets. Publish matching ZIP/DMG packages with SHA-256 checksums; the curl installer also checks Gatekeeper.
 
 - Add **tables with spreadsheet formulas**: cells starting with `=` (e.g. `=SUMME(D2:D4)`, `=B2*C2`) show their result while the Markdown keeps the formula; editing the table shows the formulas. German and English function names, ranges and whole columns (`=SUMME(D:D)` in a total row sums the rows above), currencies, spreadsheet error codes with an explaining tooltip. Insert via `/formel`, the command palette or Paragraph ▸ Table.
 - Add **THE Note Dark**, a forest-green theme with a lime accent. The ◐ toggle switches between THE Note and THE Note Dark; first launch follows the system appearance.

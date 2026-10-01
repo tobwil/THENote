@@ -2,18 +2,18 @@
 
 [Website](https://tobwil.github.io/THENote/) · [Releases](https://github.com/tobwil/THENote/releases)
 
-Das veröffentlichte Paket ist **v0.2.3 für Apple Silicon (arm64), macOS 11 oder neuer**. Die Mindestversion folgt dem gebauten Programm; die tatsächlichen Funktionstests wurden auf dem aktuellen Entwicklungs-Mac durchgeführt. Intel-Macs, Windows und Linux haben noch keine verifizierten Pakete.
+Das veröffentlichte Paket ist **v0.2.4 für Apple Silicon (arm64), macOS 11 oder neuer**. Die Mindestversion folgt dem gebauten Programm; die tatsächlichen Funktionstests wurden auf dem aktuellen Entwicklungs-Mac durchgeführt. Intel-Macs, Windows und Linux haben noch keine verifizierten Pakete.
 
-Die Preview ist lokal/ad-hoc signiert und **nicht Apple-notarisiert**. Eine gültige Ad-hoc-Signatur ist keine Apple-Freigabe. Falls macOS die App blockiert, nach dem ersten Öffnungsversuch **Systemeinstellungen → Datenschutz & Sicherheit** prüfen. Kein Installationsweg deaktiviert Gatekeeper oder entfernt Quarantäneattribute ausdrücklich.
+Die Preview ist mit **Developer ID signiert und Apple-notarisiert**. App und DMG enthalten angeheftete Notarisierungstickets. Beim ersten Start kann macOS die übliche Bestätigung für eine aus dem Internet geladene App anzeigen. Kein Installationsweg deaktiviert Gatekeeper oder entfernt Quarantäneattribute ausdrücklich.
 
 ## DMG herunterladen
 
-[DMG für macOS Apple Silicon herunterladen](https://github.com/tobwil/THENote/releases/download/v0.2.3/THE.Note-macOS-arm64.dmg), öffnen und **THE Note.app** auf **Applications** ziehen. Danach das Image auswerfen und THE Note im Programme-Ordner öffnen. Vor dem Ersetzen einer vorhandenen App offene Notizen speichern und die App beenden.
+[DMG für macOS Apple Silicon herunterladen](https://github.com/tobwil/THENote/releases/download/v0.2.4/THE.Note-macOS-arm64.dmg), öffnen und **THE Note.app** auf **Applications** ziehen. Danach das Image auswerfen und THE Note im Programme-Ordner öffnen. Vor dem Ersetzen einer vorhandenen App offene Notizen speichern und die App beenden.
 
-Das DMG enthält dieselbe ad-hoc signierte App wie ZIP, Homebrew und curl sowie die Lizenztexte. Es ist ebenfalls **nicht Apple-notarisiert**. Für v0.2.3 steht die zusätzliche DMG-Prüfsumme im Release unter `SHA256SUMS-DMG`; das bestehende ZIP und dessen `SHA256SUMS` bleiben unverändert. Beide Dateien in denselben Ordner laden und dort prüfen:
+Das DMG enthält dieselbe Developer-ID-signierte und notarisierte App wie ZIP, Homebrew und curl sowie die Lizenztexte. `SHA256SUMS` enthält die Prüfsummen beider Pakete. Das DMG und `SHA256SUMS` in denselben Ordner laden und dort nur die DMG-Zeile prüfen:
 
 ```sh
-shasum -a 256 -c SHA256SUMS-DMG
+grep '  THE.Note-macOS-arm64.dmg$' SHA256SUMS | shasum -a 256 -c -
 ```
 
 ## Homebrew
@@ -49,7 +49,7 @@ Der Cask enthält keine `zap`-Anweisung zum Löschen von Einstellungen oder Doku
 curl -fsSL https://tobwil.github.io/THENote/install.sh | bash
 ```
 
-Der Installer lädt ein festgelegtes Release über HTTPS, prüft dessen SHA-256 sowie Signatur, Bundle-Kennung und Version und installiert nach `~/Applications/THE Note.app`. Er benötigt kein `sudo`, startet die App nicht automatisch und lehnt die Installation ab, während THE Note läuft.
+Der Installer lädt ein festgelegtes Release über HTTPS, prüft dessen SHA-256 sowie Signatur, Gatekeeper-Freigabe, Bundle-Kennung und Version und installiert nach `~/Applications/THE Note.app`. Er benötigt kein `sudo`, startet die App nicht automatisch und lehnt die Installation ab, während THE Note läuft.
 
 Zum Lesen des Skripts vor dem Ausführen:
 
@@ -83,10 +83,10 @@ Deinstallieren: App schließen und `~/Applications/THE Note.app` im Finder in de
 
 ## ZIP und manuelle Prüfung
 
-Das [Release](https://github.com/tobwil/THENote/releases/tag/v0.2.3) enthält das ZIP und `SHA256SUMS`. Nach dem Download beider Dateien in denselben Ordner:
+Das [Release](https://github.com/tobwil/THENote/releases/tag/v0.2.4) enthält ZIP, DMG und `SHA256SUMS`. Nach dem Download des ZIPs und von `SHA256SUMS` in denselben Ordner nur die ZIP-Zeile prüfen:
 
 ```sh
-shasum -a 256 -c SHA256SUMS
+grep '  THE.Note-macOS-arm64.zip$' SHA256SUMS | shasum -a 256 -c -
 ```
 
 ZIP entpacken, `THE Note.app` nach Programme verschieben und öffnen. Lizenz- und Herkunftstexte liegen ebenfalls im ZIP. Vor dem Ersetzen einer vorhandenen App offene Notizen speichern und die App beenden.
