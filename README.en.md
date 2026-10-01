@@ -101,14 +101,14 @@ A cell that starts with `=` is a formula. The Markdown keeps the formula, the no
 | :--- | ---: | ---: | ---: |
 | Coffee | 2 | 3.50 € | =B2*C2 |
 | Cake | 3 | 2.80 € | =B3*C3 |
-| **Total** | =SUM(B2:B3) | | **=SUM(D2:D3)** |
+| **Total** | =SUM(B:B) | | **=SUM(D:D)** |
 ```
 
-- **Spreadsheet addresses:** columns A, B, C …; the header is row 1, the first body row is row 2. Ranges like `B2:B5`.
+- **Spreadsheet addresses:** columns A, B, C …; the header is row 1, the first body row is row 2. Ranges like `B2:B5` or whole columns like `D:D`. When the formula itself sits in that column, only the rows above it count, so a total row stays right as rows are added.
 - **Arithmetic:** `+ - * / ^`, parentheses, percent (`20%`), comparisons (`= <> < > <= >=`), text in `"…"` and `&` to join.
 - **Functions**, in English or German: `SUM`/`SUMME`, `AVERAGE`/`MITTELWERT`, `MIN`, `MAX`, `COUNT`/`ANZAHL`, `COUNTA`/`ANZAHL2`, `PRODUCT`/`PRODUKT`, `ROUND`/`RUNDEN`, `ABS`, `IF`/`WENN`. Separate arguments with `;` or `,`; decimals in formulas use a dot.
 - **Numbers in cells** may be written in German or English style (`1.234,50 €`, `3.5`) and carry a currency; results keep the currency and are shown in German number format, matching the app's interface.
-- **Errors** read like spreadsheet errors: `#DIV/0!`, `#WERT!` (value), `#BEZUG!` (reference), `#NAME?`, `#ZYKLUS!` (cycle).
+- **Errors** read like spreadsheet errors: `#DIV/0!`, `#WERT!` (value), `#BEZUG!` (reference), `#NAME?`, `#ZYKLUS!` (cycle). The cell's tooltip explains what is wrong (in German).
 
 ## Running code blocks in notes
 

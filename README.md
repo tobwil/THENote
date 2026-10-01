@@ -99,14 +99,14 @@ Eine Zelle, die mit `=` beginnt, ist eine Formel. Im Markdown bleibt die Formel 
 | :--- | ---: | ---: | ---: |
 | Kaffee | 2 | 3,50 € | =B2*C2 |
 | Kuchen | 3 | 2,80 € | =B3*C3 |
-| **Gesamt** | =SUMME(B2:B3) | | **=SUMME(D2:D3)** |
+| **Gesamt** | =SUMME(B:B) | | **=SUMME(D:D)** |
 ```
 
-- **Adressen wie in Excel:** Spalten A, B, C …; die Kopfzeile ist Zeile 1, die erste Datenzeile Zeile 2. Bereiche wie `B2:B5`.
+- **Adressen wie in Excel:** Spalten A, B, C …; die Kopfzeile ist Zeile 1, die erste Datenzeile Zeile 2. Bereiche wie `B2:B5` oder ganze Spalten wie `D:D`. Steht die Formel selbst in der Spalte, zählen nur die Zeilen darüber; so bleibt eine Summenzeile richtig, auch wenn Zeilen dazukommen.
 - **Rechnen:** `+ - * / ^`, Klammern, Prozent (`20%`), Vergleiche (`= <> < > <= >=`), Text in `"…"` und `&` zum Verbinden.
 - **Funktionen**, deutsch oder englisch: `SUMME`/`SUM`, `MITTELWERT`/`AVERAGE`, `MIN`, `MAX`, `ANZAHL`/`COUNT`, `ANZAHL2`/`COUNTA`, `PRODUKT`/`PRODUCT`, `RUNDEN`/`ROUND`, `ABS`, `WENN`/`IF`. Argumente mit `;` oder `,` trennen; Dezimalzahlen in Formeln mit Punkt.
 - **Zahlen in Zellen** dürfen deutsch oder englisch geschrieben sein (`1.234,50 €`, `3.5`) und eine Währung tragen; Ergebnisse übernehmen die Währung und erscheinen im deutschen Format.
-- **Fehler** werden wie in Tabellenkalkulationen angezeigt: `#DIV/0!`, `#WERT!`, `#BEZUG!`, `#NAME?`, `#ZYKLUS!`.
+- **Fehler** werden wie in Tabellenkalkulationen angezeigt: `#DIV/0!`, `#WERT!`, `#BEZUG!`, `#NAME?`, `#ZYKLUS!`. Der Tooltip der Zelle erklärt, was nicht stimmt.
 
 ## Codeblöcke in Notizen ausführen
 

@@ -23,7 +23,17 @@ export interface FormulaCell {
   display: string;
   /** Spreadsheet-style error code when the formula could not be evaluated. */
   error?: string;
+  /** What the error code means, with a hint at the right spelling. */
+  message?: string;
 }
+
+export const ERROR_HELP: Record<string, string> = {
+  "#NAME?": "Unbekannte Funktion oder Zelle. Zellen heißen z. B. A2, Bereiche A2:A5 oder A:A, Funktionen z. B. SUMME(…).",
+  "#WERT!": "Die Formel ist unvollständig oder rechnet mit Text, z. B. eine fehlende Klammer.",
+  "#BEZUG!": "Die Zelle liegt außerhalb der Tabelle. Die Kopfzeile ist Zeile 1.",
+  "#DIV/0!": "Division durch null.",
+  "#ZYKLUS!": "Die Formel bezieht sich auf sich selbst. Für eine Summenzeile hilft ein Spaltenbereich wie SUMME(B:B).",
+};
 
 type Value = number | string | boolean;
 interface Num { value: number; unit: string | null }
@@ -92,7 +102,7 @@ function tokenize(src: string): Token[] {
 
 type Node =
   | { type: "num"; value: number } | { type: "str"; value: string } | { type: "bool"; value: boolean }
-  | { type: "ref"; ref: string } | { type: "range"; from: string; to: string }
+  | { type: "ref"; ref: string } | { type: "range"; from: string; to: string } | { type: "cols"; from: string; to: string }
   | { type: "unary"; op: string; arg: Node } | { type: "binary"; op: string; left: Node; right: Node }
   | { type: "percent"; arg: Node } | { type: "call"; name: string; args: Node[] };
 
@@ -150,6 +160,13 @@ function parse(tokens: Token[]): Node {
       return { type: "ref", ref: token.value };
     }
     if (token.kind === "name") {
+      // Whole columns, as in spreadsheets: A:A or B:D.
+      if (/^[A-Z]{1,3}$/.test(token.value) && isOp(":")) {
+        pos++;
+        const end = tokens[pos++];
+        if (end?.kind !== "name" || !/^[A-Z]{1,3}$/.test(String(end.value))) fail("#BEZUG!");
+        return { type: "cols", from: token.value, to: String((end as { value: string }).value) };
+      }
       if (isOp("(")) {
         pos++;
         const args: Node[] = [];
@@ -187,6 +204,7 @@ const FUNCTIONS = new Set(["SUM", "AVERAGE", "MIN", "MAX", "COUNT", "COUNTA", "R
 export function evaluateTable(rows: string[][]): (FormulaCell | null)[][] {
   const memo = new Map<string, { value: Value; unit: string | null } | FormulaError>();
   const active = new Set<string>();
+  const stack: string[] = [];
   const decimals = new Set<string>();
   const centsRefs = new Set<string>();
 
@@ -207,7 +225,7 @@ export function evaluateTable(rows: string[][]): (FormulaCell | null)[][] {
     }
     if (memo.has(ref)) { const hit = memo.get(ref)!; if (hit instanceof FormulaError) throw hit; if (centsRefs.has(ref)) decimals.add(ref); return hit; }
     if (active.has(ref)) fail("#ZYKLUS!");
-    active.add(ref);
+    active.add(ref); stack.push(ref);
     try {
       const result = evaluate(parse(tokenize(formula)));
       const value = Array.isArray(result) ? fail("#WERT!") : result;
@@ -218,7 +236,7 @@ export function evaluateTable(rows: string[][]): (FormulaCell | null)[][] {
       const failure = error instanceof FormulaError ? error : new FormulaError("#WERT!");
       memo.set(ref, failure);
       throw failure;
-    } finally { active.delete(ref); }
+    } finally { active.delete(ref); stack.pop(); }
   };
   const range = (from: string, to: string) => {
     const a = /^([A-Z]+)(\d+)$/.exec(from)!, b = /^([A-Z]+)(\d+)$/.exec(to)!;
@@ -227,6 +245,23 @@ export function evaluateTable(rows: string[][]): (FormulaCell | null)[][] {
     if (r2 > rows.length || c2 >= Math.max(...rows.map(r => r.length))) fail("#BEZUG!");
     const out: { value: Value | null; unit: string | null }[] = [];
     for (let r = r1; r <= r2; r++) for (let c = c1; c <= c2; c++) out.push(cell(columnName(c) + r));
+    return out;
+  };
+  /**
+   * Body rows of whole columns. A formula inside the columns it reads only
+   * counts the rows above it, so a total line sums what stands above it.
+   */
+  const columns = (from: string, to: string) => {
+    const [c1, c2] = [columnIndex(from), columnIndex(to)].sort((x, y) => x - y);
+    if (c2 >= Math.max(...rows.map(r => r.length))) fail("#BEZUG!");
+    const here = /^([A-Z]+)(\d+)$/.exec(stack.at(-1) ?? "");
+    const inside = here && columnIndex(here[1]) >= c1 && columnIndex(here[1]) <= c2;
+    const last = inside ? Number(here[2]) - 1 : rows.length;
+    const out: { value: Value | null; unit: string | null }[] = [];
+    for (let r = 2; r <= last; r++) for (let c = c1; c <= c2; c++) {
+      const ref = columnName(c) + r;
+      if (!active.has(ref)) out.push(cell(ref));
+    }
     return out;
   };
   type Result = { value: Value | null; unit: string | null };
@@ -253,6 +288,7 @@ export function evaluateTable(rows: string[][]): (FormulaCell | null)[][] {
       case "bool": return { value: node.value, unit: null };
       case "ref": return cell(node.ref);
       case "range": return range(node.from, node.to);
+      case "cols": return columns(node.from, node.to);
       case "percent": { const r = single(node.arg); return { value: num(r) / 100, unit: null }; }
       case "unary": { const r = single(node.arg); return { value: node.op === "-" ? -num(r) : num(r), unit: r.unit }; }
       case "binary": {
@@ -320,7 +356,7 @@ export function evaluateTable(rows: string[][]): (FormulaCell | null)[][] {
       return { display: text(result) };
     } catch (error) {
       const code = error instanceof FormulaError ? error.message : "#WERT!";
-      return { display: code, error: code };
+      return { display: code, error: code, message: ERROR_HELP[code] };
     }
   }));
 }
@@ -342,5 +378,5 @@ export const FORMULA_TABLE_EXAMPLE = [
   "| Kaffee | 2 | 3,50 € | =B2*C2 |",
   "| Kuchen | 3 | 2,80 € | =B3*C3 |",
   "| Wasser | 1 | 1,90 € | =B4*C4 |",
-  "| **Gesamt** | =SUMME(B2:B4) | | **=SUMME(D2:D4)** |",
+  "| **Gesamt** | =SUMME(B:B) | | **=SUMME(D:D)** |",
 ].join("\n");
