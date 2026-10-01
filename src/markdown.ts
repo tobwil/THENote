@@ -662,7 +662,7 @@ function applyTableFormulas(table: Tokens.Table) {
     if (!result) return;
     const bold = /^\*\*=.+\*\*$/.test(cell.text.trim());
     const value = escapeHtml(result.display);
-    const html = `<span class="md-formula${result.error ? " md-formula-error" : ""}" title="${escapeAttr(cell.text.trim().replace(/^\*\*|\*\*$/g, ""))}">${bold ? `<strong>${value}</strong>` : value}</span>`;
+    const html = `<span class="md-formula${result.error ? " md-formula-error" : ""}" title="${escapeAttr(cell.text.trim().replace(/^\*\*|\*\*$/g, "") + (result.message ? ` · ${result.error}: ${result.message}` : ""))}">${bold ? `<strong>${value}</strong>` : value}</span>`;
     cell.tokens = [{ type: "html", raw: html, text: html, block: false, pre: false } as Tokens.HTML];
   }));
 }

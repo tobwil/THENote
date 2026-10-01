@@ -63,12 +63,12 @@ try {
   await page.locator('.slash-menu').getByText('Tabelle mit Formeln').waitFor();
   await page.keyboard.press('Enter');
   await page.locator('.block.active .md-table').waitFor();
-  assert.match(await page.locator('.block.active').innerText(), /=SUMME\(D2:D4\)/);
+  assert.match(await page.locator('.block.active').innerText(), /=SUMME\(D:D\)/);
   await page.keyboard.press('Escape');
   const total = page.locator('.rendered td .md-formula').last();
   await total.waitFor();
   assert.equal(await total.innerText(), '17,30 €');
-  assert.equal(await total.getAttribute('title'), '=SUMME(D2:D4)');
+  assert.equal(await total.getAttribute('title'), '=SUMME(D:D)');
   await page.getByRole('button', { name: 'Source', exact: true }).click();
   assert.match(await page.locator('.source-full').inputValue(), /\| Kaffee \| 2 \| 3,50 € \| =B2\*C2 \|/);
   await page.getByRole('button', { name: 'Live', exact: true }).click();

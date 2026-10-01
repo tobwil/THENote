@@ -4,7 +4,7 @@ The entries below reconstruct the development milestones from the conversation a
 
 ## Unreleased
 
-- Add **tables with spreadsheet formulas**: cells starting with `=` (e.g. `=SUMME(D2:D4)`, `=B2*C2`) show their result while the Markdown keeps the formula; editing the table shows the formulas. German and English function names, ranges, currencies, spreadsheet error codes. Insert via `/formel`, the command palette or Paragraph ▸ Table.
+- Add **tables with spreadsheet formulas**: cells starting with `=` (e.g. `=SUMME(D2:D4)`, `=B2*C2`) show their result while the Markdown keeps the formula; editing the table shows the formulas. German and English function names, ranges and whole columns (`=SUMME(D:D)` in a total row sums the rows above), currencies, spreadsheet error codes with an explaining tooltip. Insert via `/formel`, the command palette or Paragraph ▸ Table.
 - Add **THE Note Dark**, a forest-green theme with a lime accent. The ◐ toggle switches between THE Note and THE Note Dark; first launch follows the system appearance.
 - Add the **Spielplatz** (countdown, dice oracle, Sierpinski triangle, Mandelbrot, stoppable aquarium) and **Werkzeugkasten** (runtimes, folder overview, Git, calendar, CSV, JSON, passphrase) notes as templates under ＋ Neue Notiz and in `examples/`. All blocks are read-only.
 - Raise small interface text to readable sizes, align the run bar, keep the status bar on one line in narrow windows, show frontmatter as a labelled context card and close the template menu on outside click or Escape.
