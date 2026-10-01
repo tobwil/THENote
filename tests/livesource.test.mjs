@@ -1,0 +1,898 @@
+/**
+ * Tests for src/livesource.ts: bundle with esbuild, run in node with jsdom.
+ *
+ *   pnpm test   (= node tests/livesource.test.mjs)
+ *
+ * The load-bearing invariant: a live-styled block's textContent must be
+ * byte-identical to its markdown source — caret save/restore measures text
+ * offsets across ALL text nodes, including CSS-hidden ones.
+ */
+import { build } from "esbuild";
+import { JSDOM } from "jsdom";
+import { fileURLToPath } from "node:url";
+import path from "node:path";
+
+const here = path.dirname(fileURLToPath(import.meta.url));
+const outfile = path.join(here, ".build", "livesource.mjs");
+
+// One bundle for livesource + markdown so the lazily loaded render data
+// (KaTeX, emoji catalog) is shared, and can be awaited before the checks.
+await build({
+  stdin: {
+    contents: 'export * from "./src/livesource.ts"; export { prepareRender } from "./src/markdown.ts";',
+    resolveDir: path.join(here, ".."),
+    loader: "ts",
+  },
+  bundle: true,
+  format: "esm",
+  outfile,
+});
+
+// DOM globals must exist before the module's functions run.
+const dom = new JSDOM("<!doctype html><body></body>");
+globalThis.window = dom.window;
+globalThis.document = dom.window.document;
+globalThis.Node = dom.window.Node;
+globalThis.NodeFilter = dom.window.NodeFilter;
+globalThis.HTMLElement = dom.window.HTMLElement;
+globalThis.Text = dom.window.Text;
+
+const { styleSource, applyMarkerVisibility, mapRenderedPrefixToSource, setCaret, getCaretOffset, prepareRender } = await import(outfile);
+await prepareRender("$x$ :smile:");
+
+let failures = 0;
+let passes = 0;
+function assert(cond, label) {
+  if (cond) {
+    passes++;
+  } else {
+    failures++;
+    console.error(`FAIL: ${label}`);
+  }
+}
+
+const host = () => dom.window.document.createElement("div");
+
+/* Underline uses the same hidden-marker and caret rules as bold. */
+for (const source of [
+  "Reading this <u>article</u> helps readers.",
+  "- Read <u>this **important** article</u> next",
+  "A <u>multi\nline article</u> here",
+  "An <U>article</U> here",
+  "An <u>article with `code`</u> here",
+]) {
+  const el = host();
+  el.innerHTML = styleSource(source);
+  assert(el.textContent === source, "underline preserves exact source");
+  assert(!!el.querySelector("u"), "underline receives semantic styling");
+  applyMarkerVisibility(el, source, source.indexOf("article") + 2);
+  assert(!el.querySelector(".md-on"), "click inside underline keeps tags hidden");
+  applyMarkerVisibility(el, source, source.toLowerCase().indexOf("<u>") + 1);
+  assert(!!el.querySelector(".md-on > u"), "underline delimiter remains editable");
+}
+{
+  const el = host();
+  el.innerHTML = styleSource("Literal `<u>article</u>` code");
+  assert(!el.querySelector("u"), "underline in code stays literal");
+}
+
+/* ---------- textContent roundtrip ---------- */
+
+const SAMPLES = [
+  "### 1.1 Tech stack\n- **Language:** Java\n- **Modules:** `billing` and services",
+  "9) nine\n1) ten\n   - nested\n     continuation\n1) eleven",
+  "- first\n\n  continued paragraph\n- second",
+  "- [x] complete\n  - [ ] nested task\n- last\n",
+  "- parent\n  3. nested ordered\n  1. next\n- sibling",
+  "- [ ] ",
+  "-\titem\n\t-\tnested",
+  "- item\n  ```js\n  foo()\n  ```",
+  "plain paragraph",
+  "# Heading",
+  "###   spaced heading",
+  "## Head with **bold** and `code`",
+  "a **bold** and *ital* and ~~gone~~ and `span` mix",
+  "link [label](https://example.com/x?y=1) here",
+  "image ![alt text](./assets/pic.png) end",
+  "**[link inside bold](u)** trailing",
+  "- item one\n- item two **strong**\n- [ ] task",
+  "1. first\n2. second",
+  "> quoted *line*\n> more",
+  "```rust\nfn main() { println!(\"**not bold**\"); }\n```",
+  "---\ntitle: front matter\n---",
+  "***",
+  "text with <angle> & ampersand **bold**",
+  "## Head\nbody line with [a](b)\nlast line",
+  "**unpaired marker stays plain",
+  "emoji ✨ **宽字符** test",
+  "| Shortcut | Action |\n| --- | --- |\n| Cmd/Ctrl+S | Save **now** |",
+  "| Column 1 | Column 2 |\n| --- | --- |\n|   |   |\n|   |   |",
+  "intro line\n| a | b |\n| :-- | --: |\n| 1 | 2 |",
+  "| not a table without separator |",
+  "highlight ==marked== text",
+  "water H~2~O and E=mc^2^ formula",
+  "ordered 1) first\n2) second",
+  "emoji :smile: shortcode :rocket: stays literal in source",
+  "a footnote ref[^1] here",
+  "> [!NOTE]\n> an alert body",
+];
+
+for (const src of SAMPLES) {
+  const el = host();
+  el.innerHTML = styleSource(src);
+  assert(el.textContent === src, `roundtrip: ${JSON.stringify(src.slice(0, 40))}`);
+  // Reveal toggling must never alter the text either.
+  for (const caret of [0, Math.floor(src.length / 2), src.length]) {
+    applyMarkerVisibility(el, src, caret);
+    assert(el.textContent === src, `roundtrip after reveal@${caret}: ${JSON.stringify(src.slice(0, 40))}`);
+  }
+}
+
+/* ---------- token wrappers present ---------- */
+
+assert(styleSource("a **b** c").includes('class="md-tok"'), "styleSource emits md-tok");
+assert(styleSource("# H").includes("md-tok md-pre"), "heading hashes wrapped in md-tok md-pre");
+assert(styleSource("- item").includes("md-tok md-pre md-bullet"), "bullet marker wrapped");
+assert(styleSource("- [ ] t").includes("md-task"), "task marker wrapped");
+assert(styleSource("- [x] t").includes("md-task md-done"), "checked task marker flagged");
+assert(styleSource("> q").includes("md-quote-pre"), "quote marker wrapped");
+assert(styleSource("1. x").includes('data-number="1."'), "ordered marker has a rendered number stand-in");
+assert(styleSource("1) x").includes("md-olnum"), "1) ordered marker styled like 1.");
+assert(styleSource("==hi==").includes("<mark>"), "highlight ==text== styled as <mark> in source");
+assert(styleSource("H~2~O").includes("<sub>"), "single tilde ~x~ styled as <sub>");
+assert(styleSource("x^2^").includes("<sup>"), "caret ^x^ styled as <sup>");
+assert(styleSource("~~gone~~").includes("<del>") && !styleSource("~~gone~~").includes("<sub>"),
+  "~~strike~~ wins over single-tilde subscript");
+assert(styleSource("> [!WARNING]\n> body").includes("md-alert-tag md-alert-warning"),
+  "alert marker tagged in the live block");
+
+/* Quotes and every callout retain source while using preview block layout. */
+for (const type of ["NOTE", "TIP", "IMPORTANT", "WARNING", "CAUTION"]) {
+  const source = `> [!${type}]\n> A **styled** body with \`code\`.\n> Continued text.\n>\n> - First\n> - Second`;
+  const el = host(); el.innerHTML = styleSource(source);
+  assert(el.textContent === source, `${type}: exact source retained`);
+  assert(!!el.querySelector(`.md-alert-${type.toLowerCase()} .md-source-alert-title`), `${type}: preview callout title`);
+  assert(!!el.querySelector(".md-alert .md-list"), `${type}: nested list uses structured layout`);
+  applyMarkerVisibility(el, source, source.indexOf("body") + 2);
+  assert(!el.querySelector(".md-on"), `${type}: body click keeps syntax hidden`);
+  const title = type[0] + type.slice(1).toLowerCase();
+  const caret = mapRenderedPrefixToSource(source, title + "A styled bo");
+  assert(caret === source.indexOf("body") + 2, `${type}: title doesn't corrupt body click offset`);
+}
+for (const source of [
+  "> A soft-wrapped\n> paragraph", "> First\n>\n> Second", "> Parent\n> > Nested\n> > continued",
+  "> - First\n> - Second", "> \`\`\`js\n> const x = 1;\n> \`\`\`", "> quote\nlazy continuation", "> [!NOTE] Inline body",
+]) {
+  const el = host(); el.innerHTML = styleSource(source);
+  assert(el.textContent === source, `quote roundtrip: ${source}`);
+  assert(!!el.querySelector(".md-layout-quote, .md-alert"), "quote has continuous container");
+}
+
+/* ---------- loose lists stay one document block ---------- */
+{
+  const out = path.join(here, ".build", "list-markdown.mjs");
+  await build({ entryPoints: [path.join(here, "..", "src", "markdown.ts")], bundle: true, format: "esm", outfile: out });
+  const { splitBlocks } = await import(out);
+  const list = "1. First\n\n1. Second\n\n   Continuation paragraph";
+  const blocks = splitBlocks("## Section\n\n" + list + "\n\nOutside paragraph");
+  assert(blocks.length === 3 && blocks[1] === list, "loose ordered list stays whole between surrounding blocks");
+  assert(splitBlocks("- Alpha\n\n- Bravo").length === 1, "loose bullet list stays whole");
+  assert(splitBlocks("Paragraph one\n\nParagraph two").length === 2, "ordinary paragraphs still split");
+}
+
+/* ---------- list layout and click offsets ---------- */
+{
+  const src = "### 1.1 Tech stack\n- **Language:** Java\n- **Modules:** shared services";
+  const el = host();
+  el.innerHTML = styleSource(src);
+  assert(el.querySelectorAll(".md-layout-heading").length === 1, "mixed block retains a separate heading");
+  assert(el.querySelectorAll(".md-list-item").length === 2, "mixed block retains both list items");
+  assert(el.querySelector(".md-layout-heading + .md-layout-space + .md-list"), "heading and list are siblings");
+  const numbered = host();
+  numbered.innerHTML = styleSource("9) First\n1) Second\n1) Third");
+  assert([...numbered.querySelectorAll(".md-olnum")].map((n) => n.dataset.number).join(",") === "9.,10.,11.",
+    "ordered list display follows Markdown numbering without rewriting source");
+  applyMarkerVisibility(numbered, numbered.textContent, 12);
+  assert(numbered.textContent === "9) First\n1) Second\n1) Third", "number reveal preserves source markers");
+  const prefix = "1.1 Tech stack\n\nLanguage: Java\nModules: shared";
+  assert(mapRenderedPrefixToSource(src, prefix) === src.indexOf("shared") + "shared".length,
+    "renderer-added whitespace does not move a click past the clicked list text");
+}
+
+/* ---------- soft wraps and text clicks retain preview styling ---------- */
+for (const prefix of ["", "- ", "9) "]) {
+  const body = "The snap is **not** built here. It uses the **Snap Store\nbuild service**, with *multi-line\nemphasis* and `core22`.";
+  const src = prefix + body;
+  const el = host();
+  el.innerHTML = styleSource(src);
+  assert(el.textContent === src, "soft-wrap source preserved: " + prefix);
+  assert([...el.querySelectorAll("strong")].some((n) => n.textContent === "Snap Store\nbuild service"),
+    "bold across source newline remains styled: " + prefix);
+  assert(el.querySelector("em")?.textContent === "multi-line\nemphasis", "italic across source newline: " + prefix);
+  for (const caret of [prefix.length, src.indexOf("Snap") + 2, src.indexOf("core22") + 2, src.length]) {
+    applyMarkerVisibility(el, src, caret);
+    assert(!el.querySelector(".md-on"), "content clicks conceal syntax: " + prefix + caret);
+  }
+}
+for (const src of ["one  \ntwo", "one\\\ntwo", "- one  \n  two"]) {
+  const el = host(); el.innerHTML = styleSource(src);
+  assert(el.textContent === src, "hard break preserves source");
+  assert(el.querySelector(".md-hard-break"), "explicit hard break retains line break");
+}
+
+{
+  const src = "- **Bold** item";
+  const el = host(); el.innerHTML = styleSource(src); document.body.append(el);
+  const offset = src.indexOf("Bold");
+  applyMarkerVisibility(el, src, offset); setCaret(el, offset);
+  assert(window.getSelection().anchorNode.parentElement.tagName === "STRONG", "caret at bold start uses visible text node");
+  assert(getCaretOffset(el) === offset, "visible caret retains exact source offset");
+  el.remove();
+}
+
+/* ---------- table structure ---------- */
+{
+  const src = "| a | b |\n| --- | --- |\n| 1 | **2** |";
+  const html = styleSource(src);
+  assert(html.includes('class="md-table"'), "table run wrapped in md-table");
+  assert(html.includes("md-tsep"), "separator row flagged md-tsep");
+  const el = host();
+  el.innerHTML = html;
+  assert(el.textContent === src, "table roundtrip");
+  const pipes = el.querySelectorAll(".md-pipe").length;
+  assert(pipes === (src.match(/\|/g) || []).length, `every pipe wrapped (${pipes})`);
+  assert(el.querySelectorAll(".md-trow").length === 3, "three rows");
+  assert(el.querySelectorAll(".md-trow:not(.md-tsep) .md-tcell").length === 4, "four content cells");
+  assert(!!el.querySelector(".md-tcell .md-tok"), "inline tokens still work inside cells");
+  // pipes are not caret-scoped tokens: reveal pass leaves them untouched
+  applyMarkerVisibility(el, src, 3);
+  assert(![...el.querySelectorAll(".md-pipe")].some((p) => p.classList.contains("md-on")),
+    "pipes never gain md-on (always concealed by table layout)");
+}
+
+assert(!styleSource("| lone | row |").includes("md-table"),
+  "a pipey line without a separator below is not a table");
+
+/* ---------- fence concealment (zero-jank code blocks) ---------- */
+// "```rust\ncode\n```" — fence tokens swallow their newlines: open [0, 8),
+// close [13, 17); the code line sits between.
+{
+  const src = "```rust\nlet x;\n```";
+  const el = host();
+  el.innerHTML = styleSource(src);
+  assert(el.textContent === src, "fence block roundtrip with concealed fences");
+  const fences = [...el.querySelectorAll(".md-tok.md-fence")];
+  assert(fences.length === 2, "both fence lines tokenized");
+  applyMarkerVisibility(el, src, 11); // caret inside the code line
+  assert(fences.every((f) => !f.classList.contains("md-on")),
+    "caret in code keeps both fences concealed");
+  applyMarkerVisibility(el, src, 2); // caret inside the opening fence
+  assert(fences[0].classList.contains("md-on") && !fences[1].classList.contains("md-on"),
+    "caret in opening fence reveals only it");
+
+  const two = host();
+  two.innerHTML = styleSource("```\n```");
+  assert(two.textContent === "```\n```", "empty fence pair roundtrips (no doubled newline)");
+}
+
+/* ---------- table resize (toolbar grid picker backend) ---------- */
+{
+  const { tableDims, resizeTable } = await import(
+    await (async () => {
+      const out = path.join(here, ".build", "tabletools.mjs");
+      await build({
+        entryPoints: [path.join(here, "..", "src", "tabletools.ts")],
+        bundle: true,
+        format: "esm",
+        outfile: out,
+      });
+      return out;
+    })()
+  );
+  const src = "| a | b |\n| --- | :-: |\n| 1 | 2 |";
+  assert(JSON.stringify(tableDims(src)) === '{"rows":2,"cols":2}',
+    "tableDims counts header+body rows and columns");
+  assert(tableDims("not a table") === null, "tableDims null for non-tables");
+
+  const grown = resizeTable(src, 4, 3);
+  const dims = tableDims(grown);
+  assert(JSON.stringify(dims) === '{"rows":4,"cols":3}', `resize grows to 4x3 (${JSON.stringify(dims)})`);
+  assert(grown.includes("| a |") && grown.includes("| 1 |"), "existing cells survive growth");
+  assert(grown.split("\n")[1].includes(":---:"), "alignment survives growth (canonical :---:)");
+
+  const shrunk = resizeTable(grown, 2, 1);
+  assert(JSON.stringify(tableDims(shrunk)) === '{"rows":2,"cols":1}', "resize shrinks to 2x1");
+  assert(shrunk.split("\n")[0].includes("a"), "header cell survives shrink");
+
+  assert(resizeTable(src, 1, 0) !== null && tableDims(resizeTable(src, 1, 0)).rows === 2,
+    "rows clamp to header + one body row");
+
+  const { cellRanges } = await import(path.join(here, ".build", "tabletools.mjs"));
+  // "| a | b |\n| --- | :-: |\n| 1 | 2 |" — a@2, b@6, 1@... line2 starts at 24.
+  const ranges = cellRanges(src);
+  assert(ranges.length === 4, `four cells in tab order (${ranges.length})`);
+  assert(src.slice(ranges[0].start, ranges[0].end) === "a", "first cell range covers 'a'");
+  assert(src.slice(ranges[1].start, ranges[1].end) === "b", "second cell range covers 'b'");
+  assert(src.slice(ranges[2].start, ranges[2].end) === "1", "third cell skips the separator row");
+  assert(src.slice(ranges[3].start, ranges[3].end) === "2", "fourth cell covers '2'");
+  const blanks = cellRanges("| a |\n| --- |\n|   |");
+  assert(blanks.length === 2 && blanks[1].start === blanks[1].end,
+    "whitespace-only cell collapses to a caret position");
+  assert(cellRanges("not a table").length === 0, "cellRanges empty for non-tables");
+}
+
+/* ---------- inline reveal: bold ---------- */
+// "a **b** c" — the bold token spans source [2, 9].
+{
+  const src = "a **b** c";
+  const el = host();
+  el.innerHTML = styleSource(src);
+  const tokOn = () => el.querySelector(".md-tok").classList.contains("md-on");
+
+  applyMarkerVisibility(el, src, 4);
+  assert(!tokOn(), "caret in bold content keeps markers concealed");
+  applyMarkerVisibility(el, src, 0);
+  assert(!tokOn(), "caret outside bold hides markers");
+  applyMarkerVisibility(el, src, 2);
+  assert(tokOn(), "caret on start edge reveals (inclusive)");
+  applyMarkerVisibility(el, src, 7);
+  assert(tokOn(), "caret on end edge reveals — just-completed pair stays visible");
+  applyMarkerVisibility(el, src, 8);
+  assert(!tokOn(), "caret one past the end edge hides again");
+  // content styling survives hiding
+  assert(el.querySelector("strong")?.textContent === "b", "bold content stays <strong> when hidden");
+}
+
+/* ---------- heading prefix reveal (caret-scoped, NOT line-scoped) ---------- */
+// "## Head\nbody text" — the hash prefix token spans source [0, 3].
+{
+  const src = "## Head\nbody text";
+  const el = host();
+  el.innerHTML = styleSource(src);
+  const preTok = () => el.querySelector(".md-tok.md-pre").classList.contains("md-on");
+
+  applyMarkerVisibility(el, src, 5); // inside the heading text — stays rendered
+  assert(!preTok(), "caret in heading text hides hashes (re-entered heading looks rendered)");
+  applyMarkerVisibility(el, src, 7); // end of heading line
+  assert(!preTok(), "caret at heading line end hides hashes");
+  applyMarkerVisibility(el, src, 3); // start of the text = prefix end edge
+  assert(!preTok(), "caret at heading text start keeps hashes concealed");
+  applyMarkerVisibility(el, src, 1); // inside the hashes
+  assert(preTok(), "caret inside hashes reveals them");
+  applyMarkerVisibility(el, src, 12); // on the body line
+  assert(!preTok(), "caret on another line hides hashes");
+}
+
+/* ---------- list prefix reveal + per-line independence ---------- */
+// "- alpha\n- [x] beta" — bullet prefix [0, 2], task prefix [8, 14].
+{
+  const src = "- alpha\n- [x] beta";
+  const el = host();
+  el.innerHTML = styleSource(src);
+  const toks = () => [...el.querySelectorAll(".md-tok.md-pre")];
+  assert(toks().length === 2, "both list prefixes tokenized");
+
+  applyMarkerVisibility(el, src, src.length); // caret at end of "beta"
+  assert(toks().every((t) => !t.classList.contains("md-on")),
+    "caret at end of item text leaves every marker hidden (block looks rendered)");
+  applyMarkerVisibility(el, src, 9); // inside "- [x] "
+  assert(!toks()[0].classList.contains("md-on") && toks()[1].classList.contains("md-on"),
+    "caret inside a marker reveals only that line's marker");
+  assert(toks()[1].classList.contains("md-done"), "checked task carries md-done for the ☑ stand-in");
+}
+
+/* ---------- link reveal + URL hides with markers ---------- */
+{
+  const src = "x [lab](http://u) y";
+  const el = host();
+  el.innerHTML = styleSource(src);
+  const tok = el.querySelector(".md-tok");
+
+  applyMarkerVisibility(el, src, 0);
+  assert(!tok.classList.contains("md-on"), "caret outside link hides its markers");
+  const url = el.querySelector(".md-url");
+  assert(
+    url.classList.contains("md-mark"),
+    "URL span carries md-mark so the generic hide rule catches it"
+  );
+  assert(url.closest(".md-tok") === tok, "URL span is inside the link token");
+  applyMarkerVisibility(el, src, 4); // inside the label
+  assert(!tok.classList.contains("md-on"), "caret inside link label keeps brackets and URL concealed");
+  applyMarkerVisibility(el, src, 10);
+  assert(tok.classList.contains("md-on"), "caret inside link URL reveals editable syntax");
+}
+
+/* ---------- nested token: link inside bold, independent ranges ---------- */
+// "**[a](u)** t" — bold spans [0, 10]; link spans [2, 8].
+{
+  const src = "**[a](u)** t";
+  const el = host();
+  el.innerHTML = styleSource(src);
+  const toks = [...el.querySelectorAll(".md-tok")];
+  assert(toks.length === 2, "nested markup produces two tokens");
+  applyMarkerVisibility(el, src, 12);
+  assert(toks.every((t) => !t.classList.contains("md-on")), "caret outside hides both");
+  applyMarkerVisibility(el, src, 1); // inside bold's opening **, before the link
+  const on = toks.map((t) => t.classList.contains("md-on"));
+  assert(on.includes(true) && on.includes(false), "caret in bold marker reveals bold but not the inner link");
+}
+
+/* ---------- undo / redo history ---------- */
+{
+  const out = path.join(here, ".build", "store.mjs");
+  await build({
+    entryPoints: [path.join(here, "..", "src", "store.ts")],
+    bundle: true,
+    format: "esm",
+    outfile: out,
+  });
+  const store = await import(out);
+  const text = () => store.doc.blocks.map((b) => b.text).join("\n\n");
+
+  store.loadDocument("alpha\n\nbeta", null);
+  store.updateBlock(0, "alphaX");
+  store.updateBlock(0, "alphaXY");
+  store.updateBlock(0, "alphaXYZ");
+  assert(text() === "alphaXYZ\n\nbeta", "typing applies");
+  store.undo();
+  assert(text() === "alpha\n\nbeta", "rapid keystrokes coalesce into ONE undo step");
+  store.redo();
+  assert(text() === "alphaXYZ\n\nbeta", "redo restores the coalesced edit");
+
+  store.splitBlock(0, "al", "phaXYZ");
+  assert(store.doc.blocks.length === 3, "structural edit applies");
+  store.undo();
+  assert(store.doc.blocks.length === 2 && store.doc.blocks[0].text === "alphaXYZ",
+    "undo reverses the structural edit");
+
+  store.undo(); // back to "alpha"
+  store.updateBlock(0, "fresh");
+  store.redo(); // must be a no-op: new edits clear the redo stack
+  assert(store.doc.blocks[0].text === "fresh", "a new edit clears the redo stack");
+
+  store.undo();
+  store.undo();
+  store.undo(); // underflow: no-ops, never throws
+  assert(text() === "alpha\n\nbeta", "undo stops at the loaded document");
+
+  store.loadDocument("clean", null);
+  store.undo();
+  assert(text() === "clean", "loading a document clears history");
+}
+
+/* ---------- KaTeX math rendering ---------- */
+{
+  const out = path.join(here, ".build", "markdown.mjs");
+  await build({
+    entryPoints: [path.join(here, "..", "src", "markdown.ts")],
+    bundle: true,
+    format: "esm",
+    outfile: out,
+  });
+  const md = await import(out);
+  await md.prepareRender("$x$"); // KaTeX loads lazily
+
+  assert(md.renderMarkdown("inline $x^2$ here").includes('class="katex"'),
+    "inline $...$ renders KaTeX");
+  assert(md.renderMarkdown("$$\\int_0^1 x\\,dx$$").includes("math-block"),
+    "block $$...$$ renders a math-block");
+  assert(!md.renderMarkdown("it costs $5 and $10 total").includes('class="katex"'),
+    "currency $5 ... $10 is NOT treated as math");
+
+  // Broken math, no prior good render → visible error, never blank.
+  const broken = md.renderMarkdown("$\\frac{1}{$");
+  assert(broken.includes("math-error") && broken.replace(/<[^>]+>/g, "").trim() !== "",
+    "broken math shows an error, never blanks");
+
+  // Alt delimiters gated off by default, on when enabled.
+  assert(!md.renderMarkdown("test \\(a+b\\) end").includes('class="katex"'),
+    "\\( \\) ignored when alt delimiters off");
+  md.setMathAltDelimiters(true);
+  assert(md.renderMarkdown("test \\(a+b\\) end").includes('class="katex"'),
+    "\\( \\) renders when alt delimiters on");
+  md.setMathAltDelimiters(false);
+
+  // ```math fence gated off by default, on when enabled.
+  const fenceSrc = "```math\n\\frac{a}{b}\n```";
+  assert(!md.renderMarkdown(fenceSrc).includes('class="katex"'),
+    "```math ignored when fence pref off");
+  md.setMathFence(true);
+  assert(md.renderMarkdown(fenceSrc).includes('class="katex"'),
+    "```math renders when fence pref on");
+  md.setMathFence(false);
+
+  // Mermaid fence → placeholder div carrying the source.
+  const mmd = md.renderMarkdown("```mermaid\ngraph TD; A-->B;\n```");
+  assert(mmd.includes("mermaid-block") && mmd.includes("data-mermaid"),
+    "```mermaid emits a placeholder with its source");
+
+  // Last-good fallback: a block that rendered, then breaks, keeps its render.
+  assert(md.renderMarkdown("$y = mx + b$", "blk1").includes('class="katex"'),
+    "block renders math with a key");
+  const regressed = md.renderMarkdown("$y = \\frac{$", "blk1");
+  assert(regressed.includes('class="katex"') && regressed.includes("render-error"),
+    "broken math keeps the last good render + an error banner");
+}
+
+/* ---------- image src resolution ---------- */
+{
+  const out = path.join(here, ".build", "images.mjs");
+  await build({
+    entryPoints: [path.join(here, "..", "src", "images.ts")],
+    bundle: true,
+    format: "esm",
+    outfile: out,
+  });
+  const img = await import(out);
+
+  // Front matter parsing.
+  const fm = img.parseFrontMatter("---\ntypora-root-url: /img/root\ntypora-copy-images-to: ./a/${filename}\ntitle: \"Hi\"\n---\nbody");
+  assert(fm["typora-root-url"] === "/img/root", "front matter parses typora-root-url");
+  assert(fm["typora-copy-images-to"] === "./a/${filename}", "front matter parses copy-images-to");
+  assert(fm["title"] === "Hi", "front matter strips quotes");
+  assert(Object.keys(img.parseFrontMatter("no front matter")).length === 0, "no front matter → empty");
+
+  // Pure resolver.
+  const conv = (p) => `asset://localhost/${p}`;
+  const ctx = { dir: "/Users/me/notes", convert: conv };
+  assert(img.resolveImagePath("https://x.com/a.png", ctx) === "https://x.com/a.png",
+    "remote URLs pass through");
+  assert(img.resolveImagePath("data:image/png;base64,AAA", ctx) === "data:image/png;base64,AAA",
+    "data URIs pass through");
+  assert(img.resolveImagePath("assets/pic.png", ctx) === "asset://localhost//Users/me/notes/assets/pic.png",
+    "relative path resolves against the doc dir");
+  assert(img.resolveImagePath("./a/b/../pic.png", ctx) === "asset://localhost//Users/me/notes/a/pic.png",
+    "relative path normalizes . and ..");
+  assert(img.resolveImagePath("/Users/me/abs.png", ctx) === "asset://localhost//Users/me/abs.png",
+    "absolute path used directly (no root-url)");
+  assert(img.resolveImagePath("nope.png", { dir: null, convert: conv }) === "nope.png",
+    "unsaved doc (no dir) leaves relative src unchanged");
+
+  // typora-root-url for root-relative paths.
+  const rooted = { dir: "/Users/me/notes", rootUrl: "/Users/me/images", convert: conv };
+  assert(img.resolveImagePath("/logos/x.png", rooted) === "asset://localhost//Users/me/images/logos/x.png",
+    "root-relative path resolves against typora-root-url");
+  assert(img.resolveImagePath("rel.png", rooted) === "asset://localhost//Users/me/notes/rel.png",
+    "non-root-relative still resolves against doc dir even with root-url set");
+
+  // findImages: markdown and HTML image occurrences, in document order.
+  const f1 = img.findImages("![alt](pic.png)");
+  assert(f1.length === 1 && f1[0].src === "pic.png" && f1[0].alt === "alt" && f1[0].kind === "md",
+    "findImages parses a markdown image");
+  const f2 = img.findImages('a ![one](1.png) b <img src="2.png" alt="two" /> c');
+  assert(f2.length === 2 && f2[0].kind === "md" && f2[1].kind === "html",
+    "findImages finds md + html in order");
+  assert(f2[1].src === "2.png" && f2[1].alt === "two", "findImages reads HTML img src/alt");
+  assert(f2[0].start === 2 && "![one](1.png)" === "![one](1.png)", "findImages reports the source span");
+  assert(img.findImages("![](x.png)")[0].alt === "", "findImages handles empty alt");
+  assert(img.findImages("no images here").length === 0, "findImages empty when none");
+
+  // renderMarkdown image path (resolver is identity in node → src preserved).
+  const mdMod = await import(path.join(here, ".build", "markdown.mjs"));
+  assert(mdMod.renderMarkdown("![alt text](pic.png)").includes('src="pic.png"'),
+    "rendered image keeps its src");
+  assert(mdMod.renderMarkdown("![a](pic.png)").includes('alt="a"'),
+    "rendered image keeps alt text");
+}
+
+/* ---------- export ---------- */
+{
+  const out = path.join(here, ".build", "export.mjs");
+  await build({
+    entryPoints: [path.join(here, "..", "src", "export.ts")],
+    bundle: true,
+    format: "esm",
+    outfile: out,
+  });
+  const ex = await import(out);
+
+  // Heading ids + outline.
+  const { html, outline } = ex.addHeadingIds("<h1>Intro</h1><p>x</p><h2>Setup &amp; Run</h2><h2>Intro</h2>");
+  assert(html.includes('<h1 id="intro">Intro</h1>'), "addHeadingIds slugs an h1");
+  assert(outline.length === 3 && outline[1].id === "setup-run", "outline strips punctuation in slugs");
+  assert(outline[2].id === "intro-2", "duplicate heading slugs are deduped");
+
+  // Idempotent over the live renderer's own ids: no doubled id attribute.
+  const reid = ex.addHeadingIds('<h2 id="old">New Title</h2>').html;
+  assert(reid === '<h2 id="new-title">New Title</h2>', `existing id is replaced, not duplicated (${reid})`);
+
+  // Header/footer var substitution → CSS content with counters.
+  const hf = ex.headerFooterContent("${title}  ${pageNo} / ${totalPages}", { title: "Doc", date: "2026-06-14" });
+  assert(hf.includes('"Doc"') && hf.includes("counter(page)") && hf.includes("counter(pages)"),
+    `header maps title to literal and page vars to counters (${hf})`);
+  assert(ex.headerFooterContent("${date}", { title: "T", date: "2026-06-14" }) === '"2026-06-14"',
+    "date var becomes a literal");
+
+  // @page CSS.
+  // Always full-bleed: @page margin 0 (theme fills the page), the configured
+  // margin becomes a text-inset padding on .rendered — repeated at every page
+  // break via box-decoration-break: clone — and there's no @page footer.
+  const css = ex.pageCss({ pageSize: "A4", margin: "20mm", footer: "${pageNo}" });
+  assert(css.includes("@page { size: A4; margin: 0;") && css.includes(".rendered { padding: 20mm;")
+    && css.includes("box-decoration-break: clone") && !css.includes("@bottom-center"),
+    `pageCss is full-bleed; margin becomes .rendered padding cloned per page (${css})`);
+  const fb = ex.pageCss({ pageSize: "A4", margin: "0" });
+  assert(fb.includes("margin: 0;") && fb.includes(".rendered { padding: 18mm"),
+    `margin 0 → full-bleed with a default text inset (${fb})`);
+
+  // HTML with outline sidebar.
+  const doc = ex.buildExportHtml({
+    title: "T", theme: "sarala", css: "", withOutline: true,
+    body: "<h1>A</h1><p>x</p><h2>B</h2>",
+  });
+  assert(doc.includes('class="has-toc"') && doc.includes('<nav class="doc-toc"') && doc.includes('href="#a"'),
+    "buildExportHtml adds the outline sidebar with anchors");
+  const noToc = ex.buildExportHtml({ title: "T", theme: "x", css: "", withOutline: false, body: "<p>x</p>" });
+  assert(!noToc.includes("doc-toc"), "no outline when disabled");
+  const full = ex.buildExportHtml({ title: "T", theme: "x", css: "", withOutline: false, tablesFull: true, body: "<table></table>" });
+  assert(full.includes('class="tables-full"'), "tablesFull adds the body class so exported tables stretch");
+
+  // YAML export overrides.
+  const ov = ex.readExportOverrides({ export_filename: "report", export_pdf_margin: "15mm", title: "x" });
+  assert(ov.filename === "report" && ov.pdfMargin === "15mm", "readExportOverrides picks export_* keys");
+
+  // Pandoc default flags.
+  assert(ex.pandocFlagsFor("docx", "ref.docx").includes("--reference-doc=ref.docx"),
+    "docx flags include the reference-doc");
+  assert(ex.pandocFlagsFor("epub").includes("--toc") && ex.pandocFlagsFor("epub").includes("--epub-chapter-level=2"),
+    "epub flags include toc + chapter level");
+
+  // Output path template.
+  assert(ex.resolveOutputPath("${dir}/${name}.${ext}", { dir: "/d", name: "doc", ext: "pdf" }) === "/d/doc.pdf",
+    "resolveOutputPath expands dir/name/ext");
+}
+
+/* ---------- syntax completeness sweep (renderer) ---------- */
+{
+  const md = await import(path.join(here, ".build", "markdown.mjs"));
+
+  // GitHub-style alerts.
+  const alert = md.renderMarkdown("> [!NOTE]\n> Useful info here");
+  assert(alert.includes("md-alert md-alert-note") && alert.includes("md-alert-title"),
+    "[!NOTE] blockquote becomes an alert callout");
+  assert(alert.includes("Useful info here") && !alert.includes("[!NOTE]"),
+    "alert keeps its body, drops the [!NOTE] marker");
+  assert(md.renderMarkdown("> [!CAUTION]\n> danger").includes("md-alert-caution"),
+    "[!CAUTION] maps to the caution variant");
+  assert(md.renderMarkdown("> just a quote").includes("<blockquote>"),
+    "a plain blockquote is left untouched");
+
+  // Highlight, sub/sup (gated on by default).
+  assert(md.renderMarkdown("==hi==").includes("<mark>hi</mark>"), "==text== → <mark>");
+  assert(md.renderMarkdown("H~2~O").includes("<sub>2</sub>"), "~x~ → <sub>");
+  assert(md.renderMarkdown("E=mc^2^").includes("<sup>2</sup>"), "^x^ → <sup>");
+  assert(md.renderMarkdown("~~gone~~").includes("<del>") && !md.renderMarkdown("~~gone~~").includes("<sub>"),
+    "~~strike~~ still renders as <del>, not subscript");
+  md.setHighlightEnabled(false);
+  assert(!md.renderMarkdown("==hi==").includes("<mark>"), "highlight off → ==text== left literal");
+  md.setHighlightEnabled(true);
+  md.setSubSupEnabled(false);
+  assert(!md.renderMarkdown("H~2~O").includes("<sub>"), "sub/sup off → ~x~ left literal");
+  md.setSubSupEnabled(true);
+
+  // Emoji shortcodes + \: escape.
+  assert(md.renderMarkdown("hi :smile: there").includes("😄"), ":smile: → glyph");
+  assert(md.renderMarkdown(":not_an_emoji:").includes(":not_an_emoji:"),
+    "unknown shortcode stays literal");
+  assert(md.renderMarkdown("a \\:smile\\: b").includes(":smile:") && !md.renderMarkdown("a \\:smile\\: b").includes("😄"),
+    "\\: escapes the emoji colon");
+  md.setEmojiEnabled(false);
+  assert(!md.renderMarkdown(":smile:").includes("😄"), "emoji off → shortcode left literal");
+  md.setEmojiEnabled(true);
+
+  // Footnotes: reference + definition block.
+  const ref = md.renderMarkdown("text[^1] more");
+  assert(ref.includes('class="footnote-ref"') && ref.includes('id="fnref-1"') && ref.includes('href="#fn-1"'),
+    "[^1] renders a linked footnote reference");
+  const defs = md.renderMarkdown("[^1]: first note\n[^2]: second note");
+  assert(defs.includes('class="footnotes"') && defs.includes('id="fn-1"') && defs.includes('href="#fnref-1"'),
+    "a [^id]: block renders the footnotes section with backlinks");
+
+  // Heading anchor ids.
+  assert(md.renderMarkdown("## Setup & Run").includes('<h2 id="setup-run">'),
+    "headings get a slug anchor id");
+
+  // TOC block with anchor links (needs an injected outline provider).
+  md.setTocProvider(() => [
+    { level: 1, text: "Intro", blockIndex: 0 },
+    { level: 2, text: "Setup & Run", blockIndex: 1 },
+  ]);
+  const toc = md.renderMarkdown("[TOC]");
+  assert(toc.includes('href="#intro"') && toc.includes('href="#setup-run"'),
+    "[TOC] links each entry to its heading slug");
+  assert(md.renderMarkdown("[[_TOC_]]").includes('href="#intro"'),
+    "[[_TOC_]] is an accepted TOC alias");
+
+  // Bare-URL autolink + the disable pref.
+  assert(md.renderMarkdown("see https://example.com now").includes('href="https://example.com"'),
+    "bare URLs autolink by default");
+  md.setAutolinkEnabled(false);
+  assert(!md.renderMarkdown("see https://example.com now").includes("<a "),
+    "autolink off → bare URL stays plain text");
+  assert(md.renderMarkdown("[label](https://example.com)").includes("<a "),
+    "explicit [label](url) links still work with autolink off");
+  md.setAutolinkEnabled(true);
+
+  // Expanded sanitize allowlist.
+  assert(md.renderMarkdown("press <kbd>Cmd</kbd>").includes("<kbd>"), "kbd survives sanitize");
+  assert(md.renderMarkdown("<u>under</u>").includes("<u>"), "u tag survives sanitize");
+  assert(md.renderMarkdown("<details><summary>s</summary>body</details>").includes("<details>"),
+    "details/summary survive sanitize");
+
+  // 1) ordered lists.
+  assert(md.renderMarkdown("1) one\n2) two").includes("<ol"), "1) renders an ordered list");
+
+  // Optional-pipe tables.
+  assert(md.renderMarkdown("a | b\n--- | ---\n1 | 2").includes("<table"),
+    "tables without leading/trailing pipes still render");
+}
+
+/* ---------- rich paste & clipboard ---------- */
+{
+  const out = path.join(here, ".build", "richpaste.mjs");
+  await build({
+    entryPoints: [path.join(here, "..", "src", "richpaste.ts")],
+    bundle: true,
+    format: "esm",
+    outfile: out,
+  });
+  const rp = await import(out);
+
+  // Control-char scrubbing.
+  assert(rp.stripControlChars("a bc") === "abc", "strips NUL/BEL/DEL");
+  assert(rp.stripControlChars("a\r\nb\rc") === "a\nb\nc", "normalizes CRLF and CR to LF");
+  assert(rp.stripControlChars("keep\ttab\nand\nnewline") === "keep\ttab\nand\nnewline",
+    "tabs and newlines survive");
+  assert(rp.stripControlChars("﻿hello") === "hello", "strips a leading BOM");
+
+  // HTML → Markdown conversion.
+  assert(rp.htmlToMarkdown("<h2>Title</h2>") === "## Title", "h2 → atx heading");
+  assert(rp.htmlToMarkdown("<p>a <strong>b</strong> <em>c</em></p>") === "a **b** *c*",
+    "bold/italic convert");
+  const ul = rp.htmlToMarkdown("<ul><li>one</li><li>two</li></ul>");
+  assert(/^-\s+one$/m.test(ul) && /^-\s+two$/m.test(ul), `unordered list uses - marker (${JSON.stringify(ul)})`);
+  assert(rp.htmlToMarkdown('<a href="https://x.com">link</a>') === "[link](https://x.com)",
+    "anchors become inline links");
+  assert(rp.htmlToMarkdown("<del>gone</del>").includes("~~gone~~"),
+    "GFM strikethrough converts");
+  const table = rp.htmlToMarkdown(
+    "<table><thead><tr><th>A</th><th>B</th></tr></thead><tbody><tr><td>1</td><td>2</td></tr></tbody></table>",
+  );
+  assert(table.includes("| A | B |") && table.includes("| --- | --- |"),
+    "GFM tables convert with a separator row");
+  // Google Docs wraps everything in <b style="font-weight:normal"> — must not bold.
+  const gdocs = rp.htmlToMarkdown('<b style="font-weight:normal" id="docs-internal-guid-x"><p>plain text</p></b>');
+  assert(gdocs === "plain text", `normal-weight wrapper bold is ignored (${JSON.stringify(gdocs)})`);
+
+  // pasteToInsert: inside a fence, content stays literal (never markdown-escaped)
+  // — the mermaid-diagram regression.
+  const mermaid = "A[Christmas] -->|Get money| B(Go shopping)";
+  const inFence = rp.pasteToInsert({ html: `<p>${mermaid}</p>`, plain: mermaid, inFence: true });
+  assert(inFence === mermaid, `paste into a fence keeps [ ] - > literal (${JSON.stringify(inFence)})`);
+  assert(!inFence.includes("\\["), "no backslash-escaping inside a code fence");
+  // Outside a fence, rich HTML is converted (Markdown escaping is then correct).
+  const outFence = rp.pasteToInsert({ html: "<p>a <strong>b</strong></p>", plain: "a b", inFence: false });
+  assert(outFence === "a **b**", "paste outside a fence converts HTML to Markdown");
+  // No HTML → plain text either way, with newline normalization.
+  assert(rp.pasteToInsert({ html: "", plain: "x\r\ny", inFence: false }) === "x\ny",
+    "plain-only paste normalizes newlines");
+  // Control chars inside HTML are scrubbed too.
+  assert(rp.htmlToMarkdown("<p>a b</p>") === "ab", "control chars stripped from converted HTML");
+}
+
+/* ---------- find/replace search patterns ---------- */
+{
+  const out = path.join(here, ".build", "search.mjs");
+  await build({
+    entryPoints: [path.join(here, "..", "src", "search.ts")],
+    bundle: true,
+    format: "esm",
+    outfile: out,
+  });
+  const { buildSearchRegex } = await import(out);
+  const opt = (o = {}) => ({ regex: false, caseSensitive: false, wholeWord: false, ...o });
+  const all = (re, s) => (s.match(re) || []).length;
+
+  assert(buildSearchRegex("", opt()) === null, "empty query → null");
+
+  // Plain mode escapes regex metacharacters.
+  const plain = buildSearchRegex("a.b", opt());
+  assert(plain.test("a.b") && !plain.test("axb"), "plain query treats . literally");
+
+  // Case sensitivity.
+  assert(all(buildSearchRegex("foo", opt()), "Foo foo FOO") === 3, "case-insensitive by default");
+  assert(all(buildSearchRegex("foo", opt({ caseSensitive: true })), "Foo foo FOO") === 1,
+    "case-sensitive matches exact case only");
+
+  // Whole word.
+  assert(all(buildSearchRegex("cat", opt({ wholeWord: true })), "cat category cat") === 2,
+    "whole-word skips 'category'");
+  assert(all(buildSearchRegex("cat", opt()), "cat category") === 2,
+    "without whole-word, substring matches inside 'category'");
+
+  // Regex mode.
+  const re = buildSearchRegex("\\d+", opt({ regex: true }));
+  assert(all(re, "a1 bb 234") === 2, "regex \\d+ finds number runs");
+  assert(buildSearchRegex("(", opt({ regex: true })) === null, "invalid regex → null");
+  assert(buildSearchRegex("(", opt({ regex: false })).test("("), "invalid-looking query is literal in plain mode");
+
+  // Global flag so callers can count/iterate all matches.
+  assert(buildSearchRegex("x", opt()).flags.includes("g"), "pattern is global");
+}
+
+/* ---------- code-block language icons ---------- */
+{
+  const out = path.join(here, ".build", "langicons.mjs");
+  await build({
+    entryPoints: [path.join(here, "..", "src", "langicons.ts")],
+    bundle: true,
+    format: "esm",
+    outfile: out,
+  });
+  const { langIcon, readableText } = await import(out);
+
+  assert(langIcon("javascript").label === "JS" && langIcon("javascript").color === "#f1e05a",
+    "javascript → JS chip with brand yellow");
+  assert(langIcon("js").color === langIcon("javascript").color, "alias js shares javascript's icon");
+  assert(langIcon("rs").label === "Rs" && langIcon("rs").color === langIcon("rust").color,
+    "alias rs resolves to rust");
+  assert(langIcon("mermaid").color === "#ff3670", "mermaid has its own brand color");
+  assert(langIcon("totally-unknown").label === "T" && langIcon("totally-unknown").color === "#8b8b8b",
+    "unknown language falls back to an initial + neutral grey");
+
+  // Contrast: light brand colors get dark text, dark ones get white.
+  assert(readableText("#f1e05a") === "#1a1a1a", "yellow chip uses dark text");
+  assert(readableText("#3178c6") === "#ffffff", "blue chip uses white text");
+  assert(readableText("not-a-color") === "#ffffff", "non-hex defaults to white text");
+}
+
+/* ---------- code snippets nested under list items ---------- */
+{
+  const { readFile } = await import("node:fs/promises");
+  const { createHighlighter } = await import("shiki");
+  const { setLiveCodeHighlighter } = await import(outfile);
+  const highlighter = await createHighlighter({ themes: ["github-light", "github-dark"], langs: ["bash"] });
+  setLiveCodeHighlighter((source, lang) => highlighter.codeToHtml(source, {
+    lang: lang === "sh" ? "bash" : "text",
+    themes: { light: "github-light", dark: "github-dark" }, defaultColor: "light",
+  }));
+  const releasing = await readFile(path.join(here, "fixtures", "sarala-releasing.md"), "utf8");
+  const sample = releasing.slice(releasing.indexOf("1. **Register the name**"), releasing.indexOf("> **First-revision review:**")).trimEnd();
+  const el = host();
+  el.innerHTML = styleSource(sample);
+  assert(el.textContent === sample, "release instructions retain exact Markdown while highlighted");
+  assert(el.querySelectorAll(".md-layout-code").length === 1, "nested fenced code has its own code box");
+  assert(el.querySelector(".md-layout-code .md-code-content span[style*='color']"), "nested code keeps Shiki token colors");
+  const content = el.querySelector(".md-code-content");
+  assert(content.textContent === "snapcraft register sarala", "nested code body excludes hidden fences");
+  const codeSpan = content.querySelector("span[style]");
+  assert(codeSpan?.getAttribute("style")?.includes("--shiki-dark"), "nested highlighting supports dark themes");
+  for (const caret of [sample.indexOf("once") + 2, sample.indexOf("snapcraft register"), sample.indexOf("register sarala") + 3]) {
+    applyMarkerVisibility(el, sample, caret);
+    assert(el.textContent === sample, "list/code click keeps all source text intact");
+    assert(!el.querySelector(".md-layout-code .md-on"), "code body clicks keep fences concealed");
+  }
+  applyMarkerVisibility(el, sample, sample.indexOf("once") + 2);
+  assert(!el.querySelector(".md-layout-code .md-on"), "clicking list text leaves nested fence syntax concealed");
+  const link = [...el.querySelectorAll(".md-link")].find((n) => n.textContent.includes("snapcraft.io"));
+  assert(link?.textContent === "https://snapcraft.io/sarala/builds", "autolink is styled without visible angle brackets");
+  assert(link?.parentElement.querySelectorAll(".md-mark").length === 2, "autolink delimiters remain source-backed markers");
+  for (const src of [
+    "- Run:\n\n  ```sh\n  echo first\n  echo second\n  ```\n\n- Next",
+    "1. Run:\n\n   ~~~sh\n   echo ok\n   ~~~\n\n2. Next",
+    "- Run:\n\n      echo first\n      echo second\n\n- Next",
+    "- Parent\n  - Run:\n\n    ```sh\n    echo nested\n    ```",
+    "- Run:\n\n  ```sh\n  ```\n\n- Next",
+    "- Run:\n\n  ```sh\n  echo unclosed",
+    "- Run:\n\n  ```sh\n  echo first\n\n  echo last\n  ```",
+  ]) {
+    el.innerHTML = styleSource(src);
+    assert(el.textContent === src, `nested code roundtrip: ${JSON.stringify(src)}`);
+    assert(el.querySelector(".md-layout-code"), "fenced and indented snippets both retain a code box");
+  }
+  setLiveCodeHighlighter(() => null);
+  highlighter.dispose();
+}
+
+console.log(`${passes} passed, ${failures} failed`);
+if (failures) process.exit(1);

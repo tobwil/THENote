@@ -1,0 +1,27 @@
+node_modules/
+dist/
+src-tauri/target/
+CLAUDE.local.md
+tests/.build/
+.DS_Store
+.claude/
+
+# Flatpak: throwaway generator venv + local build artifacts
+flatpak/.venv/
+flatpak/.gen.log
+flatpak/.flatpak-builder/
+flatpak/build-dir/
+flatpak/repo/
+
+# Local delivery bundles and UI evidence
+release/
+
+# Credentials and machine-local settings
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.mobileprovision

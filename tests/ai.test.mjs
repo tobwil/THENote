@@ -1,0 +1,26 @@
+import { build } from 'esbuild';
+import assert from 'node:assert/strict';
+await build({ entryPoints: ['src/ai/model.ts'], outfile: 'tests/.build/ai.mjs', bundle: true, platform: 'node', format: 'esm' });
+const { DEFAULT_CONFIG, emptyChat, buildChatRequest, connectionId } = await import('./.build/ai.mjs');
+const config = { ...DEFAULT_CONFIG, enabled: true, endpoint: 'https://internal.example/v1/chat/completions', model: 'internal-model' };
+let count = 0;
+function test(name, fn) { fn(); count++; console.log(`✓ ${name}`); }
+const request = (chat = emptyChat(), question = 'Hallo', markdown = 'DOCUMENT SECRET', cfg = config) => buildChatRequest(chat, question, markdown, 'id', cfg);
+test('plugin disabled by default and blocks requests', () => assert.throws(() => request(emptyChat(), 'Hi', 'secret', DEFAULT_CONFIG), /Aktiviere/));
+test('document is excluded by default', () => assert.deepEqual(request(), { id: 'id', messages: [{role:'user',content:'Hallo'}], context: null, connection: connectionId(config) }));
+test('explicit document consent includes current snapshot', () => assert.equal(request({...emptyChat(),includeDocument:true}).context,'DOCUMENT SECRET'));
+test('turning context off excludes document on next turn', () => assert.equal(request({...emptyChat(),includeDocument:false,messages:[{role:'user',content:'Hi',contextAttached:true}]}).context,null));
+test('blank question rejected', () => assert.throws(() => request(emptyChat(),'  '), /Frage/));
+test('double request rejected', () => assert.throws(() => request({...emptyChat(),pending:'x'}), /bereits/));
+test('only completed assistant replies enter history', () => { const messages = ['done','error','cancelled','incomplete','streaming'].map(status => ({role:'assistant',status,content:status})); assert.deepEqual(request({...emptyChat(),messages}).messages.map(m=>m.content),['done','Hallo']); });
+test('history cannot silently cross provider or model boundaries', () => { for (const change of [{endpoint:'https://other.example/v1/chat/completions'},{protocol:'responses'},{model:'other'}]) assert.throws(() => request({...emptyChat(),connection:connectionId(config)},'Hi','secret',{...config,...change}),/neuen Chat/); });
+test('unchanged connection keeps history', () => assert.equal(request({...emptyChat(),connection:connectionId(config),messages:[{role:'user',content:'Earlier'}]}).messages.length,2));
+test('UTF-8 bytes and context count toward input limit', () => { assert.throws(() => request(emptyChat(),'é'.repeat(132000)), /256 KB/); assert.throws(() => request({...emptyChat(),includeDocument:true},'Hi','x'.repeat(262144)),/256 KB/); });
+test('history length bounded', () => assert.throws(() => request({...emptyChat(),messages:Array.from({length:60},()=>({role:'user',content:'Hi'}))}),/voll/));
+test('tabs start with independent histories', () => { const a=emptyChat(); a.messages.push({role:'user',content:'private'}); assert.equal(emptyChat().messages.length,0); });
+console.log(`${count} AI contract tests passed.`);
+await build({ entryPoints:['src/ai/inline.ts'],outfile:'tests/.build/ai-inline.mjs',bundle:true,platform:'node',format:'esm' });
+const { parseAiPrompt, serializeAiPrompt }=await import('./.build/ai-inline.mjs');
+test('inline prompt survives Markdown round trip, including fences',()=>{for(const prompt of ['', 'Ein Gedanke 🌿', 'Erkläre:\n```python\nprint(42)\n```\n\nDanach mehr Text.'])assert.equal(parseAiPrompt(serializeAiPrompt(prompt)),prompt);});
+test('regular code blocks never become AI prompts',()=>assert.equal(parseAiPrompt('```python\nprint(42)\n```'),null));
+console.log('Inline AI Markdown contracts passed.');

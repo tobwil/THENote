@@ -1,0 +1,167 @@
+import { convertFileSrc } from "@tauri-apps/api/core";
+import { doc } from "./store";
+import { isTauri } from "./platform";
+import { setImageResolver } from "./markdown";
+import { parseImgAttrs } from "./imageattrs";
+
+/* ---------- document front matter ---------- */
+
+import { parseFrontMatter } from "./frontmatter";
+export { parseFrontMatter, parseYamlMetadata } from "./frontmatter";
+
+/** Front matter of the current document (its first block, if it is YAML). */
+export function currentFrontMatter(): Record<string, string> {
+  const first = doc.blocks[0]?.text ?? "";
+  return first.startsWith("---\n") ? parseFrontMatter(first) : {};
+}
+
+/** Drop a leading YAML front-matter block (and the blank line after it). Used
+ *  to keep metadata like `image-root-url` out of rendered exports. */
+export function stripFrontMatter(md: string): string {
+  const m = /^---\r?\n[\s\S]*?\r?\n---[ \t]*(?:\r?\n|$)/.exec(md);
+  return m ? md.slice(m[0].length).replace(/^\s*\n/, "") : md;
+}
+
+/* ---------- path helpers ---------- */
+
+/** Directory containing the current document, or null when unsaved. */
+export function docDir(): string | null {
+  const path = doc.filePath;
+  if (!path) return null;
+  const norm = path.replace(/\\/g, "/");
+  const cut = norm.lastIndexOf("/");
+  return cut > 0 ? norm.slice(0, cut) : null;
+}
+
+/** Current document's base name without extension (for ${filename}). */
+export function docBaseName(): string {
+  const path = doc.filePath ?? "Untitled.md";
+  const name = path.replace(/\\/g, "/").split("/").pop() ?? "Untitled.md";
+  return name.replace(/\.[^.]+$/, "");
+}
+
+const isAbsolute = (p: string) => /^([A-Za-z]:[\\/]|\/)/.test(p);
+
+// A leading-slash path that points at a real filesystem location (a system
+// root dir), as opposed to a root-relative link like /images/x.png. Used so an
+// image root doesn't double-join an absolute path such as /Users/x/pic.png.
+const FS_ABS_ROOT = /^\/(?:Users|home|root|Applications|Library|System|Volumes|private|tmp|var|opt|usr|bin|sbin|etc|mnt|media|dev|srv)\//;
+
+/* ---------- image occurrences in block source ---------- */
+
+export interface ImageRef {
+  start: number;
+  end: number;
+  src: string;
+  alt: string;
+  kind: "md" | "html";
+  /** Every attribute on an HTML `<img>`, so a rewrite can preserve them. */
+  attrs?: Record<string, string>;
+}
+
+/** All image occurrences (markdown and HTML) in a block, in document order. */
+export function findImages(text: string): ImageRef[] {
+  const out: ImageRef[] = [];
+  let m: RegExpExecArray | null;
+  // Destination is either <…> (may contain spaces) or a bare run of non-space
+  // characters, optionally followed by a "title".
+  const md = /!\[([^\]\n]*)\]\(\s*(?:<([^>\n]*)>|([^)\s]+))(?:\s+"[^"]*")?\s*\)/g;
+  while ((m = md.exec(text))) {
+    out.push({ start: m.index, end: m.index + m[0].length, alt: m[1], src: m[2] ?? m[3], kind: "md" });
+  }
+  const html = /<img\s[^>]*?\/?>/gi;
+  while ((m = html.exec(text))) {
+    const tag = m[0];
+    const attrs = parseImgAttrs(tag);
+    out.push({
+      start: m.index,
+      end: m.index + tag.length,
+      src: attrs.src ?? "",
+      alt: attrs.alt ?? "",
+      kind: "html",
+      attrs,
+    });
+  }
+  return out.sort((a, b) => a.start - b.start);
+}
+
+/** Join a base dir and a relative path, normalizing `.` and `..`. */
+export function joinPath(base: string, rel: string): string {
+  const combined = base.replace(/\\/g, "/").replace(/\/+$/, "") + "/" + rel.replace(/\\/g, "/");
+  const out: string[] = [];
+  for (const seg of combined.split("/")) {
+    if (seg === ".") continue;
+    if (seg === "..") {
+      if (out.length > 1) out.pop();
+      continue;
+    }
+    out.push(seg);
+  }
+  return out.join("/");
+}
+
+/* ---------- resolver ---------- */
+
+const REMOTE = /^(https?:|data:|blob:|mailto:|tauri:|asset:|file:)/i;
+
+interface ResolveCtx {
+  dir: string | null;
+  rootUrl?: string;
+  convert: (absPath: string) => string;
+}
+
+/**
+ * Pure absolute-path resolution for a markdown image src (testable):
+ *  - remote/data URLs → null (no local file);
+ *  - root-relative (`/x`) → against the `image-root-url` front matter when set;
+ *  - other relative paths → against the document's directory;
+ *  - absolute file paths → used directly.
+ * Returns null when the src has no local file (remote, or no doc dir).
+ */
+export function toAbsImagePath(src: string, ctx: Omit<ResolveCtx, "convert">): string | null {
+  const s = src.trim();
+  if (!s || REMOTE.test(s) || s.startsWith("//")) return null;
+  if (s.startsWith("/")) {
+    if (!ctx.rootUrl) return s;
+    const root = ctx.rootUrl.replace(/\\/g, "/").replace(/\/+$/, "");
+    // An absolute path (under the root, or any real filesystem path) is used
+    // as-is; only a bare root-relative link like /images/x.png is joined onto
+    // the root. Without this, /Users/x/pic.png would be double-joined.
+    if (s.startsWith(root + "/") || FS_ABS_ROOT.test(s)) return s;
+    return joinPath(root, s.slice(1));
+  }
+  if (isAbsolute(s)) return s.replace(/\\/g, "/");
+  return ctx.dir ? joinPath(ctx.dir, s) : null;
+}
+
+/**
+ * Pure image-src resolution: maps a src to a loadable URL via `convert` (the
+ * asset protocol), passing remote/data URLs and unresolvable srcs through.
+ */
+export function resolveImagePath(src: string, ctx: ResolveCtx): string {
+  const abs = toAbsImagePath(src, ctx);
+  return abs == null ? src : ctx.convert(abs);
+}
+
+/** Live resolver: gathers doc dir + front matter + Tauri's convertFileSrc. */
+export function resolveImageSrc(src: string): string {
+  if (!isTauri) return src;
+  return resolveImagePath(src, {
+    dir: docDir(),
+    rootUrl: (currentFrontMatter()["image-root-url"] ?? currentFrontMatter()["typora-root-url"]),
+    convert: (p) => {
+      try {
+        return convertFileSrc(p);
+      } catch {
+        return src;
+      }
+    },
+  });
+}
+
+/** Absolute filesystem path of an image src, for file operations. Null if remote. */
+export function imageFsPath(src: string): string | null {
+  return toAbsImagePath(src, { dir: docDir(), rootUrl: (currentFrontMatter()["image-root-url"] ?? currentFrontMatter()["typora-root-url"]) });
+}
+
+setImageResolver(resolveImageSrc);

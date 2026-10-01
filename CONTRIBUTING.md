@@ -1,0 +1,30 @@
+# Contributing
+
+Issues and pull requests are welcome at [tobwil/THENote](https://github.com/tobwil/THENote).
+
+Use Node.js 22.12+ (24+ recommended), npm and stable Rust. Native development also requires the platform's Tauri prerequisites; macOS builds require Xcode Command Line Tools.
+
+```sh
+npm ci
+npm run desktop
+```
+
+Before submitting changes, run the checks relevant to your change:
+
+```sh
+npm run typecheck
+npm run lint
+npm test
+npm run test:notebook
+npm run test:ai:ui
+npm run test:diff:ui
+npm run test:workspace:ui
+cargo test --manifest-path src-tauri/Cargo.toml
+cargo clippy --manifest-path src-tauri/Cargo.toml -- -D warnings
+```
+
+UI tests use Playwright Chromium or installed Google Chrome. Install Chromium with `npx playwright install chromium` if needed. Tests use fixture notes and simulated AI responses rather than real API credentials. Keep keys, personal notes, local build paths and user settings out of commits.
+
+Explain the problem, resulting behavior and validation in your pull request. Preserve Markdown portability, explicit AI-context opt-in, unsaved buffers and undo history. Update the changelog and relevant documentation when behavior changes.
+
+Read [LICENSING.md](LICENSING.md) before contributing. Preserve Sarala, Ledge and dependency attribution. New project code is contributed under GPL-3.0-or-later; the Ledge-derived parser retains its Apache-2.0 notices.

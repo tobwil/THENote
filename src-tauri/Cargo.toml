@@ -1,0 +1,54 @@
+[package]
+name = "the-note"
+version = "0.2.3"
+description = "A calm workspace for notes that run"
+authors = ["Srinivas Gowda"]
+license = "GPL-3.0-or-later"
+edition = "2021"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["protocol-asset"] }
+tauri-plugin-opener = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tauri-plugin-clipboard-manager = "2.3.2"
+regex = "1"
+notify = "8"
+notify-debouncer-mini = "0.7"
+encoding_rs = "0.8"
+chardetng = "1"
+font-kit = "0.14"
+base64 = "0.23"
+libc = "0.2"
+reqwest = { version = "0.13", default-features = false, features = ["rustls", "json", "stream"] }
+futures-util = "0.3"
+tokio = { version = "1", features = ["macros", "sync", "time"] }
+
+[target.'cfg(target_os = "macos")'.dependencies]
+security-framework = "3"
+
+# File dialogs. On Linux, use rfd's xdg-desktop-portal backend instead of the
+# default GTK one: the portal draws the picker *outside* the snap sandbox and
+# hands back access to the chosen file via the document portal, so user-picked
+# files (incl. USB / removable media) work without the removable-media interface.
+# The portal deps (ashpd/pollster) are Linux-gated inside rfd, so macOS/Windows
+# keep their native AppKit/win32 pickers regardless — hence the target split.
+[target.'cfg(not(target_os = "linux"))'.dependencies]
+tauri-plugin-dialog = "2"
+
+[target.'cfg(target_os = "linux")'.dependencies]
+tauri-plugin-dialog = { version = "2", default-features = false, features = ["xdg-portal"] }
+
+# Auto-updater. Desktop-only (the plugin doesn't build for mobile); Sarala has no
+# mobile target, but the cfg gate keeps that true if one is ever added.
+[target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
+tauri-plugin-updater = "2"
+
+[profile.release]
+panic = "abort"
+codegen-units = 1
+lto = true
+strip = true

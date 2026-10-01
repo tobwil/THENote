@@ -1,0 +1,20 @@
+import { build } from 'esbuild';
+import assert from 'node:assert/strict';
+await build({ entryPoints: ['src/execution/model.ts'], outfile: 'tests/.build/execution.mjs', bundle: true, platform: 'node', format: 'esm' });
+const { parseExecutable, executionContext } = await import('./.build/execution.mjs');
+let count = 0;
+function test(name, fn) { fn(); count++; console.log(`✓ ${name}`); }
+test('Python fence preserves source exactly', () => assert.equal(parseExecutable('```python\nprint("é 👋")\n\n```').code, 'print("é 👋")\n'));
+test('tilde fences and CRLF', () => assert.equal(parseExecutable('~~~~js\r\nconsole.log(42)\r\n~~~~').language, 'js'));
+test('unclosed fence cannot execute', () => assert.equal(parseExecutable('```sh\nwhoami'), null));
+test('shorter closing fence cannot execute', () => assert.equal(parseExecutable('````sh\nwhoami\n```'), null));
+test('multiple fences cannot be bundled accidentally', () => assert.equal(parseExecutable('```sh\necho 1\n```\n```sh\necho 2\n```'), null));
+test('diagram and unknown languages are never shell commands', () => { for (const language of ['mermaid', 'd2', 'sql', 'prompt', 'unknown', '']) assert.equal(parseExecutable(`\`\`\`${language}\ntext\n\`\`\``), null); });
+test('confirmation attribute preserved', () => assert.deepEqual(parseExecutable('```sh confirm\necho yes\n```').attributes, ['confirm']));
+test('Ledge frontmatter supplies cwd, env, confirmation', () => { const c = executionContext('---\ncwd: ./scripts\nconfirm: true\nenv:\n  MODE: "local test"\n---\n# Note', '/notes/note.md', '/project'); assert.equal(c.cwd, './scripts'); assert.equal(c.env.MODE, 'local test'); assert.equal(c.baseDir, '/project'); assert.equal(c.confirm, true); });
+test('note directory is fallback when workspace absent', () => assert.equal(executionContext('# note', '/my notes/note.md', null).baseDir, '/my notes'));
+test('remote host never silently falls back to local', () => assert.throws(() => executionContext('---\nhost: production\n---\n', null, null), /Remote-Host/));
+test('unsupported secret profiles fail visibly', () => assert.throws(() => executionContext('---\nprofile: production\n---\n', null, null), /profile/));
+test('explicit local host permitted', () => assert.equal(executionContext('---\nhost: local\n---\n', null, null).cwd, null));
+test('unclosed frontmatter never falls back to an implicit context', () => assert.throws(() => executionContext('---\nhost: production\n', null, null), /nicht abgeschlossen/));
+console.log(`${count} execution contract tests passed.`);

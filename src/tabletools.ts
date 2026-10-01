@@ -1,0 +1,327 @@
+/**
+ * GFM pipe-table parsing and editing for the Paragraph ▸ Table menu.
+ *
+ * Unit-style asserts (shape of the contract):
+ *   parseTable("| a | b |\n| --- | :-: |\n| 1 | 2 |")
+ *     → { align: [null, "center"], rows: [["a","b"], ["1","2"]] }
+ *   serializeTable(parseTable(t))    round-trips cell content
+ *   parseTable("not a table")        → null
+ *   skeletonTable(2, 3)              → header + separator + 2 empty body rows
+ */
+
+export type Align = "left" | "center" | "right" | null;
+
+export interface PipeTable {
+  align: Align[];
+  /** rows[0] is the header row; the separator line is implicit. */
+  rows: string[][];
+}
+
+/** Split on structural pipes only; keep escapes intact for lossless edits. */
+export function splitPipeRow(line: string): string[] {
+  const parts: string[] = [];
+  let start = 0, slashes = 0;
+  for (let i = 0; i < line.length; i++) {
+    if (line[i] === "|" && slashes % 2 === 0) {
+      parts.push(line.slice(start, i));
+      start = i + 1;
+    }
+    slashes = line[i] === "\\" ? slashes + 1 : 0;
+  }
+  parts.push(line.slice(start));
+  return parts;
+}
+
+function splitRow(line: string): string[] {
+  const parts = splitPipeRow(line.trim());
+  if (parts[0] === "") parts.shift();
+  if (parts.at(-1) === "") parts.pop();
+  return parts.map(c => c.trim());
+}
+
+const SEPARATOR_CELL = /^:?-{1,}:?$/;
+
+export function parseTable(text: string): PipeTable | null {
+  const lines = text.split("\n").filter((l) => l.trim() !== "");
+  if (lines.length < 2 || !lines.every((l) => l.includes("|"))) return null;
+  const sep = splitRow(lines[1]);
+  if (!sep.length || !sep.every((c) => SEPARATOR_CELL.test(c))) return null;
+
+  const align: Align[] = sep.map((c) => {
+    const left = c.startsWith(":");
+    const right = c.endsWith(":");
+    if (left && right) return "center";
+    if (right) return "right";
+    if (left) return "left";
+    return null;
+  });
+
+  const width = align.length;
+  // Refuse structural edits on ragged tables rather than discarding extra cells.
+  if ([lines[0], ...lines.slice(2)].some(line => splitRow(line).length > width)) return null;
+  const rows = [lines[0], ...lines.slice(2)].map((l) => {
+    const cells = splitRow(l);
+    while (cells.length < width) cells.push("");
+    return cells.slice(0, width);
+  });
+  return { align, rows };
+}
+
+export function serializeTable(t: PipeTable): string {
+  const sep = t.align.map((a) => {
+    if (a === "center") return ":---:";
+    if (a === "right") return "---:";
+    if (a === "left") return ":---";
+    return "---";
+  });
+  const row = (cells: string[]) => `| ${cells.join(" | ")} |`;
+  return [row(t.rows[0]), row(sep), ...t.rows.slice(1).map(row)].join("\n");
+}
+
+/** Validate dialog drafts without coercing empty, fractional, or oversized values. */
+export function parseTableDimension(value: string, max: number): number | null {
+  if (!value.trim()) return null;
+  const n = Number(value);
+  return Number.isInteger(n) && n >= 1 && n <= max ? n : null;
+}
+
+/** New table markdown: `cols` columns, a header, and `rows` empty body rows. */
+export function skeletonTable(rows: number, cols: number): string {
+  const n = Math.max(1, Math.min(cols, 16));
+  const m = Math.max(1, Math.min(rows, 64));
+  const header = Array.from({ length: n }, (_, i) => `Column ${i + 1}`);
+  const empty = Array.from({ length: n }, () => "  ");
+  return serializeTable({
+    align: Array.from({ length: n }, () => null),
+    rows: [header, ...Array.from({ length: m }, () => [...empty])],
+  });
+}
+
+/** Line number (0-based) of a text offset; line 1 is the separator. */
+export function lineAtOffset(text: string, offset: number): number {
+  return text.slice(0, Math.max(0, Math.min(offset, text.length))).split("\n").length - 1;
+}
+
+/** Index into PipeTable.rows for a source line number (separator → header). */
+function rowForLine(line: number): number {
+  if (line <= 1) return 0;
+  return line - 1;
+}
+
+/** Column index of an offset within a table source line. */
+export function columnAtOffset(text: string, offset: number): number {
+  const lineStart = text.lastIndexOf("\n", offset - 1) + 1;
+  const before = text.slice(lineStart, offset);
+  const pipes = splitPipeRow(before).length - 1;
+  return Math.max(0, before.trimStart().startsWith("|") ? pipes - 1 : pipes);
+}
+
+/** Current size of a table: total rows (incl. header) and columns. */
+export function tableDims(text: string): { rows: number; cols: number } | null {
+  const t = parseTable(text);
+  return t ? { rows: t.rows.length, cols: t.align.length } : null;
+}
+
+/**
+ * Resize to `rows` total rows (header included, min 2) and `cols` columns.
+ * Existing cell content survives; growth adds empty cells/rows.
+ *   resizeTable("| a |\n| --- |", 3, 2) → header gains a column, one empty
+ *   body row appended; resizeTable(t, 2, 1) truncates from the bottom/right.
+ */
+export function resizeTable(text: string, rows: number, cols: number): string | null {
+  const t = parseTable(text);
+  if (!t) return null;
+  const targetRows = Math.max(2, Math.min(rows, 64));
+  const targetCols = Math.max(1, Math.min(cols, 16));
+
+  t.align = t.align.slice(0, targetCols);
+  while (t.align.length < targetCols) t.align.push(null);
+  t.rows = t.rows.map((r) => {
+    const cells = r.slice(0, targetCols);
+    while (cells.length < targetCols) cells.push("  ");
+    return cells;
+  });
+
+  t.rows = t.rows.slice(0, targetRows);
+  while (t.rows.length < targetRows) {
+    t.rows.push(Array.from({ length: targetCols }, () => "  "));
+  }
+  return serializeTable(t);
+}
+
+/**
+ * Source-offset ranges of every cell's trimmed content, in tab order
+ * (header cells left-to-right, then each body row; the separator line is
+ * skipped). Whitespace-only cells collapse to a caret position mid-cell.
+ *   cellRanges("| a | b |\n| --- | --- |\n| 1 | 2 |")
+ *     → [{2,3}, {6,7}, …] — "a" then "b" then "1" then "2"
+ */
+export function cellRanges(text: string): { start: number; end: number }[] {
+  if (!parseTable(text)) return [];
+  const out: { start: number; end: number }[] = [];
+  const lines = text.split("\n");
+  let offset = 0;
+  lines.forEach((line, i) => {
+    if (i !== 1 && line.includes("|")) {
+      const parts = splitPipeRow(line);
+      let pos = offset;
+      for (let k = 0; k < parts.length; k++) {
+        const a = pos;
+        pos += parts[k].length + 1; // advance past this part and its pipe
+        // mirror styleTableRow: empty text outside the outermost pipes isn't a cell
+        if ((k === 0 || k === parts.length - 1) && parts[k] === "") continue;
+        const leading = parts[k].length - parts[k].trimStart().length;
+        const trimmed = parts[k].trim().length;
+        if (trimmed === 0) {
+          const mid = a + Math.floor(parts[k].length / 2);
+          out.push({ start: mid, end: mid });
+        } else {
+          out.push({ start: a + leading, end: a + leading + trimmed });
+        }
+      }
+    }
+    offset += line.length + 1;
+  });
+  return out;
+}
+
+/**
+ * Append an empty row at the bottom / an empty column at the right, plus the
+ * tab-order index of the first cell of what was added — the edge "+" rails
+ * drop the caret there so you can type straight into the new cell.
+ *
+ * Unlike `editTable`, these take no caret offset: the rails act on the table's
+ * edge, not on wherever the caret happens to be.
+ */
+export interface TableAppend {
+  text: string;
+  /** Index into `cellRanges(text)` of the new row's / column's first cell. */
+  cell: number;
+}
+
+export function appendTableRow(text: string): TableAppend | null {
+  const t = parseTable(text);
+  if (!t) return null;
+  const cols = t.align.length;
+  const rowIndex = t.rows.length;
+  t.rows.push(Array.from({ length: cols }, () => "  "));
+  return { text: serializeTable(t), cell: rowIndex * cols };
+}
+
+export function appendTableColumn(text: string): TableAppend | null {
+  const t = parseTable(text);
+  if (!t) return null;
+  if (t.align.length >= 16) return null;
+  t.align.push(null);
+  for (const r of t.rows) r.push("  ");
+  // The new column's header cell: last cell of the first row, now one wider.
+  return { text: serializeTable(t), cell: t.align.length - 1 };
+}
+
+export type TableEdit =
+  | { kind: "row_above" }
+  | { kind: "row_below" }
+  | { kind: "delete_row" }
+  | { kind: "add_col"; before?: boolean }
+  | { kind: "delete_col" }
+  | { kind: "align"; align: Align }
+  | { kind: "move_row" | "move_col"; direction: -1 | 1 };
+
+/** Apply a table edit at a caret offset; returns null if text isn't a table. */
+export function editTable(text: string, offset: number, edit: TableEdit): string | null {
+  const t = parseTable(text);
+  if (!t) return null;
+  const row = Math.min(rowForLine(lineAtOffset(text, offset)), t.rows.length - 1);
+  const col = Math.min(columnAtOffset(text, offset), t.align.length - 1);
+  const emptyRow = () => Array.from({ length: t.align.length }, () => "  ");
+
+  switch (edit.kind) {
+    case "move_row": {
+      const to = row + edit.direction;
+      if (row === 0 || to < 1 || to >= t.rows.length) return text;
+      [t.rows[row], t.rows[to]] = [t.rows[to], t.rows[row]];
+      break;
+    }
+    case "move_col": {
+      const to = col + edit.direction;
+      if (to < 0 || to >= t.align.length) return text;
+      [t.align[col], t.align[to]] = [t.align[to], t.align[col]];
+      for (const cells of t.rows) [cells[col], cells[to]] = [cells[to], cells[col]];
+      break;
+    }
+    case "row_above":
+      // Never insert above the header — that would break the table shape.
+      t.rows.splice(Math.max(1, row), 0, emptyRow());
+      break;
+    case "row_below":
+      t.rows.splice(Math.max(1, row + 1), 0, emptyRow());
+      break;
+    case "delete_row":
+      if (row === 0 || t.rows.length <= 2) return text;
+      t.rows.splice(row, 1);
+      break;
+    case "add_col": {
+      const at = edit.before ? col : col + 1;
+      t.align.splice(at, 0, null);
+      for (const r of t.rows) r.splice(at, 0, "  ");
+      break;
+    }
+    case "delete_col":
+      if (t.align.length <= 1) return text;
+      t.align.splice(col, 1);
+      for (const r of t.rows) r.splice(col, 1);
+      break;
+    case "align":
+      t.align[col] = edit.align;
+      break;
+  }
+  return serializeTable(t);
+}
+
+/**
+ * Reformat table source so every column's pipes line up: cells are padded to
+ * the widest value in their column and the separator dashes fill that width,
+ * keeping any alignment colons.
+ *   prettifyTable("|a|bb|\n|-|-|\n|ccc|d|")
+ *     → "| a   | bb |\n| --- | -- |\n| ccc | d  |"
+ */
+export function prettifyTable(text: string): string | null {
+  const t = parseTable(text);
+  if (!t) return null;
+  const widths = t.align.map((_, c) =>
+    Math.max(3, ...t.rows.map((r) => (r[c] ?? "").trim().length)),
+  );
+  const pad = (s: string, w: number, a: Align) => {
+    const v = s.trim();
+    const extra = w - v.length;
+    if (a === "right") return " ".repeat(extra) + v;
+    if (a === "center") {
+      const left = Math.floor(extra / 2);
+      return " ".repeat(left) + v + " ".repeat(extra - left);
+    }
+    return v + " ".repeat(extra);
+  };
+  const row = (cells: string[]) =>
+    "| " + cells.map((c, i) => pad(c ?? "", widths[i], t.align[i])).join(" | ") + " |";
+  const sep = "| " + t.align.map((a, i) => {
+    const w = widths[i];
+    if (a === "center") return ":" + "-".repeat(w - 2) + ":";
+    if (a === "right") return "-".repeat(w - 1) + ":";
+    if (a === "left") return ":" + "-".repeat(w - 1);
+    return "-".repeat(w);
+  }).join(" | ") + " |";
+  return [row(t.rows[0]), sep, ...t.rows.slice(1).map(row)].join("\n");
+}
+
+/** Move an entire body row or column, preserving its cells and alignment. */
+export function moveTablePart(text: string, axis: "row" | "column", from: number, to: number): string | null {
+  const table = parseTable(text);
+  if (!table) return null;
+  const count = axis === "row" ? table.rows.length : table.align.length;
+  const minimum = axis === "row" ? 1 : 0;
+  if (![from, to].every(n => Number.isInteger(n) && n >= minimum && n < count) || from === to) return text;
+  const move = <T>(items: T[]) => { const [item] = items.splice(from, 1); items.splice(to, 0, item); };
+  if (axis === "row") move(table.rows);
+  else { move(table.align); table.rows.forEach(move); }
+  return serializeTable(table);
+}
