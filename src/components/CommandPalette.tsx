@@ -49,6 +49,7 @@ const BASE: Cmd[] = [
   { group: "Blocks", id: "paragraph.math_block", label: "Math Block", icon: "math" },
   { group: "Blocks", id: "paragraph.table.insert", label: "Insert Table", icon: "table" },
   { group: "Blocks", id: "paragraph.table.formula", label: "Tabelle mit Formeln", icon: "table" },
+  { group: "Blocks", id: "view.diagram_zoom", label: "Diagramm vergrößern", icon: "diagram" },
   { group: "Blocks", id: "paragraph.hr", label: "Horizontal Rule", icon: "hr" },
   { group: "Blocks", id: "paragraph.toc", label: "Table of Contents", icon: "list" },
   { group: "Blocks", id: "paragraph.footnote", label: "Link Reference / Footnote", icon: "link" },

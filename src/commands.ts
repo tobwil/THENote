@@ -78,6 +78,7 @@ import {
   appendTableRow, appendTableColumn, type TableAppend, type TableEdit, type Align,
 } from "./tabletools";
 import { FORMULA_TABLE_EXAMPLE } from "./tableformula";
+import { openDiagramOfBlock } from "./components/DiagramViewer";
 
 
 
@@ -1258,6 +1259,11 @@ const registry: Record<string, Command> = {
   "paragraph.heading_down": () => shiftHeading(-1),
   "paragraph.table.insert": () => openTableDialog(),
   "paragraph.table.formula": insertFormulaTable,
+  "view.diagram_zoom": () => {
+    const block = document.querySelectorAll(".editor .page > .block")[targetBlockIndex()]
+      ?? document.querySelector(".editor .block.active");
+    openDiagramOfBlock(block);
+  },
   "paragraph.table.row_above": () => applyTableEdit({ kind: "row_above" }),
   "paragraph.table.row_below": () => applyTableEdit({ kind: "row_below" }),
   "paragraph.table.move_row_up": () => applyTableEdit({ kind: "move_row", direction: -1 }),

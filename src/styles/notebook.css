@@ -115,3 +115,25 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 .rendered td:has(> .md-formula),.rendered th:has(> .md-formula){background:color-mix(in srgb,var(--accent) 6%,transparent)!important}
 .md-formula{font-variant-numeric:tabular-nums;cursor:help}
 .md-formula-error{color:var(--danger,#a8493e);font:600 .85em var(--font-mono)}
+
+/* Diagram magnifier: hover button and full-window viewer with zoom and pan. */
+.diagram-zoom-button{position:fixed;z-index:40;transform:translateX(-100%);display:inline-flex;align-items:center;gap:6px;padding:6px 11px;border-radius:8px;border:1px solid var(--rule);background:color-mix(in srgb,var(--bg-page) 92%,transparent);backdrop-filter:blur(6px);color:var(--ink);font:500 12px var(--font-ui);box-shadow:var(--shadow);cursor:pointer}
+.diagram-zoom-button:hover{background:var(--tint);color:var(--accent)}
+.diagram-viewer{position:fixed;inset:0;width:auto;height:auto;max-width:none!important;max-height:none!important;overflow:hidden!important;z-index:1200;display:flex;flex-direction:column;background:var(--bg);color:var(--ink);font:13px/1.5 var(--font-ui);outline:none}
+.diagram-viewer-bar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 18px;border-bottom:1px solid var(--rule);background:var(--bg-page)}
+.diagram-viewer-bar b{font-weight:600}
+.diagram-viewer-tools{display:flex;align-items:center;gap:6px}
+.diagram-viewer-tools button{min-width:34px;height:32px;padding:0 11px;border:1px solid var(--rule);border-radius:8px;background:var(--bg-page);color:var(--ink);font:500 13px var(--font-ui);cursor:pointer}
+.diagram-viewer-tools button:hover{background:var(--tint)}
+.diagram-viewer-tools .diagram-viewer-level{min-width:68px;font-variant-numeric:tabular-nums}
+.diagram-viewer-tools .diagram-viewer-close{margin-left:8px;font-size:18px;line-height:1}
+.diagram-viewer-stage{position:relative;flex:1;overflow:hidden;cursor:grab;touch-action:none;outline:none;background:radial-gradient(circle,color-mix(in srgb,var(--ink) 9%,transparent) 1px,transparent 1.2px) 0 0/22px 22px,var(--bg-page)}
+.diagram-viewer-stage.dragging{cursor:grabbing}
+.diagram-viewer-stage:focus-visible{box-shadow:inset 0 0 0 2px var(--accent)}
+.diagram-viewer-canvas{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform}
+.diagram-viewer-canvas svg{display:block;max-width:none!important;user-select:none}
+.diagram-viewer-hint{padding:8px 18px;border-top:1px solid var(--rule);background:var(--bg-page);color:var(--ink-soft);font-size:11.5px;text-align:center}
+@media print{.diagram-zoom-button,.diagram-viewer{display:none!important}}
+/* Mermaid measures its HTML labels with its own line height; the note's roomy
+   paragraph rhythm must not leak into them, or multi-line labels get clipped. */
+.mermaid-block foreignObject div,.mermaid-block foreignObject span,.mermaid-block foreignObject p{line-height:1.5!important;margin:0!important;color:inherit}

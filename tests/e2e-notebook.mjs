@@ -55,6 +55,20 @@ try {
   await page.getByRole('button', { name: /Eine Idee skizzieren/ }).click();
   await page.locator('.mermaid-block svg').waitFor({ timeout: 20000 });
   assert.equal(await page.getByRole('button', { name: /ausführen$/ }).count(), 0, 'diagram is not executable');
+  // Diagram magnifier: hover button, full-window viewer, zoom and Escape.
+  await page.locator('.mermaid-block svg').hover();
+  await page.getByRole('button', { name: /Vergrößern/ }).first().click();
+  const viewer = page.getByRole('dialog', { name: 'Mermaid-Diagramm vergrößert' });
+  await viewer.waitFor();
+  assert.ok(await viewer.evaluate(el => { const r = el.getBoundingClientRect(); return r.width === innerWidth && r.height === innerHeight; }), 'viewer covers the window');
+  const level = () => viewer.locator('.diagram-viewer-level').innerText().then(t => parseInt(t, 10));
+  const before = await level();
+  await viewer.getByRole('button', { name: 'Vergrößern', exact: true }).click();
+  assert.ok(await level() > before, 'zoom in raises the level');
+  await viewer.locator('.diagram-viewer-stage').press('0');
+  assert.ok(await viewer.locator('.diagram-viewer-canvas svg').count() === 1, 'viewer shows the diagram');
+  await page.keyboard.press('Escape');
+  await viewer.waitFor({ state: 'detached' });
   // Slash menu: a table with spreadsheet formulas; the file keeps the formulas, the page shows results.
   await page.getByRole('button', { name: /Neue Notiz/ }).click();
   await page.getByRole('button', { name: /Leere Notiz/ }).click();
@@ -75,5 +89,5 @@ try {
   await page.setViewportSize({ width: 900, height: 740 });
   assert.ok(await page.locator('body').evaluate(el => el.scrollWidth <= innerWidth), 'no horizontal app overflow');
   assert.deepEqual(errors, []);
-  console.log('PASS notebook: templates, code actions, browser boundary, activity, Markdown integrity, tabs, edits, themes, export, Mermaid, formula tables, responsive layout.');
+  console.log('PASS notebook: templates, code actions, browser boundary, activity, Markdown integrity, tabs, edits, themes, export, Mermaid with magnifier, formula tables, responsive layout.');
 } finally { await browser?.close(); server.kill('SIGTERM'); }
