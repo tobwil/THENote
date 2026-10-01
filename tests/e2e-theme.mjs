@@ -162,7 +162,7 @@ await page.evaluate(async () => {
 await page.waitForTimeout(600);
 check(await page.locator(".theme-picker").isVisible(), "the themes gallery opens");
 const cards = await page.locator(".tp-card").count();
-check(cards === 14, `every theme has a card, custom included (${cards})`);
+check(cards === 15, `every theme has a card, custom included (${cards})`);
 
 // Each preview carries its own data-theme, so it must paint in THAT theme's
 // colours rather than the active one — the property that keeps previews honest.
@@ -175,8 +175,9 @@ check(previewBgs[0] === "#faf6ef", `the Sarala card uses Sarala's page colour ($
 // Badges are measured from those computed values, not hardcoded.
 const modes = await page.locator(".tp-mode").allTextContents();
 check(modes[0] === "light", `Sarala reads as light (${modes[0]})`);
-check(modes[1] === "dark", `Pro reads as dark (${modes[1]})`);
-check(modes.filter((m) => m).length === 13, `all curated themes get a badge (${modes.filter((m) => m).length})`);
+check(modes[1] === "dark", `THE Note Dark reads as dark (${modes[1]})`);
+check(modes[2] === "dark", `Pro reads as dark (${modes[2]})`);
+check(modes.filter((m) => m).length === 14, `all curated themes get a badge (${modes.filter((m) => m).length})`);
 
 // Selecting from the gallery applies the theme.
 await page.locator(".tp-card").nth(1).click();

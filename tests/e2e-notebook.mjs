@@ -44,7 +44,7 @@ try {
   await tabs.last().click();
   await page.getByRole('heading', { name: 'Mein bearbeitetes Runbook' }).waitFor();
   await page.getByRole('button', { name: 'Farbschema wechseln' }).click();
-  assert.equal(await page.locator('.app').getAttribute('data-theme'), 'graphite');
+  assert.equal(await page.locator('.app').getAttribute('data-theme'), 'forest');
   await page.getByRole('button', { name: 'Farbschema wechseln' }).click();
   const downloadWait = page.waitForEvent('download');
   page.once('dialog', d => d.accept('Runbook.md'));

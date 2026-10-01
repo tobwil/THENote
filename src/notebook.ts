@@ -1,4 +1,6 @@
 import { fullText, loadDocument, openDocument, doc, setSidebarTab } from './store';
+import playground from '../examples/Spielplatz.md?raw';
+import toolbox from '../examples/Werkzeugkasten.md?raw';
 export const WELCOME = `# Gedanken, die etwas bewegen.
 
 Ein ruhiger Ort zum Denken. Und die Werkzeuge, um aus einer Idee etwas zu machen. Willkommen in **THE Note**.
@@ -24,6 +26,8 @@ print("\\nEin guter Anfang. ✦")
 - [ ] Diese Notiz als Markdown speichern
 - [ ] Einen eigenen Codeblock ausprobieren
 
+> **Lust auf mehr?** Unter **＋ Neue Notiz** warten der **Spielplatz** mit Würfelorakel, Mandelbrot und Aquarium und der **Werkzeugkasten** mit kleinen Helfern für Ordner, Git, Kalender und Daten.
+
 ### Alles an seinem Platz
 
 | Schreiben | Verstehen | Machen |
@@ -37,9 +41,12 @@ export const TEMPLATES = {
   blank: '',
   journal: '# Ein neuer Gedanke\n\nWas beschäftigt dich gerade?\n\n## Notizen\n\n\n\n## Nächste Schritte\n\n- [ ] Ein kleiner, konkreter Schritt\n',
   runbook: '---\ncwd: .\nconfirm: true\nenv:\n  PROJECT: THE-Note\n---\n\n# Mein Runbook\n\nEin Ziel. Klare Schritte. Sichtbare Ergebnisse.\n\n## 01 · Kontext prüfen\n\n```sh\nprintf "Projekt: %s\\n" "$PROJECT"\npwd\n```\n\n## 02 · Daten verarbeiten\n\n```python\nwerte = [12, 18, 24, 30]\nprint(f"Mittelwert: {sum(werte) / len(werte):.1f}")\n```\n\n## 03 · Ergebnis festhalten\n\n- [ ] Ergebnisse geprüft\n- [ ] Nächsten Schritt dokumentiert\n',
+  playground,
+  toolbox,
   diagram: '# Eine Idee nimmt Form an\n\n## Der Ablauf\n\n```mermaid\nflowchart LR\n    A[Idee] --> B[Notiz]\n    B --> C[Experiment]\n    C --> D[Erkenntnis]\n    D --> B\n```\n\n## Die Annahme\n\nWas möchtest du herausfinden?\n',
 };
-export function newNotebook(template: keyof typeof TEMPLATES) { openDocument(TEMPLATES[template], null); }
+export type TemplateId = keyof typeof TEMPLATES;
+export function newNotebook(template: TemplateId) { openDocument(TEMPLATES[template], null); }
 export function initializeNotebook() {
   if (!fullText().trim() && !doc.filePath && !doc.dirty) { loadDocument(WELCOME, null); setSidebarTab('outline'); }
 }

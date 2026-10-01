@@ -42,7 +42,7 @@ const [state, setState] = createStore({
 export const doc = state;
 
 export const THEMES = [
-  "sarala", "pro", "octagon", "machine", "ristretto", "spectrum", "classic",
+  "sarala", "forest", "pro", "octagon", "machine", "ristretto", "spectrum", "classic",
   "paper", "graphite", "github", "night", "newsprint", "whitey",
   // Derived at runtime from a base16 scheme rather than hand-authored in CSS.
   "custom",
