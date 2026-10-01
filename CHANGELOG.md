@@ -2,7 +2,7 @@
 
 The entries below reconstruct the development milestones from the conversation and validated local versions. Versions 0.1.0–0.2.3 were developed on 2026-10-01 before the first source publication; they are **not fabricated historical Git commits or previous GitHub releases**.
 
-## Unreleased
+## 0.2.5 — 2026-10-01
 
 - Add a **diagram magnifier**: hovering a rendered Mermaid or D2 diagram shows **⤢ Vergrößern**, which opens it full-window with zoom and pan (pinch or ⌘/Ctrl + scroll, drag or scroll, double-click, + / − / 0 / 1, arrow keys, Esc). Also in the command palette as "Diagramm vergrößern".
 - Keep multi-line Mermaid labels from being clipped by the note's paragraph line height.

@@ -6,11 +6,11 @@
 
 Ein lokales Notizbuch für Gedanken, Pläne und Projekte. Du schreibst in Markdown, ordnest Notizen in Projekten und Ordnern, und wenn eine Notiz etwas rechnen, prüfen oder ausprobieren soll, läuft der Codeblock direkt darin.
 
-THE Note verbindet **Saralas Live-Markdown-Editor** mit **Ledges ausführbaren Notizen**. Native macOS-App auf Tauri 2 und SolidJS. Aktueller Stand: **0.2.4, funktionale Entwicklungsversion**.
+THE Note verbindet **Saralas Live-Markdown-Editor** mit **Ledges ausführbaren Notizen**. Native macOS-App auf Tauri 2 und SolidJS. Aktueller Stand: **0.2.5, funktionale Entwicklungsversion**.
 
 ## Website und Installation
 
-[**THE Note entdecken, im Browser ausprobieren und installieren →**](https://tobwil.github.io/THENote/) ([English](https://tobwil.github.io/THENote/en/)) · [Download v0.2.4](https://github.com/tobwil/THENote/releases/tag/v0.2.4) · [Changelog](CHANGELOG.md)
+[**THE Note entdecken, im Browser ausprobieren und installieren →**](https://tobwil.github.io/THENote/) ([English](https://tobwil.github.io/THENote/en/)) · [Download v0.2.5](https://github.com/tobwil/THENote/releases/tag/v0.2.5) · [Changelog](CHANGELOG.md)
 
 Aktuell für **macOS 11+ auf Apple Silicon**. Drei Wege führen zur gleichen App:
 
@@ -38,9 +38,9 @@ curl -fsSL https://tobwil.github.io/THENote/install.sh | bash -s -- --check
 
 ### DMG herunterladen
 
-[DMG für macOS Apple Silicon](https://github.com/tobwil/THENote/releases/download/v0.2.4/THE.Note-macOS-arm64.dmg) öffnen und **THE Note.app** auf **Applications** ziehen. Danach das Image auswerfen und die App im Programme-Ordner öffnen.
+[DMG für macOS Apple Silicon](https://github.com/tobwil/THENote/releases/download/v0.2.5/THE.Note-macOS-arm64.dmg) öffnen und **THE Note.app** auf **Applications** ziehen. Danach das Image auswerfen und die App im Programme-Ordner öffnen.
 
-Alternativ: [ZIP herunterladen](https://github.com/tobwil/THENote/releases/download/v0.2.4/THE.Note-macOS-arm64.zip).
+Alternativ: [ZIP herunterladen](https://github.com/tobwil/THENote/releases/download/v0.2.5/THE.Note-macOS-arm64.zip).
 
 Vor Updates offene Notizen speichern und die App beenden. Diese Preview ist mit **Developer ID signiert und Apple-notarisiert**. Beim ersten Start kann macOS die übliche Bestätigung für eine aus dem Internet geladene App anzeigen. Die Installationswege verändern keine Sicherheitseinstellungen. Windows-, Linux- und Intel-Mac-Pakete sind noch nicht verifiziert.
 
@@ -170,7 +170,7 @@ npm run desktop         # Native App im Entwicklungsmodus
 npm run package:macos    # Preview signieren, prüfen und als ZIP + DMG ablegen
 ```
 
-Der Paketierungsbefehl legt ZIP und DMG lokal unter `release/` ab. Für ein Apple-notarisiertes Paket `npm run package:macos -- --notarized` verwenden; Einrichtung: [SIGNING.md](docs/SIGNING.md). Mit `THE_NOTE_RELEASE_DIR=release/v0.2.4` lässt sich ein separater Zielordner wählen. Build-Ausgaben gehören nicht in den Quellcode-Commit.
+Der Paketierungsbefehl legt ZIP und DMG lokal unter `release/` ab. Für ein Apple-notarisiertes Paket `npm run package:macos -- --notarized` verwenden; Einrichtung: [SIGNING.md](docs/SIGNING.md). Mit `THE_NOTE_RELEASE_DIR=release/v0.2.5` lässt sich ein separater Zielordner wählen. Build-Ausgaben gehören nicht in den Quellcode-Commit.
 
 Die Website liegt in `site/`: eine HTML-Vorlage, Texte pro Sprache in `site/i18n.mjs`. `npm run build:site` erzeugt Deutsch unter `/` und Englisch unter `/en/`.
 
@@ -198,7 +198,7 @@ GPL-3.0-or-later. Sarala © Srinivas Gowda. Der übernommene Ledge-Frontmatter-P
 ## Entstehung und Mitmachen
 
 - [Gesprächsarchiv mit Zeitstempeln und Anhängen](docs/history/README.md)
-- [Changelog](CHANGELOG.md), [Architekturentscheidungen](docs/REENGINEERING.md), [Prüfergebnisse und Grenzen](docs/VALIDATION-v0.2.4.md)
+- [Changelog](CHANGELOG.md), [Architekturentscheidungen](docs/REENGINEERING.md), [Prüfergebnisse und Grenzen](docs/VALIDATION-v0.2.5.md)
 - [Beiträge und lokale Entwicklung](CONTRIBUTING.md)
 - [Drittanbieter-Hinweise](THIRD_PARTY_NOTICES.md)
 
