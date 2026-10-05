@@ -48,6 +48,12 @@ try {
   const d = JSON.parse(await readFile('distribution.json', 'utf8'));
   assert.equal(await page.getByRole('link', { name: 'Alternativ als ZIP' }).getAttribute('href'), `https://github.com/${d.repository}/releases/download/v${d.version}/${d.asset}`);
   assert.equal(await page.getByRole('link', { name: 'Im Browser ausprobieren', exact: true }).getAttribute('href'), 'app/', 'hero links the browser version');
+  // „Tippe /“: the getting-started section shows real slash commands and links the app and the full list.
+  const slashSection = page.locator('.examples-section');
+  await slashSection.getByRole('heading', { name: /Tippe \/ und los/ }).waitFor({ state: 'attached' });
+  for (const command of ['/pomodoro', '/atem', '/checkin', '/timebox', '/punkte', '/zusammenfassen', '/todos', '/entscheidung', '/git', '/orakel']) assert.ok((await slashSection.innerText()).includes(command), command);
+  assert.equal(await slashSection.getByRole('link', { name: /Im Browser ausprobieren/ }).getAttribute('href'), 'app/');
+  assert.match(await slashSection.getByRole('link', { name: /Alle Bausteine ansehen/ }).getAttribute('href'), /#bausteine-mit-$/);
   assert.equal(await page.getByRole('link', { name: 'Ohne Installation: im Browser ausprobieren ↗' }).getAttribute('href'), 'app/');
   assert.equal(await page.getByRole('link', { name: 'DMG für macOS herunterladen' }).getAttribute('href'), `https://github.com/${d.repository}/releases/download/v${d.version}/${d.dmg.asset}`);
   for (const path of ['install.sh', 'assets/inline-ai.png', 'assets/folders-and-date.png', 'assets/gallery.png', 'assets/slash-menu.png', 'assets/unsaved-diff.png', 'assets/note-light.png', 'assets/note-dark.png', 'assets/the-note.svg', 'fonts/inter-latin-400-normal.woff2', 'sitemap.xml', 'en/']) assert.equal((await page.request.get('http://127.0.0.1:1454/THENote/' + path)).status(), 200);

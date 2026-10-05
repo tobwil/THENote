@@ -154,7 +154,7 @@ Eine Zelle, die mit `=` beginnt, ist eine Formel. Im Markdown bleibt die Formel 
 
 ## Codeblöcke in Notizen ausführen
 
-Öffne einen Ordner, erstelle über **Neue Notiz → Ausführbares Runbook** ein Dokument und speichere es als `.md`. Ein minimales Beispiel:
+Öffne einen Ordner, erstelle über **⌄** neben dem **+** der Tableiste → **Ausführbares Runbook** ein Dokument und speichere es als `.md`. Ein minimales Beispiel:
 
 ````markdown
 ---
@@ -176,7 +176,7 @@ print(sum([12, 18, 24, 30]) / 4)
 ```
 ````
 
-**Ausführen** startet einen Block; **⌘/Ctrl+Enter** startet den gerade bearbeiteten Codeblock. `confirm: true` verlangt vor dem Start eine Bestätigung; pro Block sind `confirm`, `confirm=yes` und `confirm=no` möglich. Ohne Bestätigungsoption startet nur der ausdrückliche Klick oder Shortcut, niemals das Öffnen einer Datei.
+**Ausführen** startet einen Block; **⌘/Ctrl+Enter** startet den gerade bearbeiteten Codeblock. `confirm: true` verlangt vor dem Start eine Bestätigung; pro Block sind `confirm`, `confirm=yes` und `confirm=no` möglich. Ohne Bestätigungsoption startet nur der ausdrückliche Klick oder Shortcut, niemals das Öffnen einer Datei. Während ein Block läuft, folgt die Ausgabe der neuesten Zeile; wer zum Nachlesen hochscrollt, kommt mit **↓ Live folgen** zurück.
 
 Ausgaben sind temporär und werden nicht in die Markdown-Datei geschrieben. Sie bleiben beim Tabwechsel erhalten. Pro Lauf gilt ein Zeitlimit von 120 Sekunden und ein Ausgabelimit von 1 MB; maximal acht Prozesse gleichzeitig. Stop beendet unter macOS/Linux auch die Prozessgruppe.
 

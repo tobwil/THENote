@@ -220,3 +220,7 @@ body.img-dragging,body.img-dragging *{cursor:grabbing!important}
 .app-toast .app-toast-close{background:none;font-size:16px;padding:4px 8px}
 @keyframes app-toast-in{from{opacity:0;transform:translate(-50%,8px)}}
 @media print{.app-toast{display:none!important}}
+/* Live output: jump back to the newest line after scrolling up. */
+.run-output{position:relative}
+.output-follow{position:absolute;right:16px;bottom:12px;padding:4px 10px;border:1px solid var(--rule);border-radius:999px;background:var(--bg-page);color:var(--accent);font:600 11.5px var(--font-ui);box-shadow:var(--shadow);cursor:pointer}
+.output-follow:hover{background:var(--tint)}

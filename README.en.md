@@ -156,7 +156,7 @@ A cell that starts with `=` is a formula. The Markdown keeps the formula, the no
 
 ## Running code blocks in notes
 
-Open a folder, create a document via **Neue Notiz → Ausführbares Runbook** (new note → executable runbook) and save it as `.md`. A minimal example:
+Open a folder, create a document via **⌄** next to the tab bar's **+** → **Ausführbares Runbook** (executable runbook) and save it as `.md`. A minimal example:
 
 ````markdown
 ---
@@ -178,7 +178,7 @@ print(sum([12, 18, 24, 30]) / 4)
 ```
 ````
 
-**Ausführen** (run) starts a block; **⌘/Ctrl+Enter** starts the code block you are editing. `confirm: true` asks for confirmation before each start; per block, `confirm`, `confirm=yes` and `confirm=no` are available. Without a confirmation option only an explicit click or shortcut starts code, never opening a file.
+**Ausführen** (run) starts a block; **⌘/Ctrl+Enter** starts the code block you are editing. `confirm: true` asks for confirmation before each start; per block, `confirm`, `confirm=yes` and `confirm=no` are available. Without a confirmation option only an explicit click or shortcut starts code, never opening a file. While a block runs, its output follows the newest line; scroll up to read and **↓ Live folgen** (follow live) brings you back.
 
 Output is temporary and never written into the Markdown file. It survives switching tabs. Each run has a 120-second time limit and a 1 MB output limit; at most eight processes run at once. On macOS/Linux, stop also ends the process group.
 

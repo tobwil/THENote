@@ -2,6 +2,11 @@
 
 The entries below reconstruct the development milestones from the conversation and validated local versions. Versions 0.1.0–0.2.3 were developed on 2026-10-01 before the first source publication; they are **not fabricated historical Git commits or previous GitHub releases**.
 
+## Unreleased
+
+- **Live output follows:** a running block's output scrolls with its newest line (breathing exercise, timers, countdowns) and comes into view when the run starts below the window. Scrolling up to read pauses following; „↓ Live folgen“ resumes.
+- **Website „Tippe /“:** the getting-started section now shows real slash commands (Fokus & Moderation, KI & Werkzeuge) with links to the browser version and the full list, and all seven templates.
+
 ## 0.2.12 — 2026-10-05
 
 - **Screenshots, README and website for the building blocks:** new shots of the slash menu, moderation, focus & calm and the /todos quick action; README sections for each; the website story gains chapter 04 „Ein Baustein für jeden Moment“, and the export card becomes „Drucken & Teilen“. Empty placeholders in the daily focus, gratitude, meeting and 5-Whys blocks now carry visible text, so they render as checkboxes and list items.
