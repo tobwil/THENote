@@ -19,6 +19,7 @@ const suites = [
   ['Gallery and image moves UI', 'npm', ['run', 'test:gallery:ui']],
   ['Slash date immediate execution', 'node', ['tests/e2e-slashdate.mjs']],
   ['Slash building blocks and sharing', 'npm', ['run', 'test:slash:ui']],
+  ['Live output following', 'node', ['tests/e2e-runfollow.mjs']],
   ['Workspace UI', 'npm', ['run', 'test:workspace:ui']],
   ['Sidebar UI', 'node', ['tests/e2e-sidebar.mjs']],
   ['AI UI', 'npm', ['run', 'test:ai:ui']],
