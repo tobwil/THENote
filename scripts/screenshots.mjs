@@ -36,8 +36,11 @@ try {
     viewport: { width: 1380, height: 900 }, deviceScaleFactor: 2, locale: 'de-DE', timezoneId: 'Europe/Berlin',
     userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0 Safari/537.36',
   });
+  // Painted demo photos stand in for pictures in the gallery shots (scripts/demo-photos.js).
+  await context.addInitScript({ path: 'scripts/demo-photos.js' });
   await context.addInitScript(() => {
-    window.__TAURI_INTERNALS__ = { metadata: { currentWindow: { label: 'main' }, currentWebview: { label: 'main', windowLabel: 'main' } }, transformCallback() { return 1; }, unregisterCallback() {}, convertFileSrc(path) { return path; }, async invoke(cmd) {
+    const photo = path => { const name = path.match(/\/assets\/(\w+)\.jpg$/)?.[1]; return name ? window.__demoPhoto(name) : null; };
+    window.__TAURI_INTERNALS__ = { metadata: { currentWindow: { label: 'main' }, currentWebview: { label: 'main', windowLabel: 'main' } }, transformCallback() { return 1; }, unregisterCallback() {}, convertFileSrc(path) { return photo(path) ?? path; }, async invoke(cmd) {
       if (cmd === 'load_settings') return {};
       if (cmd === 'list_shadows' || cmd === 'list_fonts') return [];
       if (cmd === 'ai_status') return { config: { enabled: false, endpoint: '', protocol: 'chat-completions', model: '', maxTokens: 4096, rememberKey: false }, hasKey: false, keychainAvailable: true };
@@ -144,7 +147,7 @@ try {
   await page.screenshot({ path: `${OUT}/unsaved-diff.png` });
   await page.keyboard.press('Escape');
 
-  // 6 · Projects with nested folders and a date inserted at the caret.
+  // 6 · Folders with nested notes and a date inserted at the caret.
   await page.evaluate(async () => {
     const s = await import('/src/store.ts');
     s.setFolderPath('/Users/demo/Kuchen'); s.setFolderName('Kuchen'); s.setSidebarTab('files');
@@ -162,6 +165,41 @@ try {
   await page.evaluate(async () => { (await import('/src/components/DatePicker.tsx')).openDatePicker(); });
   await page.locator('.date-picker').waitFor();
   await page.waitForTimeout(300);
-  await page.screenshot({ path: `${OUT}/projects-and-date.png` });
+  await page.screenshot({ path: `${OUT}/folders-and-date.png` });
+  await page.keyboard.press('Escape');
+
+  // 7 · Pictures: a gallery as a grid in a travel note, then the full-window viewer.
+  await page.evaluate(async () => {
+    const s = await import('/src/store.ts');
+    s.setFolderPath('/Users/demo/Reisen'); s.setFolderName('Reisen'); s.setSidebarTab('files');
+    s.setFileTree([
+      { name: 'Lissabon', path: '/Users/demo/Reisen/Lissabon', is_dir: true, children: [
+        { name: 'Fotos.md', path: '/Users/demo/Reisen/Lissabon/Fotos.md', is_dir: false },
+        { name: 'Lissabon im Mai.md', path: '/Users/demo/Reisen/Lissabon/Lissabon im Mai.md', is_dir: false },
+        { name: 'Packliste.md', path: '/Users/demo/Reisen/Lissabon/Packliste.md', is_dir: false },
+      ] },
+      { name: 'Porto', path: '/Users/demo/Reisen/Porto', is_dir: true, children: [] },
+    ]);
+    s.setFolderOpen('/Users/demo/Reisen/Lissabon', true);
+    s.loadDocument([
+      '# Lissabon – Fotos', '',
+      'Sechs Tage, viele Lieblingsorte. Mehrere Bilder hintereinander werden zur Galerie; **▦ Raster** zeigt alle auf einmal.', '',
+      ['tejo', 'alfama', 'atlantik', 'azulejos', 'miradouro', 'cabo'].map((name, i) => `![${['Sonnenuntergang am Tejo', 'Alfama', 'Atlantik bei Cascais', 'Azulejos', 'Miradouro am Abend', 'Cabo da Roca'][i]}](assets/${name}.jpg)`).join('\n'), '',
+      '## Was wir uns merken', '',
+      '- [x] Tram 28 früh am Morgen', '- [x] Pastéis de Nata in Belém', '- [ ] Fotos für Oma ausdrucken',
+    ].join('\n'), '/Users/demo/Reisen/Lissabon/Fotos.md');
+  });
+  await page.locator('.img-gallery.grid').waitFor();
+  await page.waitForFunction(() => [...document.querySelectorAll('.img-gallery img')].every(img => img.complete && img.naturalWidth > 0));
+  await page.evaluate(() => { document.querySelector('#document-panel').scrollTop = 0; document.activeElement?.blur(); });
+  await page.mouse.move(1300, 860);
+  await page.waitForTimeout(300);
+  await page.screenshot({ path: `${OUT}/gallery.png` });
+  await page.locator('.img-gallery img').nth(0).click();
+  await page.getByRole('dialog', { name: 'Bildansicht' }).waitFor();
+  await page.mouse.move(690, 870);
+  await page.waitForTimeout(300);
+  await page.screenshot({ path: `${OUT}/image-viewer.png` });
+  await page.keyboard.press('Escape');
   console.log('Screenshots saved; outputs executed locally, AI answer is a fixture, no API request.');
 } finally { await browser?.close(); server.kill('SIGTERM'); }

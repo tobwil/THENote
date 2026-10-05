@@ -28,6 +28,8 @@
     "test:paste:ui": "node tests/e2e-imagepaste.mjs",
     "test:gallery:ui": "node tests/e2e-gallery.mjs && node tests/e2e-gallerydrag.mjs",
     "build:site": "node scripts/sync-distribution.mjs --check && node scripts/build-site.mjs",
+    "build:webapp": "node scripts/build-web-app.mjs",
+    "test:webapp": "npm run build:site && npm run build:webapp && node tests/webapp.test.mjs",
     "test:site": "npm run build:site && node tests/site.test.mjs",
     "test:release": "node scripts/test-release.mjs"
   },

@@ -31,7 +31,7 @@
       <p class="eyebrow"><span class="live-dot"></span>{{hero.eyebrow}}</p>
       <h1>{{hero.h1}}</h1>
       <p class="lead">{{hero.lead}}</p>
-      <div class="hero-actions"><a class="button primary" href="#install">{{hero.cta}} <span aria-hidden="true">↓</span></a><a class="button ghost" href="#features">{{hero.more}} <span aria-hidden="true">→</span></a></div>
+      <div class="hero-actions"><a class="button primary" href="#install">{{hero.cta}} <span aria-hidden="true">↓</span></a><a class="button ghost" href="#features">{{hero.more}} <span aria-hidden="true">→</span></a><a class="button ghost" href="{{root}}app/">{{hero.web}} <span aria-hidden="true">↗</span></a></div>
       <p class="release-line">v%%VERSION%% Preview <span>·</span> macOS Apple Silicon <span>·</span> Open Source · GPL-3.0</p>
     </div>
 
@@ -68,19 +68,21 @@
         <div class="story-media" aria-hidden="true">
           <div class="story-frame">
             <img class="is-active" data-story-shot="1" src="{{root}}assets/note-light.png" width="2760" height="2600" alt="">
-            <img data-story-shot="2" src="{{root}}assets/projects-and-date.png" width="2760" height="1800" alt="">
-            <img data-story-shot="3" src="{{root}}assets/unsaved-diff.png" width="2760" height="1800" alt="">
-            <img data-story-shot="4" src="{{root}}assets/inline-ai.png" width="2760" height="1800" alt="">
-            <img data-story-shot="5" src="{{root}}assets/note-dark.png" width="2760" height="2600" alt="">
+            <img data-story-shot="2" src="{{root}}assets/folders-and-date.png" width="2760" height="1800" alt="">
+            <img data-story-shot="3" src="{{root}}assets/gallery.png" width="2760" height="1800" alt="">
+            <img data-story-shot="4" src="{{root}}assets/unsaved-diff.png" width="2760" height="1800" alt="">
+            <img data-story-shot="5" src="{{root}}assets/inline-ai.png" width="2760" height="1800" alt="">
+            <img data-story-shot="6" src="{{root}}assets/note-dark.png" width="2760" height="2600" alt="">
           </div>
-          <div class="story-progress"><i data-story-dot="1" class="is-active"></i><i data-story-dot="2"></i><i data-story-dot="3"></i><i data-story-dot="4"></i><i data-story-dot="5"></i></div>
+          <div class="story-progress"><i data-story-dot="1" class="is-active"></i><i data-story-dot="2"></i><i data-story-dot="3"></i><i data-story-dot="4"></i><i data-story-dot="5"></i><i data-story-dot="6"></i></div>
         </div>
         <ol class="story-steps">
           <li class="story-step is-active" data-step="1"><span class="step-no">01</span><h3>{{story.s1h}}</h3><p>{{story.s1p}}</p><ul class="chips">{{story.s1c}}</ul><img class="step-shot" src="{{root}}assets/note-light.png" width="2760" height="2600" loading="lazy" alt="{{story.s1alt}}"></li>
-          <li class="story-step" data-step="2"><span class="step-no">02</span><h3>{{story.s2h}}</h3><p>{{story.s2p}}</p><ul class="chips">{{story.s2c}}</ul><img class="step-shot" src="{{root}}assets/projects-and-date.png" width="2760" height="1800" loading="lazy" alt="{{story.s2alt}}"></li>
-          <li class="story-step" data-step="3"><span class="step-no">03</span><h3>{{story.s3h}}</h3><p>{{story.s3p}}</p><ul class="chips">{{story.s3c}}</ul><img class="step-shot" src="{{root}}assets/unsaved-diff.png" width="2760" height="1800" loading="lazy" alt="{{story.s3alt}}"></li>
-          <li class="story-step" data-step="4"><span class="step-no">04</span><h3>{{story.s4h}}</h3><p>{{story.s4p}}</p><ul class="chips">{{story.s4c}}</ul><img class="step-shot" src="{{root}}assets/inline-ai.png" width="2760" height="1800" loading="lazy" alt="{{story.s4alt}}"></li>
-          <li class="story-step" data-step="5"><span class="step-no">05</span><h3>{{story.s5h}}</h3><p>{{story.s5p}}</p><ul class="chips">{{story.s5c}}</ul><img class="step-shot" src="{{root}}assets/note-dark.png" width="2760" height="2600" loading="lazy" alt="{{story.s5alt}}"></li>
+          <li class="story-step" data-step="2"><span class="step-no">02</span><h3>{{story.s2h}}</h3><p>{{story.s2p}}</p><ul class="chips">{{story.s2c}}</ul><img class="step-shot" src="{{root}}assets/folders-and-date.png" width="2760" height="1800" loading="lazy" alt="{{story.s2alt}}"></li>
+          <li class="story-step" data-step="3"><span class="step-no">03</span><h3>{{story.s3h}}</h3><p>{{story.s3p}}</p><ul class="chips">{{story.s3c}}</ul><img class="step-shot" src="{{root}}assets/gallery.png" width="2760" height="1800" loading="lazy" alt="{{story.s3alt}}"></li>
+          <li class="story-step" data-step="4"><span class="step-no">04</span><h3>{{story.s4h}}</h3><p>{{story.s4p}}</p><ul class="chips">{{story.s4c}}</ul><img class="step-shot" src="{{root}}assets/unsaved-diff.png" width="2760" height="1800" loading="lazy" alt="{{story.s4alt}}"></li>
+          <li class="story-step" data-step="5"><span class="step-no">05</span><h3>{{story.s5h}}</h3><p>{{story.s5p}}</p><ul class="chips">{{story.s5c}}</ul><img class="step-shot" src="{{root}}assets/inline-ai.png" width="2760" height="1800" loading="lazy" alt="{{story.s5alt}}"></li>
+          <li class="story-step" data-step="6"><span class="step-no">06</span><h3>{{story.s6h}}</h3><p>{{story.s6p}}</p><ul class="chips">{{story.s6c}}</ul><img class="step-shot" src="{{root}}assets/note-dark.png" width="2760" height="2600" loading="lazy" alt="{{story.s6alt}}"></li>
         </ol>
       </div>
     </div>
@@ -111,7 +113,7 @@
   <section id="install" class="install-section">
     <div class="install-bg" aria-hidden="true"><span class="orb orb-c"></span></div>
     <div class="wrap install-grid">
-      <div class="reveal"><p class="eyebrow">{{install.eyebrow}}</p><h2>{{install.h2}}</h2><p>{{install.lead}}</p><a class="download-link" href="%%DMG_DOWNLOAD%%">{{install.dmg}} <span aria-hidden="true">↓</span></a><p class="install-details">{{install.dmgNote}}<br><a class="zip-link" href="%%DOWNLOAD%%">{{install.zip}}</a></p><p class="install-details">v%%VERSION%% · {{install.dev}}<br>{{install.signed}}</p></div>
+      <div class="reveal"><p class="eyebrow">{{install.eyebrow}}</p><h2>{{install.h2}}</h2><p>{{install.lead}}</p><a class="download-link" href="%%DMG_DOWNLOAD%%">{{install.dmg}} <span aria-hidden="true">↓</span></a><p class="install-details">{{install.dmgNote}}<br><a class="zip-link" href="%%DOWNLOAD%%">{{install.zip}}</a></p><p class="install-details">v%%VERSION%% · {{install.dev}}<br>{{install.signed}}</p><p class="install-details"><a class="web-link" href="{{root}}app/">{{install.web}} ↗</a><br>{{install.webNote}}</p></div>
       <div class="install-card reveal"><div class="install-tabs" role="tablist" aria-label="{{install.tabsLabel}}"><button type="button" role="tab" aria-selected="true" aria-controls="brew-panel" id="brew-tab" data-panel="brew-panel">Homebrew</button><button type="button" role="tab" aria-selected="false" aria-controls="curl-panel" id="curl-tab" tabindex="-1" data-panel="curl-panel">curl</button></div><div role="tabpanel" id="brew-panel" aria-labelledby="brew-tab" tabindex="0"><div class="code-heading"><span>TERMINAL</span><button type="button" class="copy" data-copy="brew-command">{{install.copy}} <span aria-hidden="true">⧉</span></button></div><pre><code id="brew-command">brew tap tobwil/thenote https://github.com/tobwil/THENote
 brew trust --cask tobwil/thenote/the-note
 brew install --cask tobwil/thenote/the-note</code></pre><p>{{install.brewNote}}</p><p class="update-command">{{install.updates}}: <code>brew upgrade --cask tobwil/thenote/the-note</code></p></div><div role="tabpanel" id="curl-panel" aria-labelledby="curl-tab" tabindex="0" hidden><div class="code-heading"><span>TERMINAL</span><button type="button" class="copy" data-copy="curl-command">{{install.copy}} <span aria-hidden="true">⧉</span></button></div><pre><code id="curl-command">curl -fsSL https://tobwil.github.io/THENote/install.sh | bash</code></pre><p>{{install.curlNote}}</p><a href="{{root}}install.sh">{{install.script}} ↗</a></div><div class="copy-status" role="status" aria-live="polite" data-copied="{{install.copied}}" data-selected="{{install.selected}}"></div></div>

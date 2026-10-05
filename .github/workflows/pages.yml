@@ -12,6 +12,13 @@ on:
       - 'docs/screenshots/**'
       - 'assets/**'
       - '.github/workflows/pages.yml'
+      # The browser version at /app/ is built from the editor source.
+      - 'src/**'
+      - 'index.html'
+      - 'vite.config.ts'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'scripts/build-web-app.mjs'
   workflow_dispatch:
 permissions:
   contents: read
@@ -29,8 +36,12 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '24'
+      - run: npm ci
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
       - run: node scripts/sync-distribution.mjs --check
       - run: node scripts/build-site.mjs
+      - run: node scripts/build-web-app.mjs
       - uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
       - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3
         with:
