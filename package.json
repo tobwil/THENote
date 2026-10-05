@@ -2,7 +2,7 @@
   "name": "the-note",
   "private": true,
   "license": "GPL-3.0-or-later",
-  "version": "0.2.7",
+  "version": "0.2.8",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -28,7 +28,8 @@
     "test:paste:ui": "node tests/e2e-imagepaste.mjs",
     "test:gallery:ui": "node tests/e2e-gallery.mjs",
     "build:site": "node scripts/sync-distribution.mjs --check && node scripts/build-site.mjs",
-    "test:site": "npm run build:site && node tests/site.test.mjs"
+    "test:site": "npm run build:site && node tests/site.test.mjs",
+    "test:release": "node scripts/test-release.mjs"
   },
   "dependencies": {
     "@fontsource/inter": "^5.3.0",
