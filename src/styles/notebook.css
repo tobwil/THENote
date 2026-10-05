@@ -184,3 +184,11 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 .tree-drag-ghost span{color:var(--accent);font-weight:600}
 .move-dialog footer .move-new-folder{margin-right:auto}
 .img-gallery:not(.overflowing) .img-gallery-count{display:none}
+/* Leiste/Raster switch under each gallery; grid layout shows every picture at once. */
+.img-gallery-toggle{display:block;margin:2px 0 0 auto;padding:2px 9px;border:1px solid transparent;border-radius:999px;background:transparent;color:var(--ink-soft);font:500 11.5px/1.6 var(--font-ui);cursor:pointer;opacity:.6;transition:opacity .15s ease}
+.img-gallery:hover .img-gallery-toggle,.img-gallery-toggle:focus-visible{opacity:1;border-color:var(--rule);background:var(--bg-page)}
+.img-gallery-toggle:hover{color:var(--accent)}
+.img-gallery.grid .img-gallery-track{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));overflow:visible;scroll-snap-type:none;padding-bottom:4px}
+.rendered .img-gallery.grid .img-gallery-track img,.img-gallery.grid .img-gallery-track img{width:100%;height:auto;max-width:none;aspect-ratio:4/3;object-fit:cover}
+.img-gallery.grid .img-gallery-nav,.img-gallery.grid .img-gallery-count{display:none!important}
+@media print{.img-gallery-toggle{display:none!important}}

@@ -46,6 +46,7 @@ try {
       async invoke(cmd, args) {
         calls.push([cmd, args]);
         if (cmd === 'load_settings') return { workspace: '/n' };
+        if (cmd === 'save_settings') { window.__fs.settings = args.value; return; }
         if (cmd === 'list_shadows' || cmd === 'list_fonts') return [];
         if (cmd === 'list_dir') return tree(args.path);
         if (cmd === 'path_exists') return files.has(args.path) || folders.has(args.path) || images.has(args.path);
@@ -111,6 +112,52 @@ try {
   assert.equal(await page.locator('.block.active').count(), 0, 'clicking a picture does not open the Markdown source');
   await gallery.hover(); await page.mouse.move(400, 260);
   await page.screenshot({ path: 'release/THE Note-gallery-preview.png' });
+
+  // 2a. Grabbing the strip's scrollbar scrolls it and keeps the gallery (no Markdown source).
+  const bar = await gallery.locator('.img-gallery-track').boundingBox();
+  await page.mouse.move(bar.x + 40, bar.y + bar.height - 4); await page.mouse.down();
+  await page.mouse.move(bar.x + 240, bar.y + bar.height - 4, { steps: 6 }); await page.mouse.up();
+  await page.waitForTimeout(200);
+  assert.equal(await page.locator('.block.active').count(), 0, 'the scrollbar does not open the Markdown source');
+  // A plain click on the scrollbar (paging) or a gap between pictures keeps the gallery too.
+  await page.mouse.click(bar.x + bar.width - 30, bar.y + bar.height - 4);
+  const gap = await gallery.locator('.img-gallery-track img').first().boundingBox();
+  await page.mouse.click(gap.x + gap.width + 5, gap.y + gap.height / 2);
+  await page.waitForTimeout(200);
+  assert.equal(await page.locator('.block.active').count(), 0, 'clicking the scrollbar or a gap does not open the Markdown source');
+  assert.ok(await gallery.locator('.img-gallery-track').evaluate(el => el.scrollLeft > 0), 'dragging the scrollbar scrolls the strip');
+  await gallery.locator('.img-gallery-track').evaluate(el => { el.style.scrollBehavior = 'auto'; el.scrollLeft = 0; el.style.scrollBehavior = ''; });
+
+  // 2b. Leiste ⇄ Raster: three pictures start as a strip; the switch shows them all as a grid and is remembered.
+  const toggle = gallery.getByRole('button', { name: 'Galerie als Raster' });
+  assert.equal(await toggle.innerText(), '▦ Raster');
+  await toggle.click();
+  assert.ok(await gallery.evaluate(el => el.classList.contains('grid') && !el.classList.contains('overflowing')), 'grid shows every picture');
+  assert.equal(await toggle.getAttribute('aria-pressed'), 'true');
+  assert.equal(await toggle.innerText(), '⇆ Leiste');
+  const boxes = await gallery.locator('.img-gallery-track img').evaluateAll(imgs => imgs.map(img => { const r = img.getBoundingClientRect(); return [Math.round(r.top), Math.round(r.right)]; }));
+  const trackRight = await gallery.locator('.img-gallery-track').evaluate(el => el.getBoundingClientRect().right);
+  assert.ok(boxes.every(([, right]) => right <= trackRight + 1), 'no picture sticks out to the right');
+  assert.equal(await page.locator('.block.active').count(), 0, 'the switch does not open the Markdown source');
+  await page.waitForFunction(() => Object.values(window.__fs.settings?.galleryLayouts ?? {}).includes('grid'), null, { timeout: 3000 });
+  await gallery.hover(); await page.mouse.move(400, 200);
+  await page.screenshot({ path: 'release/THE Note-gallery-grid-preview.png' });
+  // A re-render (switching the tab away and back) keeps the chosen grid.
+  await page.evaluate(async () => (await import('/src/store.ts')).bumpRenderEpoch());
+  await page.waitForFunction(() => document.querySelector('.img-gallery')?.classList.contains('grid'));
+  // Many pictures start as a grid without asking.
+  const many = await page.evaluate(async () => {
+    const { decorateGalleries, GRID_FROM } = await import('/src/components/ImageViewer.tsx');
+    const host = document.createElement('div');
+    host.innerHTML = `<div class="img-gallery"><div class="img-gallery-track">${Array.from({ length: GRID_FROM + 1 }, (_, i) => `<img src="x${i}.png" alt="">`).join('')}</div></div>`;
+    document.body.append(host); decorateGalleries(host);
+    const result = host.querySelector('.img-gallery').classList.contains('grid');
+    host.remove(); return result;
+  });
+  assert.ok(many, 'six pictures start as a grid');
+  // Back to the strip for the next steps.
+  await gallery.getByRole('button', { name: 'Galerie als Raster' }).click();
+  assert.ok(await gallery.evaluate(el => !el.classList.contains('grid')));
 
   // 3. "In Ordner verschieben … ▸ ＋ Neuer Ordner …": the note and its pictures move together.
   await page.getByRole('treeitem', { name: 'Day1.md', exact: true }).click({ button: 'right' });

@@ -2,13 +2,16 @@
  * Image galleries and the full-window image viewer.
  *
  * A paragraph of two or more images renders as an `.img-gallery` strip
- * (markdown.ts). `decorateGalleries` adds the ‹ › buttons and the counter to
- * each strip after it is rendered; clicking any rendered image opens the viewer
- * with its gallery (or just that image): ← → or the buttons to browse, Esc closes.
+ * (markdown.ts). `decorateGalleries` adds the ‹ › buttons, the counter and a
+ * Leiste/Raster switch to each gallery after it is rendered. Galleries of many
+ * pictures start as a grid; a switched gallery remembers its layout. Clicking
+ * any rendered image opens the viewer with its gallery (or just that image):
+ * ← → or the buttons to browse, Esc closes.
  */
 import { For, Show, createSignal, onCleanup, onMount, untrack } from "solid-js";
 import { Portal } from "solid-js/web";
 import { theme } from "../store";
+import { getSetting, setSetting } from "../settings";
 import ModalFrame from "./ModalFrame";
 
 interface Picture { src: string; alt: string }
@@ -39,7 +42,29 @@ function step(track: HTMLElement, dir: number) {
   track.scrollTo({ left: target ? target.offsetLeft - items[0].offsetLeft : dir > 0 ? track.scrollWidth : 0, behavior: "smooth" });
 }
 
-/** Add browse buttons and a counter to the gallery strips inside `host`. */
+type Layout = "strip" | "grid";
+/** From this many pictures on, a gallery starts as a grid: scrolling sideways gets tedious. */
+export const GRID_FROM = 5;
+const LAYOUTS_KEY = "galleryLayouts";
+// Keyed by the gallery's first picture, so the choice survives re-renders and restarts.
+const layoutKey = (track: HTMLElement) => track.querySelector("img")?.getAttribute("src") ?? "";
+function layoutOf(track: HTMLElement, count: number): Layout {
+  const saved = getSetting<Record<string, Layout>>(LAYOUTS_KEY, {})[layoutKey(track)];
+  return saved ?? (count >= GRID_FROM ? "grid" : "strip");
+}
+function rememberLayout(track: HTMLElement, layout: Layout, count: number) {
+  const key = layoutKey(track);
+  if (!key) return;
+  const all = { ...getSetting<Record<string, Layout>>(LAYOUTS_KEY, {}) };
+  // Only a choice that differs from the default is worth keeping; cap the list.
+  if (layout === (count >= GRID_FROM ? "grid" : "strip")) delete all[key];
+  else all[key] = layout;
+  const keys = Object.keys(all);
+  for (const old of keys.slice(0, Math.max(0, keys.length - 500))) delete all[old];
+  void setSetting(LAYOUTS_KEY, all);
+}
+
+/** Add browse buttons, a counter and the layout switch to the galleries inside `host`. */
 export function decorateGalleries(host: HTMLElement) {
   for (const gallery of host.querySelectorAll<HTMLElement>(".img-gallery")) {
     if (gallery.querySelector(".img-gallery-nav")) continue;
@@ -60,6 +85,24 @@ export function decorateGalleries(host: HTMLElement) {
     counter.className = "img-gallery-count";
     const prev = button(-1, "Vorheriges Bild", "‹");
     const next = button(1, "Nächstes Bild", "›");
+    const toggle = document.createElement("button");
+    toggle.type = "button";
+    toggle.className = "img-gallery-toggle";
+    const apply = (layout: Layout) => {
+      gallery.classList.toggle("grid", layout === "grid");
+      toggle.textContent = layout === "grid" ? "⇆ Leiste" : "▦ Raster";
+      toggle.title = layout === "grid" ? "Als Bildleiste zeigen" : `Alle ${count} Bilder als Raster zeigen`;
+      toggle.setAttribute("aria-pressed", String(layout === "grid"));
+      track.scrollLeft = 0;
+      update();
+    };
+    toggle.setAttribute("aria-label", "Galerie als Raster");
+    toggle.addEventListener("click", (e) => {
+      e.preventDefault(); e.stopPropagation();
+      const layout: Layout = gallery.classList.contains("grid") ? "strip" : "grid";
+      apply(layout);
+      rememberLayout(track, layout, count);
+    });
     const update = () => {
       const items = [...track.querySelectorAll<HTMLElement>("img")];
       const first = items[0]?.offsetLeft ?? 0;
@@ -67,12 +110,12 @@ export function decorateGalleries(host: HTMLElement) {
       counter.textContent = `${Math.max(0, at) + 1} / ${count}`;
       prev.disabled = track.scrollLeft <= 2;
       next.disabled = track.scrollLeft + track.clientWidth >= track.scrollWidth - 2;
-      gallery.classList.toggle("overflowing", track.scrollWidth > track.clientWidth + 2);
+      gallery.classList.toggle("overflowing", !gallery.classList.contains("grid") && track.scrollWidth > track.clientWidth + 2);
     };
     track.addEventListener("scroll", update, { passive: true });
     track.querySelectorAll("img").forEach(img => img.addEventListener("load", update));
-    gallery.append(prev, next, counter);
-    update();
+    gallery.append(prev, next, counter, toggle);
+    apply(layoutOf(track, count));
   }
 }
 

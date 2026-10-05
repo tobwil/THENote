@@ -731,8 +731,11 @@ export default function Block(props: Props) {
       void fillEmptyImage();
       return;
     }
-    // Gallery ‹ › buttons scroll the strip; they never enter edit mode.
-    if (t.closest(".img-gallery-nav")) { e.preventDefault(); return; }
+    // Gallery ‹ › buttons and the Leiste/Raster switch never enter edit mode.
+    if (t.closest(".img-gallery-nav, .img-gallery-toggle")) { e.preventDefault(); return; }
+    // The strip itself (its scrollbar, the gaps between pictures) scrolls; grabbing
+    // the scrollbar must not flip the gallery into Markdown source.
+    if (t.classList.contains("img-gallery-track")) return;
     // A checkbox is handled on click. Do NOT preventDefault here: in WebKit (the
     // macOS Tauri webview) preventDefault on a form control's mousedown can
     // suppress the following click, which is where the toggle lives. The early

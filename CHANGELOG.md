@@ -2,6 +2,10 @@
 
 The entries below reconstruct the development milestones from the conversation and validated local versions. Versions 0.1.0–0.2.3 were developed on 2026-10-01 before the first source publication; they are **not fabricated historical Git commits or previous GitHub releases**.
 
+## Unreleased
+
+- **Gallery as a grid:** every gallery has a **▦ Raster / ⇆ Leiste** switch underneath. The grid shows all pictures at once in even tiles instead of a sideways strip; galleries of five or more pictures start as a grid. A switched gallery keeps its layout across re-renders and restarts; the Markdown stays plain images.
+
 ## 0.2.8 — 2026-10-05
 
 - **Image galleries:** a paragraph of two or more images shows as a scrollable strip with ‹ › and a counter; clicking any picture opens a full-window viewer with thumbnails (← → to browse, Esc closes). The Markdown stays plain images.
