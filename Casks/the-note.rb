@@ -1,6 +1,6 @@
 cask "the-note" do
-  version "0.2.11"
-  sha256 "03b5253150649d3b0c5515c7ce5a6d6df90c1a849888546615aa536af0939eb8"
+  version "0.2.12"
+  sha256 "c09c96264cb72765b3ee077f4723258557809ec5d16ef2ad066268deeddfb6b2"
 
   url "https://github.com/tobwil/THENote/releases/download/v#{version}/THE.Note-macOS-arm64.zip"
   name "THE Note"
