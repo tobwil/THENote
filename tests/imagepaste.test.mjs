@@ -1,0 +1,23 @@
+import { build } from "esbuild";
+import assert from "node:assert/strict";
+import { fileURLToPath } from "node:url";
+const root = fileURLToPath(new URL("../", import.meta.url));
+const outdir = root + "tests/.build/imagepaste";
+await build({ entryPoints: [root + "src/richpaste.ts"], bundle: true, format: "esm", outdir, platform: "neutral", mainFields: ["module", "main"] });
+const { imageToPaste } = await import(outdir + "/richpaste.js");
+let checks = 0;
+const eq = (actual, expected, message) => { assert.equal(actual, expected, message); checks++; };
+const png = { name: "image.png", type: "image/png" };
+const clip = ({ files = [], items = [], plain = "", html = "" } = {}) => ({ files, items, getData: (t) => (t === "text/plain" ? plain : t === "text/html" ? html : "") });
+
+eq(imageToPaste(clip({ files: [png] })), png, "a screenshot (image only) pastes as image");
+eq(imageToPaste(clip({ items: [{ kind: "file", type: "image/jpeg", getAsFile: () => png }] })), png, "image items count too");
+const heic = { name: "Foto.heic", type: "image/heic" };
+eq(imageToPaste(clip({ files: [heic], plain: "Foto.heic" })), heic, "a copied Finder file with its name as text pastes as image");
+eq(!!imageToPaste(clip({ files: [png], plain: "Bildschirmfoto 2026-10-05 um 10.12.03.png" })), true, "file name text does not block the image");
+eq(!!imageToPaste(clip({ files: [png], html: '<meta charset="utf-8"><img src="data:image/png;base64,AAAA">' })), true, "a lone local <img> is still an image paste");
+eq(imageToPaste(clip({ files: [png], plain: "Posten\tBetrag\nMiete\t950", html: "<table><tr><td>Posten</td></tr></table>" })), null, "Excel/Word text wins over its picture");
+eq(imageToPaste(clip({ files: [png], html: '<img src="https://example.com/a.png">' })), null, "web images keep the remote-link paste");
+eq(imageToPaste(clip({ files: [{ name: "notes.txt", type: "text/plain" }], plain: "hello" })), null, "non-image files are ignored");
+eq(imageToPaste(clip({ plain: "just text" })), null, "plain text stays text");
+console.log(`${checks} image paste checks passed`);

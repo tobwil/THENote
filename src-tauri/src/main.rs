@@ -464,6 +464,50 @@ fn copy_asset(src: String, doc_dir: String, subfolder: String) -> Result<String,
     Ok(format!("{subfolder}/{name}"))
 }
 
+/// Write pasted image bytes (base64) into `<doc_dir>/<subfolder>/`, with a
+/// unique name, and return the document-relative path for the markdown link.
+/// Clipboard images have no file on disk, so `copy_asset` cannot be used.
+#[tauri::command]
+fn save_image_data(doc_dir: String, subfolder: String, name: String, data: String) -> Result<String, String> {
+    use base64::Engine;
+    let bytes = base64::engine::general_purpose::STANDARD
+        .decode(data.as_bytes())
+        .map_err(|_| "Das Bild aus der Zwischenablage ist beschädigt.".to_string())?;
+    if bytes.is_empty() || bytes.len() > 50 * 1024 * 1024 {
+        return Err("Bilder aus der Zwischenablage dürfen höchstens 50 MB groß sein.".into());
+    }
+    let requested = Path::new(&name);
+    let ext = requested
+        .extension()
+        .and_then(|e| e.to_str())
+        .map(|e| e.to_ascii_lowercase())
+        .filter(|e| ["png", "jpg", "jpeg", "gif", "webp", "bmp", "tif", "tiff", "heic", "avif"].contains(&e.as_str()))
+        .ok_or_else(|| "Unbekanntes Bildformat.".to_string())?;
+    let stem: String = requested
+        .file_stem()
+        .and_then(|s| s.to_str())
+        .unwrap_or("Bild")
+        .chars()
+        .map(|c| if c.is_control() || "\\/:*?\"<>|".contains(c) { '-' } else { c })
+        .collect();
+    let stem = if stem.trim().is_empty() || stem.starts_with('.') { "Bild".to_string() } else { stem };
+    let target_dir = Path::new(&doc_dir).join(&subfolder);
+    fs::create_dir_all(&target_dir).map_err(|e| e.to_string())?;
+    let mut file_name = format!("{stem}.{ext}");
+    let mut k = 1;
+    while target_dir.join(&file_name).exists() {
+        file_name = format!("{stem}-{k}.{ext}");
+        k += 1;
+    }
+    let mut file = fs::OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .open(target_dir.join(&file_name))
+        .map_err(|e| format!("Konnte das Bild nicht speichern: {e}"))?;
+    std::io::Write::write_all(&mut file, &bytes).map_err(|e| format!("Konnte das Bild nicht speichern: {e}"))?;
+    Ok(format!("{subfolder}/{file_name}"))
+}
+
 /// Reveal a file in the OS file manager (Finder / Explorer / default).
 #[tauri::command]
 fn reveal_in_dir(path: String) -> Result<(), String> {
@@ -1179,6 +1223,7 @@ fn main() {
             create_entry,
             delete_file,
             copy_asset,
+            save_image_data,
             reveal_in_dir,
             copy_file_to,
             has_pandoc,

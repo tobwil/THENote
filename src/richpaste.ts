@@ -78,3 +78,24 @@ export function pasteToInsert(opts: { html: string; plain: string; inFence: bool
   }
   return stripControlChars(opts.plain);
 }
+
+const IMAGE_FILE = /^[^\n]{1,255}\.(png|jpe?g|gif|webp|bmp|tiff?|heic|avif)$/i;
+
+/**
+ * The image to paste from a clipboard, or null when the paste is text.
+ * Screenshots and copied pictures arrive as an image file or item. Real text
+ * wins: Excel or Word put a picture of the selection beside their text, and a
+ * web page copies its <img src="https://…"> as HTML (the existing paste keeps
+ * that as a remote link). A copied file name or a lone local <img> is not text.
+ */
+export function imageToPaste(cd: Pick<DataTransfer, "files" | "items" | "getData">): File | null {
+  let image: File | null = null;
+  for (const file of Array.from(cd.files ?? [])) if (!image && file.type.startsWith("image/")) image = file;
+  for (const item of Array.from(cd.items ?? [])) if (!image && item.kind === "file" && item.type.startsWith("image/")) image = item.getAsFile();
+  if (!image) return null;
+  const plain = cd.getData("text/plain").trim();
+  const html = cd.getData("text/html");
+  const htmlText = html.replace(/<img\b[^>]*>/gi, "").replace(/<[^>]+>/g, "").replace(/&nbsp;/g, " ").trim();
+  if (htmlText || /<img\b[^>]*\bsrc=["']https?:/i.test(html)) return null;
+  return !plain || plain === image.name || IMAGE_FILE.test(plain) ? image : null;
+}

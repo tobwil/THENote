@@ -1,5 +1,7 @@
 import { createEffect, onMount } from "solid-js";
 import { fullText, replaceAll, setSourceCaret, currentTabView } from "../store";
+import { imageToPaste } from "../richpaste";
+import { pasteImageBlob, imageMarkdown } from "../commands";
 
 export default function SourceView() {
   let el: HTMLTextAreaElement | undefined;
@@ -45,6 +47,20 @@ export default function SourceView() {
             replaceAll(e.currentTarget.value);
             fit();
             reportCaret();
+          }}
+          onPaste={(e) => {
+            // Images go next to the note; the link lands where the caret was.
+            const image = e.clipboardData ? imageToPaste(e.clipboardData) : null;
+            if (!image || !el) return;
+            e.preventDefault();
+            const [start, end] = [el.selectionStart, el.selectionEnd];
+            void pasteImageBlob(image, image.name || undefined, (ref) => {
+              if (!el) return;
+              el.setRangeText(imageMarkdown(ref), start, end, "end");
+              replaceAll(el.value);
+              fit();
+              reportCaret();
+            });
           }}
           onKeyUp={reportCaret}
           onClick={reportCaret}

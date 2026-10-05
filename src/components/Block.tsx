@@ -17,10 +17,10 @@ import {
 } from "../store";
 import { renderMermaidIn } from "../mermaid";
 import { renderD2In } from "../d2";
-import { executeCommand, registerBlockApi, unregisterBlockApi, imageInsertRef, followLink, type BlockApi } from "../commands";
+import { executeCommand, registerBlockApi, unregisterBlockApi, imageInsertRef, followLink, type BlockApi, pasteImageBlob } from "../commands";
 import { parseTable, cellRanges } from "../tabletools";
 import { findImages } from "../images";
-import { pasteToInsert } from "../richpaste";
+import { pasteToInsert, imageToPaste } from "../richpaste";
 import { openImageMenu } from "./ImageContextMenu";
 import { openEditorMenu } from "./EditorContextMenu";
 import ImageHoverTools from "./ImageHoverTools";
@@ -484,6 +484,10 @@ export default function Block(props: Props) {
     e.preventDefault();
     const cd = e.clipboardData;
     if (!cd) return;
+    // An image on the clipboard (screenshot, copied picture or image file) is
+    // saved next to the note and linked; see imageToPaste for text vs. image.
+    const image = isFence() ? null : imageToPaste(cd);
+    if (image) { void pasteImageBlob(image, image.name || undefined); return; }
     insertAtCaret(
       pasteToInsert({
         html: cd.getData("text/html"),

@@ -33,7 +33,7 @@ import {
   confirmDialog, alertDialog, renameFile, deleteFile, openNewWindow,
   pandocImport, pandocExport, exportPdf, runCommand, revealInDir,
   clipboardWriteText, clipboardReadText, pathExists,
-  pickImageFile, copyAsset,
+  pickImageFile, copyAsset, saveImageData,
   setWindowAlwaysOnTop, toggleFullscreen, minimizeWindow, toggleMaximizeWindow,
 } from "./platform";
 import {
@@ -1219,6 +1219,55 @@ export async function imageInsertRef(absPath: string): Promise<string> {
   // Otherwise store relative to the document folder when the file is under it.
   if (dir && norm(absPath).startsWith(norm(dir) + "/")) return norm(absPath).slice(norm(dir).length + 1);
   return absPath;
+}
+
+const IMAGE_EXT: Record<string, string> = { "image/png": "png", "image/jpeg": "jpg", "image/gif": "gif", "image/webp": "webp", "image/bmp": "bmp", "image/tiff": "tiff", "image/heic": "heic", "image/avif": "avif" };
+const blobBase64 = async (blob: Blob) => {
+  const bytes = new Uint8Array(await blob.arrayBuffer());
+  let binary = "";
+  for (let i = 0; i < bytes.length; i += 0x8000) binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+  return btoa(binary);
+};
+/** Markdown for an image link; destinations with spaces are wrapped in <>. */
+export const imageMarkdown = (ref: string) => `![](${/\s/.test(ref) ? `<${ref}>` : ref})`;
+const insertImageMarkdown = (ref: string) => {
+  const md = imageMarkdown(ref);
+  if (blockApi) blockApi.insertAtCaret(md, md.length - 1);
+  else insertBlock(md, md.length - 1);
+};
+
+/**
+ * Paste an image from the clipboard (a screenshot, an image copied in a
+ * browser or a file copied in Finder). The bytes are saved next to the note,
+ * into the images folder (`assets` by default, or `copy-images-to`), and a
+ * relative link is inserted. An unsaved note uses the notes folder instead and
+ * links the file by its full path. Without the desktop app the image is
+ * embedded as a data URL, so the browser editor still shows it.
+ */
+export async function pasteImageBlob(blob: Blob, name?: string, insert: (ref: string) => void = insertImageMarkdown) {
+  const ext = IMAGE_EXT[blob.type] ?? (name?.match(/\.(png|jpe?g|gif|webp|bmp|tiff?|heic|avif)$/i)?.[1].toLowerCase());
+  if (!ext) { await alertDialog("Dieses Bildformat kann nicht eingefügt werden."); return; }
+  if (!isTauri) { insert(`data:${blob.type || `image/${ext}`};base64,${await blobBase64(blob)}`); return; }
+  const now = new Date(), two = (n: number) => String(n).padStart(2, "0");
+  const stamp = `${now.getFullYear()}-${two(now.getMonth() + 1)}-${two(now.getDate())}-${two(now.getHours())}${two(now.getMinutes())}${two(now.getSeconds())}`;
+  const fileName = name && !/^image\.(png|jpe?g|gif|webp|bmp|tiff?|heic|avif)$/i.test(name) ? name : `Bild-${stamp}.${ext}`;
+  try {
+    const dir = docDir();
+    const fm = currentFrontMatter();
+    const template = fm["copy-images-to"] ?? fm["typora-copy-images-to"] ?? (copyImagesToFolder() || "assets");
+    if (dir) {
+      const rel = await saveImageData(dir, template.replace(/\$\{filename\}/g, docBaseName()), fileName, await blobBase64(blob));
+      insert(rel);
+      return;
+    }
+    const root = folderPath() ?? await ensureNotebook();
+    if (!root) { await alertDialog("Bitte speichere die Notiz zuerst, damit das Bild daneben abgelegt werden kann."); return; }
+    const rel = await saveImageData(root, "assets", fileName, await blobBase64(blob));
+    insert(`${root.replace(/\\/g, "/")}/${rel}`);
+    await refreshTree();
+  } catch (e) {
+    await alertDialog(String(e));
+  }
 }
 
 /** Insert an image reference, honoring the copy-to-folder rules. */
