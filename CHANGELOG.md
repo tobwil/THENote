@@ -2,7 +2,9 @@
 
 The entries below reconstruct the development milestones from the conversation and validated local versions. Versions 0.1.0–0.2.3 were developed on 2026-10-01 before the first source publication; they are **not fabricated historical Git commits or previous GitHub releases**.
 
-## Unreleased
+## 0.2.10 — 2026-10-05
+
+- Fix immediate slash-command execution leaving part of the typed query in the note. Refresh the query and caret before click, Enter or Tab execution; cover all three with a regression test.
 
 - **Pasted pictures show right away:** after pasting or inserting an image in the live view, the caret sits after it, so the picture appears instead of its `![](…)` path.
 - **Drag pictures into galleries:** drag a picture from anywhere in the note (a text paragraph or its own block) onto a gallery or a single picture; it lands before or after the picture under the pointer, a bar marks the spot. Dragging inside a gallery reorders it; one undo step reverts a move, Esc cancels. Image files dragged from Finder onto a gallery join it at that spot.

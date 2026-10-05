@@ -17,6 +17,7 @@ const suites = [
   ['Notebook UI', 'npm', ['run', 'test:notebook']],
   ['Clipboard images UI', 'npm', ['run', 'test:paste:ui']],
   ['Gallery and image moves UI', 'npm', ['run', 'test:gallery:ui']],
+  ['Slash date immediate execution', 'node', ['tests/e2e-slashdate.mjs']],
   ['Workspace UI', 'npm', ['run', 'test:workspace:ui']],
   ['Sidebar UI', 'node', ['tests/e2e-sidebar.mjs']],
   ['AI UI', 'npm', ['run', 'test:ai:ui']],
