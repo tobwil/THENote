@@ -20,6 +20,7 @@ const suites = [
   ['Slash date immediate execution', 'node', ['tests/e2e-slashdate.mjs']],
   ['Slash building blocks and sharing', 'npm', ['run', 'test:slash:ui']],
   ['Live output following', 'node', ['tests/e2e-runfollow.mjs']],
+  ['Export image portability', 'npm', ['run', 'test:export:ui']],
   ['Workspace UI', 'npm', ['run', 'test:workspace:ui']],
   ['Sidebar UI', 'node', ['tests/e2e-sidebar.mjs']],
   ['AI UI', 'npm', ['run', 'test:ai:ui']],
