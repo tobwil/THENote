@@ -555,7 +555,11 @@ fn relocate_image(from_dir: &Path, to_dir: &Path, item: &ImageMove) -> Result<St
         if dest.exists() {
             // The same picture is already there: reuse it.
             if fs::read(&dest).map(|b| b == bytes).unwrap_or(false) {
-                if !item.copy {
+                // A folder alias may resolve to the source itself. Reusing it
+                // must never delete the only copy of the picture.
+                let same_path = fs::canonicalize(&src).map_err(|e| e.to_string())?
+                    == fs::canonicalize(&dest).map_err(|e| e.to_string())?;
+                if !item.copy && !same_path {
                     fs::remove_file(&src).map_err(|e| e.to_string())?;
                 }
                 break;
@@ -1355,6 +1359,123 @@ mod tests {
         relocate_images(from.to_string_lossy().into(), to.to_string_lossy().into(), vec![item("assets/d.png", false)]);
         assert!(!from.join("assets").exists() && from.exists());
         std::fs::remove_dir_all(root).ok();
+    }
+
+    struct ImageFixture(std::path::PathBuf);
+    impl ImageFixture {
+        fn new(name: &str) -> Self {
+            let root = std::env::temp_dir().join(format!("the-note-{name}-{}-{}", std::process::id(), std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos()));
+            std::fs::create_dir_all(&root).unwrap();
+            Self(root)
+        }
+        fn write(&self, rel: &str, bytes: &[u8]) {
+            let path = self.0.join(rel);
+            std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+            std::fs::write(path, bytes).unwrap();
+        }
+        fn relocate(&self, from: &str, to: &str, rel: &str, copy: bool) -> Option<String> {
+            relocate_images(self.0.join(from).to_string_lossy().into(), self.0.join(to).to_string_lossy().into(), vec![ImageMove { rel: rel.into(), copy }]).remove(0)
+        }
+    }
+    impl Drop for ImageFixture {
+        fn drop(&mut self) { let _ = std::fs::remove_dir_all(&self.0); }
+    }
+
+    #[test]
+    fn image_relocation_same_directory_preserves_original() {
+        let f = ImageFixture::new("same-dir");
+        f.write("notes/assets/a.png", b"precious picture");
+        assert_eq!(f.relocate("notes", "notes", "assets/a.png", false), Some("assets/a.png".into()));
+        assert_eq!(std::fs::read(f.0.join("notes/assets/a.png")).unwrap(), b"precious picture");
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn image_relocation_folder_alias_preserves_original() {
+        let f = ImageFixture::new("folder-alias");
+        f.write("notes/assets/a.png", b"only copy");
+        std::os::unix::fs::symlink(f.0.join("notes"), f.0.join("alias")).unwrap();
+        assert_eq!(f.relocate("notes", "alias", "assets/a.png", false), Some("assets/a.png".into()));
+        assert_eq!(std::fs::read(f.0.join("notes/assets/a.png")).unwrap(), b"only copy");
+    }
+
+    #[test]
+    fn image_relocation_reuses_identical_bytes_without_losing_shared_source() {
+        for copy in [false, true] {
+            let f = ImageFixture::new("identical");
+            f.write("from/assets/a.png", b"same");
+            f.write("to/assets/a.png", b"same");
+            assert_eq!(f.relocate("from", "to", "assets/a.png", copy), Some("assets/a.png".into()));
+            assert_eq!(std::fs::read(f.0.join("to/assets/a.png")).unwrap(), b"same");
+            assert_eq!(f.0.join("from/assets/a.png").exists(), copy);
+            assert!(!f.0.join("to/assets/a-1.png").exists());
+        }
+    }
+
+    #[test]
+    fn image_relocation_skips_all_existing_collision_names() {
+        let f = ImageFixture::new("collisions");
+        f.write("from/assets/a.png", b"new");
+        f.write("to/assets/a.png", b"first");
+        f.write("to/assets/a-1.png", b"second");
+        assert_eq!(f.relocate("from", "to", "assets/a.png", false), Some("assets/a-2.png".into()));
+        for (rel, expected) in [("a.png", &b"first"[..]), ("a-1.png", &b"second"[..]), ("a-2.png", &b"new"[..])] {
+            assert_eq!(std::fs::read(f.0.join("to/assets").join(rel)).unwrap(), expected);
+        }
+    }
+
+    #[test]
+    fn image_relocation_failure_preserves_source() {
+        let f = ImageFixture::new("blocked-destination");
+        f.write("from/assets/a.png", b"keep me");
+        f.write("to/assets", b"not a directory");
+        assert_eq!(f.relocate("from", "to", "assets/a.png", false), None);
+        assert_eq!(std::fs::read(f.0.join("from/assets/a.png")).unwrap(), b"keep me");
+        assert_eq!(std::fs::read(f.0.join("to/assets")).unwrap(), b"not a directory");
+    }
+
+    #[test]
+    fn image_relocation_rejects_missing_absolute_and_parent_paths() {
+        let f = ImageFixture::new("invalid-paths");
+        f.write("outside.png", b"outside");
+        std::fs::create_dir_all(f.0.join("from")).unwrap();
+        let absolute = f.0.join("outside.png").to_string_lossy().into_owned();
+        for rel in ["", "../outside.png", "assets/../../outside.png", "assets/missing.png", absolute.as_str()] {
+            assert_eq!(f.relocate("from", "to", rel, false), None, "{rel}");
+        }
+        assert_eq!(std::fs::read(f.0.join("outside.png")).unwrap(), b"outside");
+        assert!(!f.0.join("to").exists());
+    }
+
+    #[test]
+    fn pasted_images_preserve_bytes_and_never_overwrite() {
+        use base64::Engine;
+        let f = ImageFixture::new("paste-collision");
+        let data = base64::engine::general_purpose::STANDARD.encode(b"image payload");
+        let dir = f.0.to_string_lossy().into_owned();
+        let first = super::save_image_data(dir.clone(), "assets".into(), "Photo.PNG".into(), data.clone()).unwrap();
+        let second = super::save_image_data(dir, "assets".into(), "Photo.PNG".into(), data).unwrap();
+        assert_eq!(first, "assets/Photo.png");
+        assert_eq!(second, "assets/Photo-1.png");
+        for rel in [first, second] { assert_eq!(std::fs::read(f.0.join(rel)).unwrap(), b"image payload"); }
+    }
+
+    #[test]
+    fn pasted_images_reject_bad_data_and_unsupported_extensions_without_writes() {
+        let f = ImageFixture::new("paste-rejection");
+        for (name, data) in [("x.png", "%%%"), ("x.png", ""), ("x.exe", "YWJj")] {
+            assert!(super::save_image_data(f.0.to_string_lossy().into(), "assets".into(), name.into(), data.into()).is_err());
+        }
+        assert_eq!(std::fs::read_dir(&f.0).unwrap().count(), 0);
+    }
+
+    #[test]
+    fn pasted_image_filename_cannot_escape_asset_folder() {
+        let f = ImageFixture::new("paste-path");
+        let rel = super::save_image_data(f.0.to_string_lossy().into(), "assets".into(), "../../outside.png".into(), "YWJj".into()).unwrap();
+        assert_eq!(rel, "assets/outside.png");
+        assert!(!f.0.join("outside.png").exists());
+        assert_eq!(std::fs::read(f.0.join(rel)).unwrap(), b"abc");
     }
 
     #[test]

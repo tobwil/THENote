@@ -1,14 +1,14 @@
 {
-  "version": "0.2.7",
+  "version": "0.2.8",
   "repository": "tobwil/THENote",
   "asset": "THE.Note-macOS-arm64.zip",
-  "sha256": "84f6120bc33bafadad5245bb81057bc747cac943ea34ebb4b0572a89c0abc4c7",
+  "sha256": "e1576d237e8fe846bb8c1a52a7c36cc8c03287b0b745d9ed0a31b1752630b478",
   "minimumMacOS": "11.0",
   "preview": true,
   "site": "https://tobwil.github.io/THENote/",
   "dmg": {
     "asset": "THE.Note-macOS-arm64.dmg",
-    "sha256": "b3e0bb07aaab79887bb24db1d35eedc75e6cb43d797af46fbd1597c247a90a33"
+    "sha256": "82d8f4874e967402b9dca2a86781de3afc6d048d58f7622ebe1186a943b766a1"
   },
   "notarized": true
 }

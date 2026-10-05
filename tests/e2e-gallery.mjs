@@ -92,6 +92,19 @@ try {
   await page.keyboard.press('ArrowRight');
   assert.equal(await viewer.locator('.image-viewer-count').innerText(), '3 / 3');
   assert.equal(await viewer.locator('.image-viewer-thumbs button').count(), 3);
+  // Keyboard boundaries wrap; Home/End and thumbnails select the expected image.
+  await page.keyboard.press('ArrowRight');
+  assert.equal(await viewer.locator('.image-viewer-count').innerText(), '1 / 3', 'right wraps to first');
+  await page.keyboard.press('ArrowLeft');
+  assert.equal(await viewer.locator('.image-viewer-count').innerText(), '3 / 3', 'left wraps to last');
+  await page.keyboard.press('Home');
+  assert.equal(await viewer.locator('.image-viewer-count').innerText(), '1 / 3');
+  await page.keyboard.press('End');
+  assert.equal(await viewer.locator('.image-viewer-count').innerText(), '3 / 3');
+  await viewer.getByRole('listitem', { name: 'Bild 2', exact: true }).click();
+  assert.equal(await viewer.locator('.image-viewer-count').innerText(), '2 / 3');
+  assert.equal(await viewer.getByRole('listitem', { name: 'Bild 2', exact: true }).getAttribute('aria-current'), 'true');
+  assert.equal(await viewer.locator('[aria-current="true"]').count(), 1);
   await page.screenshot({ path: 'release/THE Note-viewer-preview.png' });
   await page.keyboard.press('Escape');
   await viewer.waitFor({ state: 'hidden' });
