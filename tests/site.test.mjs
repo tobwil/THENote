@@ -50,7 +50,7 @@ try {
   assert.equal(await page.getByRole('link', { name: 'Im Browser ausprobieren', exact: true }).getAttribute('href'), 'app/', 'hero links the browser version');
   assert.equal(await page.getByRole('link', { name: 'Ohne Installation: im Browser ausprobieren ↗' }).getAttribute('href'), 'app/');
   assert.equal(await page.getByRole('link', { name: 'DMG für macOS herunterladen' }).getAttribute('href'), `https://github.com/${d.repository}/releases/download/v${d.version}/${d.dmg.asset}`);
-  for (const path of ['install.sh', 'assets/inline-ai.png', 'assets/folders-and-date.png', 'assets/gallery.png', 'assets/unsaved-diff.png', 'assets/note-light.png', 'assets/note-dark.png', 'assets/the-note.svg', 'fonts/inter-latin-400-normal.woff2', 'sitemap.xml', 'en/']) assert.equal((await page.request.get('http://127.0.0.1:1454/THENote/' + path)).status(), 200);
+  for (const path of ['install.sh', 'assets/inline-ai.png', 'assets/folders-and-date.png', 'assets/gallery.png', 'assets/slash-menu.png', 'assets/unsaved-diff.png', 'assets/note-light.png', 'assets/note-dark.png', 'assets/the-note.svg', 'fonts/inter-latin-400-normal.woff2', 'sitemap.xml', 'en/']) assert.equal((await page.request.get('http://127.0.0.1:1454/THENote/' + path)).status(), 200);
 
   // The notebook window: live Markdown, tasks, sidebar, theme and a small runnable block.
   await page.setViewportSize({ width: 1440, height: 1050 });

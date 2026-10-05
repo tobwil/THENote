@@ -80,6 +80,30 @@ Paste screenshots with ⌘V: they are saved next to the note and show right away
 
 ![Full-size view of a picture with thumbnails of the whole gallery](docs/screenshots/image-viewer.png)
 
+### Building blocks with /
+
+Type **/** on an empty line: AI quick actions, focus & calm, tools, facilitation and the playground land right at the caret.
+
+![The slash menu with AI quick actions and focus & calm blocks](docs/screenshots/slash-menu.png)
+
+### Facilitation
+
+Draw the speaking order, hand out dot votes, collect a ROTI: the tables do the maths, the code blocks run with one click. All ten methods are also in the **Moderationskoffer** (facilitation kit) template.
+
+![A strategy workshop with a drawn speaking order and dot voting](docs/screenshots/moderation.png)
+
+### Focus & calm
+
+Fill in your daily focus, take a breath, then start a focus session: the breathing exercise guides you round by round, the focus timer ends with a Mac notification.
+
+![A filled-in daily focus and box breathing with its output](docs/screenshots/focus.png)
+
+### AI quick actions
+
+**/todos** pulls the tasks out of a meeting, with who and by when. Likewise **/zusammenfassen** (summary), **/schritte** (next steps) and **/fragen** (open questions). Only "Übernehmen" (accept) turns the draft into plain Markdown.
+
+![A meeting note with the to-dos quick action and its draft](docs/screenshots/quick-actions.png)
+
 ### Changes before saving
 
 ![Markdown diff with red deletions, green additions and line numbers](docs/screenshots/unsaved-diff.png)
@@ -88,7 +112,7 @@ Paste screenshots with ⌘V: they are saved next to the note and show right away
 
 ![Inline AI with a prompt and a Markdown draft](docs/screenshots/inline-ai.png)
 
-The screenshots show example and test notes; the photos are painted demo scenes. All code output was produced locally with `bash`, `python3` and `node`; the AI answer is a reproducible demo, no external provider was contacted. Regenerate them with `node scripts/screenshots.mjs`.
+The screenshots show example and test notes; the photos are painted demo scenes. All code output was produced locally with `bash`, `python3` and `node`; the AI answers are reproducible demos, no external provider was contacted. Regenerate them with `node scripts/screenshots.mjs`.
 
 ## What was merged
 
