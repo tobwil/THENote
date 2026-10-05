@@ -18,6 +18,7 @@ import {
 import { renderMermaidIn } from "../mermaid";
 import { renderD2In } from "../d2";
 import { decorateGalleries, openImageViewer } from "./ImageViewer";
+import { imageDragJustEnded, startImageDrag } from "../imagedrag";
 import { executeCommand, registerBlockApi, unregisterBlockApi, imageInsertRef, followLink, type BlockApi, pasteImageBlob } from "../commands";
 import { parseTable, cellRanges } from "../tabletools";
 import { findImages } from "../images";
@@ -679,6 +680,7 @@ export default function Block(props: Props) {
     const t = e.target as HTMLElement;
     // A click on a picture (not a linked one) opens it large, with its gallery.
     const img = t.closest("img");
+    if (img && imageDragJustEnded()) { e.preventDefault(); return; }
     if (img && !img.closest("a") && e.button === 0 && openImageViewer(img as HTMLImageElement)) {
       e.preventDefault();
       setImgTool(null);
@@ -754,7 +756,16 @@ export default function Block(props: Props) {
     // Clicking an image no longer drops the block into raw ![](…) source — the
     // hover toolbar owns image edits. Leave surrounding text clickable so the
     // rest of the paragraph still enters edit mode normally.
-    if (t.closest("img")) { e.preventDefault(); return; }
+    // Dragging a picture moves it into a gallery (imagedrag.ts).
+    const picture = t.closest("img");
+    if (picture) {
+      e.preventDefault();
+      if (renderedEl?.contains(picture) && !picture.closest("a") && picture.getAttribute("src")) {
+        const ordinal = ordinalOf(picture as HTMLImageElement);
+        if (ordinal >= 0 && imageAt(ordinal)) startImageDrag(e, picture as HTMLImageElement, props.id, ordinal);
+      }
+      return;
+    }
     if (e.button !== 0) return;
     // Defer activation until mouseup: a plain click enters the block for editing,
     // but a drag is left alone so the browser can extend a native selection
@@ -817,7 +828,7 @@ export default function Block(props: Props) {
   };
 
   return (
-    <div class="block" classList={{ active: props.active, "executable-block": !!parseExecutable(props.text) }} ref={rootEl}>
+    <div class="block" data-block-id={props.id} classList={{ active: props.active, "executable-block": !!parseExecutable(props.text) }} ref={rootEl}>
       <Show when={parseAiPrompt(props.text) === null} fallback={<InlineAi id={props.id} text={props.text} active={props.active} onChange={props.onChange} />} >
       <Show when={props.active && parseTable(props.text)}>
         <TableToolbar text={props.text} />

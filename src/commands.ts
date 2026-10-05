@@ -1,7 +1,7 @@
 import { openNameDialog } from "./components/NameDialog";
 import { requestInlineFocus } from "./ai/focus";
 import {
-  doc, fullText, fileName, retargetTabPath, cycleTab, setHeading,
+  doc, fullText, fileName, retargetTabPath, cycleTab, setHeading, rewriteBlocks,
   setTabDraftName, setFolderOpen, openTabs, activeTabId, openDocument, findTabByPath, switchTab, removeTab, getTabDocument, markTabSaved, replaceTabDocument,
   sourceMode, setSourceMode, sidebarOpen, setSidebarOpen,
   theme, setTheme, THEMES, fileTree, setFileTree, setFolderName,
@@ -60,6 +60,7 @@ import {
 } from "./export";
 import { docDir, currentFrontMatter, docBaseName, stripFrontMatter } from "./images";
 import { imagesToCarry, rewriteImageSources } from "./imagecarry";
+import { insertImages } from "./gallerytext";
 import { setImageRootPath } from "./imageactions";
 // The app stylesheet as a string (bundled at build time), so exports embed it
 // reliably — a runtime fetch of a side-effect-imported CSS file is fragile in
@@ -1296,8 +1297,9 @@ const blobBase64 = async (blob: Blob) => {
 export const imageMarkdown = (ref: string) => `![](${/\s/.test(ref) ? `<${ref}>` : ref})`;
 const insertImageMarkdown = (ref: string) => {
   const md = imageMarkdown(ref);
-  if (blockApi) blockApi.insertAtCaret(md, md.length - 1);
-  else insertBlock(md, md.length - 1);
+  // Caret after the picture, so the live view shows it instead of its path.
+  if (blockApi) blockApi.insertAtCaret(md, md.length);
+  else insertBlock(md, md.length);
 };
 
 /**
@@ -1340,8 +1342,24 @@ export async function insertImageFromPath(absPath: string) {
   // A destination with spaces must be wrapped in <> to be valid markdown.
   const dest = /\s/.test(ref) ? `<${ref}>` : ref;
   const md = `![](${dest})`;
-  if (blockApi) blockApi.insertAtCaret(md, md.length - 1);
-  else insertBlock(md, md.length - 1);
+  // Caret after the picture, so the live view shows it instead of its path.
+  if (blockApi) blockApi.insertAtCaret(md, md.length);
+  else insertBlock(md, md.length);
+}
+
+/** Image files dropped onto a gallery join it, before picture `before` (null: at the end). */
+export async function addImagesToGallery(blockId: number, before: number | null, paths: string[]) {
+  try {
+    const markups: string[] = [];
+    for (const path of paths) {
+      const ref = await imageInsertRef(path);
+      markups.push(`![](${/\s/.test(ref) ? `<${ref}>` : ref})`);
+    }
+    const text = doc.blocks.find(block => block.id === blockId)?.text;
+    if (text != null) rewriteBlocks([{ id: blockId, text: insertImages(text, markups, before) }]);
+  } catch (e) {
+    await alertDialog(String(e));
+  }
 }
 
 async function insertImage() {

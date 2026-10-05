@@ -4,6 +4,7 @@ import ChangesModal from "./components/ChangesModal";
 import DiagramViewer from "./components/DiagramViewer";
 import ImageViewer from "./components/ImageViewer";
 import MoveDialog from "./components/MoveDialog";
+import { imageDropTarget, showImageDropTarget } from "./imagedrag";
 import AiSettings from "./components/AiSettings";
 import { Show, createEffect, onMount, onCleanup, untrack } from "solid-js";
 import Editor from "./components/Editor";
@@ -49,7 +50,7 @@ import {
   onExternalChange,
 } from "./platform";
 import {
-  executeCommand, openFile, openFolder, insertImageFromPath, restoreWorkspace,
+  executeCommand, openFile, openFolder, insertImageFromPath, addImagesToGallery, restoreWorkspace,
 } from "./commands";
 import { BLOCK_TARGETED_IDS } from "./menudata";
 import { makeMenuKeyHandler } from "./shortcuts";
@@ -158,11 +159,19 @@ export default function App() {
       let undrop: (() => void) | undefined;
       import("@tauri-apps/api/webviewWindow").then(async ({ getCurrentWebviewWindow }) => {
         undrop = await getCurrentWebviewWindow().onDragDropEvent((e) => {
+          // Over a gallery (or a lone picture), image files join it; elsewhere they insert at the caret.
+          const at = (p: { x: number; y: number }) => imageDropTarget(p.x / devicePixelRatio, p.y / devicePixelRatio);
+          if (e.payload.type === "enter" || e.payload.type === "over") { showImageDropTarget(at(e.payload.position)); return; }
+          showImageDropTarget(null);
           if (e.payload.type !== "drop") return;
+          const isImage = (path: string) => IMAGE_EXTS.includes(path.split(".").pop()?.toLowerCase() ?? "");
+          const target = at(e.payload.position);
+          const images = e.payload.paths.filter(isImage);
+          if (target && images.length) void addImagesToGallery(target.blockId, target.before, images);
+          else for (const path of images) void insertImageFromPath(path);
           for (const path of e.payload.paths) {
             const ext = path.split(".").pop()?.toLowerCase() ?? "";
-            if (IMAGE_EXTS.includes(ext)) void insertImageFromPath(path);
-            else if (["md", "markdown", "txt"].includes(ext)) void openFile(path);
+            if (["md", "markdown", "txt"].includes(ext)) void openFile(path);
           }
         });
       });

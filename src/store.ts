@@ -524,6 +524,24 @@ export function removeBlock(index: number) {
   );
 }
 
+/** Rewrite blocks by id in one undo step; a null text removes the block (moving a picture into a gallery). */
+export function rewriteBlocks(changes: { id: number; text: string | null }[]) {
+  const known = changes.filter(change => state.blocks.some(block => block.id === change.id));
+  if (!known.length) return;
+  pushHistory();
+  setState(produce((s) => {
+    for (const { id, text } of known) {
+      const index = s.blocks.findIndex(block => block.id === id);
+      if (index < 0) continue;
+      if (text === null) s.blocks.splice(index, 1);
+      else s.blocks[index].text = text;
+    }
+    if (s.blocks.length === 0) s.blocks.push(mkBlock(""));
+    s.activeIndex = -1;
+    s.dirty = true;
+  }));
+}
+
 /** Replace blocks[start..end] (inclusive) with a single block of `text` and
  *  activate it — used to delete/replace a selection that spans blocks. */
 export function replaceBlocks(start: number, end: number, text: string) {
