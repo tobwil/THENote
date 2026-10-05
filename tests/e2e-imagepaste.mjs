@@ -55,6 +55,9 @@ try {
   assert.match(first.name, /^Bild-\d{4}-\d{2}-\d{2}-\d{6}\.png$/, 'clipboard images get a dated name');
   assert.ok(first.data.length > 20, 'image bytes are sent');
   assert.match(await source(), new RegExp(`Rezept!\\[\\]\\(assets/${first.name.replace(/\./g, '\\.')}\\)`), 'relative link at the caret');
+  // The live view shows the picture right away, not its path: the caret sits after the image.
+  await page.waitForFunction(() => !!document.querySelector('.block.active .source .md-tok:not(.md-on) > img'));
+  assert.equal(await page.locator('.block.active .source .md-tok.md-on').count(), 0, 'the image markup stays hidden');
 
   // 2. A copied Finder file keeps its name; copy-images-to in front matter wins.
   await page.evaluate(async () => { (await import('/src/store.ts')).openDocument('---\ncopy-images-to: bilder/${filename}\n---\n\nText\n', '/notes/Reise.md'); });
