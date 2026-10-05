@@ -464,6 +464,33 @@ fn copy_asset(src: String, doc_dir: String, subfolder: String) -> Result<String,
     Ok(format!("{subfolder}/{name}"))
 }
 
+/// An image file as a `data:` URL, so HTML and PDF exports carry their pictures
+/// instead of app-only asset links. Only image types, at most 40 MB each.
+#[tauri::command]
+fn read_image_data_url(path: String) -> Result<String, String> {
+    use base64::Engine;
+    let p = Path::new(&path);
+    let ext = p.extension().and_then(|e| e.to_str()).unwrap_or("").to_lowercase();
+    let mime = match ext.as_str() {
+        "png" => "image/png",
+        "jpg" | "jpeg" => "image/jpeg",
+        "gif" => "image/gif",
+        "webp" => "image/webp",
+        "svg" => "image/svg+xml",
+        "bmp" => "image/bmp",
+        "avif" => "image/avif",
+        "tif" | "tiff" => "image/tiff",
+        "heic" => "image/heic",
+        _ => return Err(format!("Kein Bildformat: {path}")),
+    };
+    let meta = fs::metadata(p).map_err(|e| format!("Bild nicht gefunden: {path} ({e})"))?;
+    if meta.len() > 40 * 1024 * 1024 {
+        return Err(format!("Bild zu groß für den Export: {path}"));
+    }
+    let bytes = fs::read(p).map_err(|e| e.to_string())?;
+    Ok(format!("data:{mime};base64,{}", base64::engine::general_purpose::STANDARD.encode(bytes)))
+}
+
 /// Write pasted image bytes (base64) into `<doc_dir>/<subfolder>/`, with a
 /// unique name, and return the document-relative path for the markdown link.
 /// Clipboard images have no file on disk, so `copy_asset` cannot be used.
@@ -1305,6 +1332,7 @@ fn main() {
             delete_file,
             copy_asset,
             save_image_data,
+            read_image_data_url,
             relocate_images,
             reveal_in_dir,
             copy_file_to,
@@ -1326,8 +1354,20 @@ fn main() {
 #[cfg(test)]
 mod tests {
     use super::{
-        decode_bytes, encode_contents, enumerate_system_fonts, font_faces_b64, relocate_images, search_in_folder, ImageMove,
+        decode_bytes, encode_contents, enumerate_system_fonts, font_faces_b64, read_image_data_url, relocate_images, search_in_folder, ImageMove,
     };
+
+    #[test]
+    fn read_image_data_url_embeds_pictures_only() {
+        let dir = std::env::temp_dir().join(format!("embed-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        std::fs::write(dir.join("a.png"), b"png!").unwrap();
+        std::fs::write(dir.join("notes.md"), b"# no").unwrap();
+        assert_eq!(read_image_data_url(dir.join("a.png").to_string_lossy().into()).unwrap(), "data:image/png;base64,cG5nIQ==");
+        assert!(read_image_data_url(dir.join("notes.md").to_string_lossy().into()).is_err(), "not an image");
+        assert!(read_image_data_url(dir.join("missing.jpg").to_string_lossy().into()).is_err(), "missing file");
+        std::fs::remove_dir_all(dir).ok();
+    }
 
     #[test]
     fn relocate_images_moves_copies_dedupes_and_tidies() {

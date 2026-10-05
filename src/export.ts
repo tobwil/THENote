@@ -163,6 +163,13 @@ const PAGE_BREAK_CSS = `
 }
 `;
 
+/** Galleries in a static document: every picture visible as a tile grid (no arrows to scroll a strip). */
+const GALLERY_EXPORT_CSS = `
+.rendered .img-gallery-track { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 10px; overflow: visible; padding: 2px; }
+.rendered .img-gallery-track img { width: 100%; height: auto; max-width: none; aspect-ratio: 4 / 3; object-fit: cover; break-inside: avoid; }
+.rendered img { max-width: 100%; }
+`;
+
 export const EXPORT_PRINT_CSS = `
 html, body { height: auto !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
 * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -170,6 +177,7 @@ body { background: var(--bg); color: var(--ink); margin: 0; }
 body:not(.has-toc) .rendered { max-width: 760px; margin: 40px auto; padding: 0 28px; }
 body.has-toc { padding: 40px 28px; box-sizing: border-box; }
 .rendered { padding: 0; }
+${GALLERY_EXPORT_CSS}
 ${PAGE_BREAK_CSS}`;
 
 /**
@@ -186,6 +194,7 @@ html, body { height: auto !important; margin: 0 !important; -webkit-print-color-
 html { background: var(--bg); }
 body { background: var(--bg); color: var(--ink); }
 .rendered { max-width: none !important; width: 100% !important; margin: 0 !important; font-size: 11pt; }
+${GALLERY_EXPORT_CSS}
 ${PAGE_BREAK_CSS}`;
 
 export interface BuildHtmlOptions {
