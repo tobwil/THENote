@@ -50,7 +50,10 @@ try {
 
   // HTML: every local picture embedded, nothing points at asset://.
   await share(/Als HTML/);
-  await page.getByRole('dialog', { name: 'Export HTML' }).getByRole('button', { name: 'With outline' }).click();
+  const options = page.getByRole('dialog', { name: 'Als HTML exportieren' });
+  assert.match(await options.innerText(), /6 Bilder werden in die Datei eingebettet/);
+  assert.ok(await options.getByLabel(/Bilder mitnehmen/).isChecked() && await options.getByLabel(/Inhaltsverzeichnis/).isChecked(), 'pictures and outline are on by default');
+  await options.getByRole('button', { name: 'Exportieren …' }).click();
   await page.waitForFunction(() => window.__export.files.has('/notes/Day1.html'));
   const html = await page.evaluate(() => window.__export.files.get('/notes/Day1.html'));
   assert.ok(!html.includes('asset://'), 'no app-only links in the export');
@@ -65,14 +68,48 @@ try {
 
   // PDF: the print HTML embeds the pictures too.
   await share(/Als PDF/);
+  const pdfOptions = page.getByRole('dialog', { name: 'Als PDF exportieren' });
+  assert.equal(await pdfOptions.getByLabel(/Inhaltsverzeichnis/).count(), 0, 'no outline option for PDF');
+  await pdfOptions.getByRole('button', { name: 'Exportieren …' }).click();
   await page.waitForFunction(() => window.__export.files.has('/notes/Day1.pdf'));
   const pdf = await page.evaluate(() => window.__export.files.get('/notes/Day1.pdf'));
   assert.ok(!pdf.includes('asset://') && pdf.includes('data:image/png;base64,'), 'PDF source embeds the pictures');
 
   // Word via Pandoc: relative pictures are found next to the note.
   await share(/Als Word/);
+  await page.getByRole('dialog', { name: 'Als Word exportieren' }).getByRole('button', { name: 'Exportieren …' }).click();
   await page.waitForFunction(() => !!window.__export.pandoc);
   assert.ok((await page.evaluate(() => window.__export.pandoc.flags)).includes('--resource-path=/notes'));
+  assert.match(await page.evaluate(() => window.__export.pandoc.markdown), /!\[\]\(assets\/a\.png\)/);
+
+  // Without pictures: HTML and Word carry only the text; the choice is remembered.
+  await page.evaluate(() => { window.__export.files.clear(); window.__export.pandoc = null; window.__export.calls.length = 0; });
+  await share(/Als HTML/);
+  const again = page.getByRole('dialog', { name: 'Als HTML exportieren' });
+  await again.getByLabel(/Bilder mitnehmen/).uncheck();
+  await again.getByRole('button', { name: 'Exportieren …' }).click();
+  await page.waitForFunction(() => window.__export.files.has('/notes/Day1.html'));
+  const plain = await page.evaluate(() => window.__export.files.get('/notes/Day1.html'));
+  assert.ok(!/<img\b/.test(plain) && !plain.includes('img-gallery"'), 'no pictures, no empty gallery');
+  assert.match(plain, /Ein Bild fehlt:/, 'the text stays');
+  assert.equal(await page.evaluate(() => window.__export.calls.filter(([c]) => c === 'read_image_data_url').length), 0, 'no picture is read');
+  await share(/Als Word/);
+  const word = page.getByRole('dialog', { name: 'Als Word exportieren' });
+  assert.equal(await word.getByLabel(/Bilder mitnehmen/).isChecked(), false, 'the last choice is remembered');
+  await word.getByRole('button', { name: 'Exportieren …' }).click();
+  await page.waitForFunction(() => !!window.__export.pandoc);
+  const md = await page.evaluate(() => window.__export.pandoc.markdown);
+  assert.ok(!md.includes('![') && !/<img/.test(md), 'Word gets the text without pictures');
+  assert.match(md, /^# Day 1\n\nEin Bild fehlt:\n\nUnd eins aus dem Netz:\n$/);
+
+  // Rules: code blocks keep image syntax, linked pictures leave no empty link, hard breaks survive.
+  const rules = await page.evaluate(async () => {
+    const { stripImages } = await import('/src/gallerytext.ts');
+    return [
+      stripImages('Text  \nmit Umbruch\n\n```md\n![](a.png)\n\n![](b.png)\n```\n\n[![](c.png)](https://x.de) danach\n'),
+    ];
+  });
+  assert.equal(rules[0], 'Text  \nmit Umbruch\n\n```md\n![](a.png)\n\n![](b.png)\n```\n\ndanach\n');
   assert.deepEqual(errors, []);
-  console.log('PASS export pictures: HTML and PDF embed local images (gallery as grid, remote kept, missing keeps path, files read once, editor links untouched), Word gets the resource path. Native IPC mocked.');
+  console.log('PASS export pictures: HTML and PDF embed local images (gallery as grid, remote kept, missing keeps path, files read once, editor links untouched), Word gets the resource path; export options: with or without pictures (remembered), outline for HTML. Native IPC mocked.');
 } finally { await browser?.close(); server.kill('SIGTERM'); }

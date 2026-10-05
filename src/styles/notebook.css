@@ -224,3 +224,10 @@ body.img-dragging,body.img-dragging *{cursor:grabbing!important}
 .run-output{position:relative}
 .output-follow{position:absolute;right:16px;bottom:12px;padding:4px 10px;border:1px solid var(--rule);border-radius:999px;background:var(--bg-page);color:var(--accent);font:600 11.5px var(--font-ui);box-shadow:var(--shadow);cursor:pointer}
 .output-follow:hover{background:var(--tint)}
+/* Export options: pictures and outline as two clear choices. */
+.export-options{display:flex;flex-direction:column;gap:10px;margin-top:6px}
+.export-options label{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid var(--rule);border-radius:8px;cursor:pointer}
+.export-options label:hover{background:var(--tint)}
+.export-options input{margin-top:3px;accent-color:var(--accent)}
+.export-options span{display:flex;flex-direction:column;gap:2px;font:13px/1.45 var(--font-ui);color:var(--ink)}
+.export-options small{color:var(--ink-soft);font-size:12px}

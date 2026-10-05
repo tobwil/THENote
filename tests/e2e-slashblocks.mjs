@@ -128,7 +128,7 @@ try {
   const share = page.getByRole('menu', { name: 'Drucken und exportieren' });
   assert.deepEqual(await share.getByRole('menuitem').allInnerTexts().then(t => t.map(x => x.split('\n')[0])), ['⎙ Drucken …', 'Als PDF', 'Als HTML', 'Als Word (.docx)']);
   await share.getByRole('menuitem', { name: /Als HTML/ }).click();
-  await page.getByRole('dialog', { name: 'Export HTML' }).getByRole('button', { name: 'With outline' }).click();
+  await page.getByRole('dialog', { name: 'Als HTML exportieren' }).getByRole('button', { name: 'Exportieren …' }).click();
   await page.waitForFunction(() => window.__written?.some(p => p.endsWith('.html')));
   assert.equal(await page.evaluate(() => window.__saveDialog), '/Users/demo/Notizen/Wochenende.html', 'the save dialog starts next to the note');
   const toast = page.getByRole('status').filter({ hasText: 'Exportiert: Wochenende.html' });

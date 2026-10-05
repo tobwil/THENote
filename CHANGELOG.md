@@ -2,6 +2,10 @@
 
 The entries below reconstruct the development milestones from the conversation and validated local versions. Versions 0.1.0–0.2.3 were developed on 2026-10-01 before the first source publication; they are **not fabricated historical Git commits or previous GitHub releases**.
 
+## Unreleased
+
+- **Export with or without pictures:** HTML, PDF, Word and the other Pandoc formats ask whether to include the pictures (with their count); HTML also asks for the outline. The choice is remembered. Without pictures, images, linked pictures and emptied gallery paragraphs are left out, code blocks stay as written. PDF and Word skip the question when the note has no pictures.
+
 ## 0.2.14 — 2026-10-05
 
 - **Exports keep their pictures:** HTML and PDF exports embed local images as data: URLs, so the file works on its own (the app's asset:// links only load inside the app). Galleries export as a tile grid; remote images stay links; a missing file keeps its relative path. Word and other Pandoc exports find relative pictures next to the note (`--resource-path`). New native command `read_image_data_url`.

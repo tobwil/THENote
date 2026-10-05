@@ -63,3 +63,41 @@ export function moveImage(fromText: string, ordinal: number, toText: string, bef
   }
   return { from: taken.rest, to: insertImages(toText, [taken.markup], before) };
 }
+
+/**
+ * The Markdown without its pictures, for an export "ohne Bilder": images (and
+ * links that only wrapped an image) are removed, paragraphs left empty go away,
+ * code blocks are left exactly as written.
+ */
+export function stripImages(markdown: string): string {
+  const blocks = markdown.replace(/\r\n/g, "\n").split(/\n{2,}/);
+  let open: string | null = null; // marker of a code fence that is still open
+  const kept: string[] = [];
+  for (const block of blocks) {
+    // Code blocks (they may span blank lines) pass through untouched.
+    if (open !== null || /^\s*(`{3,}|~{3,})/m.test(block)) {
+      kept.push(block);
+      for (const line of block.split("\n")) {
+        const marker = /^\s*(`{3,}|~{3,})/.exec(line)?.[1];
+        if (!marker) continue;
+        if (open === null) open = marker;
+        else if (marker[0] === open[0] && marker.length >= open.length && !line.trim().slice(marker.length).trim()) open = null;
+      }
+      continue;
+    }
+    const refs = findImages(block);
+    if (!refs.length) { kept.push(block); continue; }
+    // Cut [start, end) and close the gap: one space between words, none at a line edge.
+    const cut = (t: string, start: number, end: number) => {
+      const left = t.slice(0, start).replace(/[ \t]+$/, ""), right = t.slice(end).replace(/^[ \t]+/, "");
+      return left + (left && right && !left.endsWith("\n") && !right.startsWith("\n") ? " " : "") + right;
+    };
+    let text = block;
+    for (const ref of refs.reverse()) text = cut(text, ref.start, ref.end);
+    // A link that only wrapped a picture is now empty: drop it too.
+    for (let m = /\[\s*\]\([^)]*\)/.exec(text); m; m = /\[\s*\]\([^)]*\)/.exec(text)) text = cut(text, m.index, m.index + m[0].length);
+    text = text.replace(/\n{2,}/g, "\n").replace(/^\n+|\n+$/g, "");
+    if (text.trim()) kept.push(text);
+  }
+  return kept.join("\n\n") + (markdown.endsWith("\n") ? "\n" : "");
+}
