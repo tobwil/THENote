@@ -18,6 +18,7 @@ const suites = [
   ['Clipboard images UI', 'npm', ['run', 'test:paste:ui']],
   ['Gallery and image moves UI', 'npm', ['run', 'test:gallery:ui']],
   ['Slash date immediate execution', 'node', ['tests/e2e-slashdate.mjs']],
+  ['Slash building blocks and sharing', 'npm', ['run', 'test:slash:ui']],
   ['Workspace UI', 'npm', ['run', 'test:workspace:ui']],
   ['Sidebar UI', 'node', ['tests/e2e-sidebar.mjs']],
   ['AI UI', 'npm', ['run', 'test:ai:ui']],
@@ -25,6 +26,7 @@ const suites = [
   ['Native Rust tests', 'cargo', ['test', '--locked', '--manifest-path', 'src-tauri/Cargo.toml']],
   ['Clippy', 'cargo', ['clippy', '--locked', '--manifest-path', 'src-tauri/Cargo.toml', '--', '-D', 'warnings']],
   ['Website UI and distribution metadata', 'npm', ['run', 'test:site']],
+  ['Built browser app', 'npm', ['run', 'test:webapp']],
 ];
 const results = [];
 for (const [index, [name, command, args]] of suites.entries()) {

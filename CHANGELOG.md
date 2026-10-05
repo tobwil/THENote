@@ -2,7 +2,7 @@
 
 The entries below reconstruct the development milestones from the conversation and validated local versions. Versions 0.1.0–0.2.3 were developed on 2026-10-01 before the first source publication; they are **not fabricated historical Git commits or previous GitHub releases**.
 
-## Unreleased
+## 0.2.11 — 2026-10-05
 
 - **Building blocks in the slash menu:** focus timer (Pomodoro), box breathing, daily focus, three good things, 5-4-3-2-1 grounding, meeting notes, a decision matrix with formulas, the Werkzeugkasten helpers and the Spielplatz pieces insert into the open note (one undo step). Werkzeugkasten/Spielplatz sections are read from the example notes, so the code exists once.
 - **AI quick actions:** „Notiz zusammenfassen“, „To-dos herausziehen“ (who · what · by when), „Nächste Schritte ableiten“ and „Offene Fragen sammeln“ insert a prompt that starts right away with the note as context. They have their own group in the slash menu.
