@@ -51,7 +51,7 @@ for pkg in sorted(metadata['packages'], key=lambda p: (p['name'], p['version']))
         continue
     collect('rust', pkg['name'], pkg['version'], pkg.get('license'), Path(pkg['manifest_path']).parent,
         pkg.get('repository') or 'https://crates.io/crates/' + pkg['name'])
-header = '''# Third-party notices · THE Note 0.2.6
+header = '''# Third-party notices · THE Note 0.2.7
 
 THE Note combines the [Sarala](https://github.com/solancer/sarala) editor (GPL-3.0-or-later) with [Ledge](https://github.com/ledgesh/ledge) concepts and its Apache-2.0 frontmatter parser. See [NOTICE.md](NOTICE.md) and [LICENSING.md](LICENSING.md) for their exact provenance. Existing emoji and Unicode notices also remain in [licenses](licenses).
 
