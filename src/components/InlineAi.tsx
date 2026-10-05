@@ -1,4 +1,4 @@
-import { requestedInlineFocus, requestInlineFocus } from '../ai/focus';
+import { requestedInlineFocus, requestInlineFocus, takeQuickRun } from '../ai/focus';
 import { Show, createEffect, createSignal, onCleanup, onMount } from 'solid-js';
 import { parseAiPrompt, serializeAiPrompt } from '../ai/inline';
 import { aiStatus, aiError, initializeAi, openAiSettings, inlineRuns, runInlineAi, stopInlineAi, discardInlineResult } from '../ai';
@@ -10,7 +10,15 @@ export default function InlineAi(props: { id: number; text: string; active: bool
   const prompt = () => parseAiPrompt(props.text) ?? '';
   const busy = () => run()?.status === 'streaming';
   const stale = () => !!run() && run()?.source !== props.text;
-  onMount(() => { void initializeAi(); });
+  onMount(() => {
+    // A quick action (/zusammenfassen …) sends the note along and starts at once, once a provider is set up.
+    // The block mounts while it is being inserted; the quick-run mark follows in the same task.
+    queueMicrotask(() => {
+      const quick = takeQuickRun(props.id);
+      if (quick) setContext(true);
+      void initializeAi().then(() => { if (quick && aiStatus().config.enabled) generate(); });
+    });
+  });
   createEffect(() => {
     if (requestedInlineFocus() !== props.id) return;
     consumeCaretRequest();

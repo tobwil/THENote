@@ -28,6 +28,8 @@ export interface SlashItem {
 
 export const SLASH_ITEMS = [
   { id: "ai", label: "AI · Inline schreiben", group: "Assistent", icon: "codeBlock", aliases: ["ai", "ki", "prompt", "assistant"], hint: "/ai" },
+  { id: "summarize", label: "Notiz zusammenfassen", group: "Assistent", icon: "sparkle", aliases: ["zusammenfassen", "summary", "summarize", "tldr", "kurz", "ki"] },
+  { id: "nextSteps", label: "Nächste Schritte ableiten", group: "Assistent", icon: "sparkle", aliases: ["aufgaben", "action", "schritte", "ki"] },
   // ---- Basic: convert the current block ----
   { id: "text", label: "Text", group: "Basic", icon: "paragraph", aliases: ["paragraph", "plain", "body"] },
   { id: "h1", label: "Heading 1", group: "Basic", icon: "h1", aliases: ["h1", "title"], hint: "# " },
@@ -61,6 +63,27 @@ export const SLASH_ITEMS = [
   { id: "important", label: "Important", group: "Callout", icon: "alert", aliases: ["callout", "admonition"] },
   { id: "warning", label: "Warning", group: "Callout", icon: "alert", aliases: ["callout", "admonition"] },
   { id: "caution", label: "Caution", group: "Callout", icon: "alert", aliases: ["callout", "danger", "admonition"] },
+
+  // ---- Building blocks (snippets.ts): operative, calming and playful ----
+  { id: "focusTimer", label: "Fokuszeit (Pomodoro)", group: "Fokus & Ruhe", icon: "timer", aliases: ["pomodoro", "timer", "fokus", "focus", "konzentration", "tomate"] },
+  { id: "breathing", label: "Atemübung", group: "Fokus & Ruhe", icon: "breath", aliases: ["atmen", "breathe", "box", "ruhe", "stress", "entspannen"] },
+  { id: "checkIn", label: "Tagesfokus", group: "Fokus & Ruhe", icon: "sun", aliases: ["heute", "tag", "daily", "check-in", "stimmung", "planen"] },
+  { id: "gratitude", label: "Drei gute Dinge", group: "Fokus & Ruhe", icon: "leaf", aliases: ["dankbarkeit", "gratitude", "journal", "tagebuch"] },
+  { id: "grounding", label: "5-4-3-2-1 Ankommen", group: "Fokus & Ruhe", icon: "breath", aliases: ["erdung", "grounding", "achtsamkeit", "ruhe", "pause"] },
+  { id: "meeting", label: "Besprechungsnotiz", group: "Werkzeuge", icon: "listTask", aliases: ["meeting", "protokoll", "minutes", "agenda", "besprechung"] },
+  { id: "decision", label: "Entscheidungsmatrix", group: "Werkzeuge", icon: "table", aliases: ["entscheidung", "decision", "abwägen", "matrix", "pro", "contra"] },
+  { id: "folderOverview", label: "Ordner-Überblick", group: "Werkzeuge", icon: "folder", aliases: ["ordner", "dateien", "folder", "files", "aufräumen"] },
+  { id: "gitGlance", label: "Git auf einen Blick", group: "Werkzeuge", icon: "codeBlock", aliases: ["git", "commits", "branch", "repo"] },
+  { id: "calendar", label: "Kalender-Rechner", group: "Werkzeuge", icon: "table", aliases: ["kalender", "tage", "datum", "wochen", "calendar"] },
+  { id: "expenses", label: "Ausgaben auswerten (CSV)", group: "Werkzeuge", icon: "table", aliases: ["csv", "ausgaben", "budget", "kosten", "geld"] },
+  { id: "json", label: "JSON prüfen", group: "Werkzeuge", icon: "codeBlock", aliases: ["json", "format", "validieren"] },
+  { id: "passphrase", label: "Passphrase & ID", group: "Werkzeuge", icon: "codeBlock", aliases: ["passwort", "password", "uuid", "id", "zufall"] },
+  { id: "runtimes", label: "Was ist installiert?", group: "Werkzeuge", icon: "codeBlock", aliases: ["system", "python", "node", "laufzeiten", "speicher"] },
+  { id: "countdown", label: "Countdown", group: "Spielplatz", icon: "sparkle", aliases: ["rakete", "start", "launch", "spiel"] },
+  { id: "oracle", label: "Würfelorakel", group: "Spielplatz", icon: "dice", aliases: ["würfel", "orakel", "zufall", "entscheiden", "spiel"] },
+  { id: "pattern", label: "Ein Muster entsteht", group: "Spielplatz", icon: "sparkle", aliases: ["muster", "sierpinski", "kunst", "spiel"] },
+  { id: "mandelbrot", label: "Mandelbrot", group: "Spielplatz", icon: "sparkle", aliases: ["fraktal", "fractal", "kunst", "spiel"] },
+  { id: "aquarium", label: "Aquarium", group: "Spielplatz", icon: "sparkle", aliases: ["fische", "animation", "spiel"] },
 ] as const satisfies readonly SlashItem[];
 
 export type SlashItemId = (typeof SLASH_ITEMS)[number]["id"];

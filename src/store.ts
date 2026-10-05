@@ -524,6 +524,21 @@ export function removeBlock(index: number) {
   );
 }
 
+/** Put Markdown (any number of blocks) at `index`: replacing that block when `replace`, else after it. One undo step; nothing stays in edit mode. */
+export function insertMarkdownBlocks(index: number, text: string, replace: boolean): number {
+  const parts = splitBlocks(text);
+  if (!parts.length) return index;
+  pushHistory();
+  const at = Math.max(0, Math.min(index, state.blocks.length - 1));
+  setState(produce((s) => {
+    if (!s.blocks.length) s.blocks.push(mkBlock(""));
+    s.blocks.splice(replace ? at : at + 1, replace ? 1 : 0, ...parts.map(mkBlock));
+    s.activeIndex = -1;
+    s.dirty = true;
+  }));
+  return replace ? at : at + 1;
+}
+
 /** Rewrite blocks by id in one undo step; a null text removes the block (moving a picture into a gallery). */
 export function rewriteBlocks(changes: { id: number; text: string | null }[]) {
   const known = changes.filter(change => state.blocks.some(block => block.id === change.id));

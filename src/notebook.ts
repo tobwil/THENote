@@ -26,7 +26,7 @@ print("\\nEin guter Anfang. ✦")
 - [ ] Diese Notiz als Markdown speichern
 - [ ] Einen eigenen Codeblock ausprobieren
 
-> **Lust auf mehr?** Unter **＋ Neue Notiz** warten der **Spielplatz** mit Würfelorakel, Mandelbrot und Aquarium und der **Werkzeugkasten** mit kleinen Helfern für Ordner, Git, Kalender und Daten.
+> **Lust auf mehr?** Tippe **/** in eine Zeile: Fokuszeit, Atemübung, Entscheidungsmatrix, kleine Werkzeuge oder **Notiz zusammenfassen** landen direkt in deiner Notiz. Ganze Vorlagen wie den **Spielplatz** und den **Werkzeugkasten** findest du über **⌄** neben dem **+** oben bei den Tabs.
 
 ### Alles an seinem Platz
 

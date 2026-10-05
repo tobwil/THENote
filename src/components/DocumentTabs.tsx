@@ -1,4 +1,5 @@
 import { For, createEffect, createSignal, onCleanup } from "solid-js";
+import NewNoteMenu from "./NewNoteMenu";
 import { activeTabId, openTabs, openDocument, switchTab, moveTab } from "../store";
 import { closeTab, renameTab } from "../commands";
 import { tabDragPosition } from "../tabdrag";
@@ -172,6 +173,7 @@ export default function DocumentTabs() {
         onMouseDown={(e) => e.preventDefault()} onClick={() => openDocument("", null)}>
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M8 3v10M3 8h10" /></svg>
       </button>
+      <NewNoteMenu />
     </div>
   );
 }

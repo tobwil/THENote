@@ -28,8 +28,8 @@ try {
   assert.match(markdown, /```python/);
   assert.ok(!markdown.includes('Nicht gestartet'), 'execution output never modifies the Markdown');
   await page.getByRole('button', { name: 'Live', exact: true }).click();
-  await page.getByRole('button', { name: /^＋ Neue Notiz/ }).click();
-  await page.getByRole('button', { name: /Ausführbares Runbook/ }).click();
+  await page.getByRole('button', { name: 'Neue Notiz aus Vorlage' }).click();
+  await page.getByRole('menuitem', { name: /Ausführbares Runbook/ }).click();
   await page.getByRole('heading', { name: 'Mein Runbook' }).waitFor();
   assert.equal(await page.getByRole('button', { name: /ausführen$/ }).count(), 2);
   await page.getByRole('button', { name: 'Source', exact: true }).click();
@@ -51,8 +51,8 @@ try {
   await page.getByRole('button', { name: /Speichern/ }).click();
   const download = await downloadWait;
   assert.match(download.suggestedFilename(), /\.md$/);
-  await page.getByRole('button', { name: /^＋ Neue Notiz/ }).click();
-  await page.getByRole('button', { name: /Eine Idee skizzieren/ }).click();
+  await page.getByRole('button', { name: 'Neue Notiz aus Vorlage' }).click();
+  await page.getByRole('menuitem', { name: /Eine Idee skizzieren/ }).click();
   await page.locator('.mermaid-block svg').waitFor({ timeout: 20000 });
   assert.equal(await page.getByRole('button', { name: /ausführen$/ }).count(), 0, 'diagram is not executable');
   // Diagram magnifier: hover button, full-window viewer, zoom and Escape.
@@ -70,8 +70,8 @@ try {
   await page.keyboard.press('Escape');
   await viewer.waitFor({ state: 'detached' });
   // Slash menu: a table with spreadsheet formulas; the file keeps the formulas, the page shows results.
-  await page.getByRole('button', { name: /^＋ Neue Notiz/ }).click();
-  await page.getByRole('button', { name: /Leere Notiz/ }).click();
+  await page.getByRole('button', { name: 'Neue Notiz aus Vorlage' }).click();
+  await page.getByRole('menuitem', { name: /Leere Notiz/ }).click();
   await page.locator('.block').first().click();
   await page.keyboard.type('/formel');
   await page.locator('.slash-menu').getByText('Tabelle mit Formeln').waitFor();
