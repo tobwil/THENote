@@ -4,6 +4,7 @@ The entries below reconstruct the development milestones from the conversation a
 
 ## 0.2.11 — 2026-10-05
 
+- **Screenshots, README and website for the building blocks:** new shots of the slash menu, moderation, focus & calm and the /todos quick action; README sections for each; the website story gains chapter 04 „Ein Baustein für jeden Moment“, and the export card becomes „Drucken & Teilen“. Empty placeholders in the daily focus, gratitude, meeting and 5-Whys blocks now carry visible text, so they render as checkboxes and list items.
 - **Building blocks in the slash menu:** focus timer (Pomodoro), box breathing, daily focus, three good things, 5-4-3-2-1 grounding, meeting notes, a decision matrix with formulas, the Werkzeugkasten helpers and the Spielplatz pieces insert into the open note (one undo step). Werkzeugkasten/Spielplatz sections are read from the example notes, so the code exists once.
 - **AI quick actions:** „Notiz zusammenfassen“, „To-dos herausziehen“ (who · what · by when), „Nächste Schritte ableiten“ and „Offene Fragen sammeln“ insert a prompt that starts right away with the note as context. They have their own group in the slash menu.
 - **Moderation:** check-in question, random speaking order, agenda timebox with notifications, Crazy 8s, dot voting and ROTI (formula tables that count), Lean Coffee, 5 Whys, retrospective and rose · bud · thorn as slash blocks, and all of them as the „Moderationskoffer“ template.

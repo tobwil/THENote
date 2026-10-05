@@ -78,6 +78,30 @@ Screenshots mit ⌘V einfügen: Sie landen neben der Notiz und sind sofort zu se
 
 ![Großansicht eines Bildes mit Vorschaubildern der ganzen Galerie](docs/screenshots/image-viewer.png)
 
+### Bausteine mit /
+
+Tippe **/** in eine leere Zeile: KI-Schnellaktionen, Fokus & Ruhe, Werkzeuge, Moderation und der Spielplatz landen direkt an der Schreibstelle.
+
+![Das Slash-Menü mit KI-Schnellaktionen und Bausteinen für Fokus & Ruhe](docs/screenshots/slash-menu.png)
+
+### Moderation
+
+Reihenfolge auslosen, Punkte vergeben, ROTI einsammeln: Die Tabellen rechnen selbst, die Codeblöcke laufen mit einem Klick. Alle zehn Methoden stecken auch in der Vorlage **Moderationskoffer**.
+
+![Ein Strategie-Workshop mit ausgeloster Reihenfolge und Punkte-Abstimmung](docs/screenshots/moderation.png)
+
+### Fokus & Ruhe
+
+Tagesfokus ausfüllen, kurz durchatmen, dann eine Fokuszeit: Die Atemübung führt Runde für Runde durch, die Fokuszeit meldet sich am Ende mit einer Mac-Benachrichtigung.
+
+![Ein ausgefüllter Tagesfokus und die Box-Atmung mit ihrer Ausgabe](docs/screenshots/focus.png)
+
+### KI-Schnellaktionen
+
+**/todos** zieht aus einer Besprechung die Aufgaben heraus, mit Wer und Bis wann. Genauso fassen **/zusammenfassen**, **/schritte** und **/fragen** die Notiz zusammen. Erst „Übernehmen“ macht daraus normales Markdown.
+
+![Eine Besprechungsnotiz mit der KI-Schnellaktion To-dos und ihrem Entwurf](docs/screenshots/quick-actions.png)
+
 ### Änderungen vor dem Speichern
 
 ![Markdown-Diff mit roten Löschungen, grünen Ergänzungen und Zeilennummern](docs/screenshots/unsaved-diff.png)
@@ -86,7 +110,7 @@ Screenshots mit ⌘V einfügen: Sie landen neben der Notiz und sind sofort zu se
 
 ![Inline-KI mit Prompt und Markdown-Entwurf](docs/screenshots/inline-ai.png)
 
-Die Screenshots zeigen Beispiel- und Testnotizen; die Fotos sind gezeichnete Demo-Motive. Alle Code-Ausgaben wurden lokal mit `bash`, `python3` und `node` erzeugt; die KI-Antwort ist eine reproduzierbare Demo, dafür wurde kein externer Anbieter kontaktiert. Neu erzeugen: `node scripts/screenshots.mjs`.
+Die Screenshots zeigen Beispiel- und Testnotizen; die Fotos sind gezeichnete Demo-Motive. Alle Code-Ausgaben wurden lokal mit `bash`, `python3` und `node` erzeugt; die KI-Antworten sind reproduzierbare Demos, dafür wurde kein externer Anbieter kontaktiert. Neu erzeugen: `node scripts/screenshots.mjs`.
 
 ## Was zusammengeführt wurde
 

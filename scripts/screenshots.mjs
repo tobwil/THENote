@@ -88,6 +88,9 @@ try {
     await page.waitForTimeout(300);
   }
   const ran = (block, cwd) => { const r = execute(block, cwd); return { status: 'finished', output: r.output, exitCode: r.exitCode, durationMs: r.durationMs }; };
+  // Timers and exercises print exactly what they print, just without waiting: sleep becomes a no-op.
+  const ranFast = block => ran({ ...block, code: 'import time\ntime.sleep = lambda *_: None\n' + block.code });
+  const snippet = id => page.evaluate(async id => (await import('/src/snippets.ts')).SNIPPETS[id](), id);
 
   // 1 · The notebook first: a trip note with one small calculation, by day and by night.
   const trip = await readFile('examples/Reiseplanung.md', 'utf8');
@@ -201,5 +204,81 @@ try {
   await page.waitForTimeout(300);
   await page.screenshot({ path: `${OUT}/image-viewer.png` });
   await page.keyboard.press('Escape');
+  // 8 · The slash menu: building blocks for every moment, opened in a workshop note.
+  await page.evaluate(async () => {
+    const s = await import('/src/store.ts');
+    s.setFolderPath('/Users/demo/Team'); s.setFolderName('Team'); s.setSidebarTab('files');
+    s.setFileTree([
+      { name: 'Workshops', path: '/Users/demo/Team/Workshops', is_dir: true, children: [{ name: 'Strategie-Workshop.md', path: '/Users/demo/Team/Workshops/Strategie-Workshop.md', is_dir: false }] },
+      { name: 'Meetings', path: '/Users/demo/Team/Meetings', is_dir: true, children: [] },
+    ]);
+    s.setFolderOpen('/Users/demo/Team/Workshops', true);
+    s.loadDocument('# Strategie-Workshop\n\nZiel: drei Prioritäten für das nächste Quartal.\n\n', '/Users/demo/Team/Workshops/Strategie-Workshop.md');
+    s.appendBlock(''); s.setActive(s.doc.blocks.length - 1);
+  });
+  await page.locator('.block.active .source').waitFor();
+  await page.keyboard.type('/');
+  await page.locator('.slash-item').first().waitFor();
+  // Scroll the menu to the quick actions and calm blocks.
+  await page.evaluate(() => {
+    const header = [...document.querySelectorAll('.slash-group')].find(el => el.textContent.includes('KI-Schnellaktionen'));
+    const list = header?.closest('[role="listbox"], .slash-menu, .slash-list') ?? header?.parentElement;
+    let box = header; while (box && box.scrollHeight <= box.clientHeight + 1) box = box.parentElement;
+    if (box && header) box.scrollTop = header.offsetTop - 4;
+    void list;
+  });
+  await page.waitForTimeout(300);
+  await page.screenshot({ path: `${OUT}/slash-menu.png` });
+  await page.keyboard.press('Escape');
+
+  // 9 · Moderation: a workshop note with check-in, speaking order, dot voting and ROTI; outputs are real.
+  const workshop = ['# Strategie-Workshop', 'Ziel: drei Prioritäten für das nächste Quartal.',
+    (await snippet('speakingOrder')).replace('["Anna", "Ben", "Chris", "Dana", "Emil"]', '["Lena", "Jonas", "Mia", "Can"]'),
+    (await snippet('dotVoting')).replace('| Anna | Ben | Chris |', '| Lena | Jonas | Mia |').replace('Idee 1 |', 'Neue Kunden |').replace('Idee 2 |', 'Onboarding |').replace('Idee 3 |', 'Weniger Meetings |'),
+    (await snippet('roti')).replace('| Anna |', '| Lena |').replace('| Ben |', '| Jonas |').replace('| Chris |', '| Mia |')].join('\n\n') + '\n';
+  const wBlocks = blocksOf(workshop);
+  await showNote(workshop, '/Users/demo/Team/Workshops/Strategie-Workshop.md', [{ index: 0, ...ran(wBlocks[0]) }], null);
+  await page.evaluate(() => { document.querySelector('#document-panel').scrollTop = 0; document.activeElement?.blur(); });
+  await page.setViewportSize({ width: 1380, height: 1300 });
+  await page.waitForTimeout(300);
+  await page.screenshot({ path: `${OUT}/moderation.png` });
+
+  // 10 · Fokus & Ruhe: a filled-in daily focus and the breathing exercise with its real output.
+  const focus = [(await snippet('checkIn')).replace('**Das Wichtigste heute:** …', '**Das Wichtigste heute:** Angebot für Kunde Nord fertig machen')
+      .replace('- [ ] Eine Sache, die heute zählt\n- [ ] Noch etwas Kleines\n- [ ] Und eine Kleinigkeit', '- [x] Zahlen mit Lena abstimmen\n- [ ] Entwurf schreiben\n- [ ] Um 16 Uhr abschicken')
+      .replace('**Was lasse ich heute bewusst weg?** …', '**Was lasse ich heute bewusst weg?** E-Mails vor 11 Uhr'),
+    await snippet('breathing')].join('\n\n') + '\n';
+  const fBlocks = blocksOf(focus);
+  await page.setViewportSize({ width: 1380, height: 1300 });
+  await showNote(focus, '/Users/demo/Team/Montag.md', [{ index: 0, ...ranFast(fBlocks[0]) }], null);
+  await page.evaluate(() => { document.querySelector('#document-panel').scrollTop = 0; document.activeElement?.blur(); });
+  await page.waitForTimeout(300);
+  await page.screenshot({ path: `${OUT}/focus.png` });
+  await page.setViewportSize({ width: 1380, height: 900 });
+
+  // 11 · KI-Schnellaktionen: /todos on meeting notes, with a fixture answer (no API request).
+  await page.evaluate(async () => {
+    const store = await import('/src/store.ts');
+    const ai = await import('/src/ai.ts');
+    const inline = await import('/src/ai/inline.ts');
+    const { QUICK_PROMPTS } = await import('/src/snippets.ts');
+    store.loadDocument(['# Besprechung Kunde Nord', '**Dabei:** Lena, Jonas, Mia',
+      'Lena stellt die neuen Zahlen vor; das Budget passt, wenn wir die Schulung ins zweite Quartal schieben. Jonas klärt bis Freitag, ob der Termin im März hält. Mia schreibt die Zusammenfassung für den Kunden.',
+      'Offen: Wer übernimmt die Präsentation beim Kunden?',
+      inline.serializeAiPrompt(QUICK_PROMPTS.todos)].join('\n\n'), '/Users/demo/Team/Meetings/Kunde Nord.md');
+    ai.setAiStatus({ config: { enabled: true, protocol: 'chat-completions', endpoint: 'https://example.invalid/v1/chat/completions', model: 'Demo-Modell', maxTokens: 4096, rememberKey: false }, hasKey: false, keychainAvailable: false });
+    const block = store.doc.blocks.find(b => inline.parseAiPrompt(b.text) !== null);
+    ai.setInlineRuns(block.id, { id: 'screenshot-todos', tab: store.activeTabId(), block: block.id, source: block.text, status: 'done', model: 'Demo-Modell', contextAttached: true,
+      content: '## To-dos\n\n- [ ] Schulung ins zweite Quartal verschieben · Lena · nächste Woche\n- [ ] Termin im März bestätigen · Jonas · Freitag\n- [ ] Zusammenfassung an den Kunden schicken · Mia · offen\n- [ ] Präsentation beim Kunden übernehmen · offen · offen' });
+  });
+  await page.getByRole('button', { name: '✓ Übernehmen' }).waitFor();
+  await page.setViewportSize({ width: 1380, height: 1300 });
+  await page.locator('.inline-ai-controls input[type=checkbox]').check();
+  // Show the meeting text's end, the prompt and the whole draft.
+  await page.evaluate(() => { const panel = document.querySelector('#document-panel'); const ai = panel.querySelector('.inline-ai'); panel.scrollTop = ai.getBoundingClientRect().top - panel.getBoundingClientRect().top - 420; document.activeElement?.blur(); return document.fonts.ready; });
+  await page.waitForTimeout(300);
+  await page.screenshot({ path: `${OUT}/quick-actions.png` });
+  await page.setViewportSize({ width: 1380, height: 900 });
+
   console.log('Screenshots saved; outputs executed locally, AI answer is a fixture, no API request.');
 } finally { await browser?.close(); server.kill('SIGTERM'); }

@@ -69,23 +69,23 @@ print("Gut gemacht. Spür kurz nach: Wie geht es dir jetzt?")
 
 const CHECKIN = () => `## ☀︎ Tagesfokus · ${today()}
 
-**Das Wichtigste heute:**
+**Das Wichtigste heute:** …
 
-- [ ]
-- [ ]
-- [ ]
+- [ ] Eine Sache, die heute zählt
+- [ ] Noch etwas Kleines
+- [ ] Und eine Kleinigkeit
 
 **Wie geht es mir?** 😌 gut · 😐 geht so · 😣 angespannt
 
-**Was lasse ich heute bewusst weg?** `;
+**Was lasse ich heute bewusst weg?** …`;
 
 const GRATITUDE = `## 🌱 Drei gute Dinge
 
 Kleine Dinge zählen. Was war heute gut, und was hast du dazu beigetragen?
 
-1.
-2.
-3.
+1. …
+2. …
+3. …
 
 > Warum war das gut?`;
 
@@ -101,15 +101,15 @@ Wenn der Kopf zu voll ist: Sinne der Reihe nach durchgehen und abhaken.
 
 const MEETING = () => `## Besprechung · ${today()}
 
-**Dabei:**
+**Dabei:** …
 
 ### Agenda
 
-1.
+1. …
 
 ### Entscheidungen
 
--
+- …
 
 ### Aufgaben
 
@@ -233,7 +233,7 @@ const FIVE_WHYS = `## ❓ 5 × Warum
 
 Von einem Symptom zur Ursache: fünfmal nachfragen, jedes Mal auf die vorige Antwort.
 
-**Problem:** 
+**Problem:** …
 
 1. Warum? 
 2. Warum? 
@@ -241,7 +241,7 @@ Von einem Symptom zur Ursache: fünfmal nachfragen, jedes Mal auf die vorige Ant
 4. Warum? 
 5. Warum? 
 
-**Ursache:** 
+**Ursache:** …
 
 - [ ] Maßnahme`;
 
@@ -262,7 +262,7 @@ Themen sammeln, per Punkt abstimmen, dann der Reihe nach je 5 Minuten. Daumen ho
 |  |  |  |
 |  |  |  |
 
-**Erkenntnisse:** `;
+**Erkenntnisse:** …`;
 
 const ROTI = `## 📈 ROTI: Hat sich die Zeit gelohnt?
 
