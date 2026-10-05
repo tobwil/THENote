@@ -127,6 +127,154 @@ Bewerte jede Option von 1 bis 5 und gewichte, was dir wichtig ist. Die Tabelle r
 | Risiko | 1 | 3 | 4 | =B5*C5 | =B5*D5 |
 | **Summe** | | | | =SUMME(E2:E5) | =SUMME(F2:F5) |`;
 
+// ---- Moderation: methods for meetings and workshops ----
+
+const CHECKIN_QUESTION = `## 🎤 Check-in-Frage
+
+Eine Runde, ein Satz pro Person: Kommentieren ist nicht, nur zuhören. Starte den Block für eine neue Frage.
+
+\`\`\`python
+import random
+
+FRAGEN = [
+    "Was hat dich diese Woche überrascht?",
+    "Welches Wetter beschreibt deine Stimmung gerade?",
+    "Worauf freust du dich heute noch?",
+    "Was brauchst du, damit dieses Treffen für dich gut wird?",
+    "Welches kleine Erfolgserlebnis hattest du zuletzt?",
+    "Wenn dieses Projekt ein Tier wäre: welches, und warum?",
+    "Was hast du kürzlich gelernt?",
+    "Ein Wort für deinen Kopf, eines für deinen Bauch?",
+]   # ← eigene Fragen ergänzen
+
+print("🎤", random.choice(FRAGEN))
+\`\`\``;
+
+const SPEAKING_ORDER = `## 🔀 Reihenfolge auslosen
+
+Wer fängt an? Fair und ohne Diskussion.
+
+\`\`\`python
+import random
+
+NAMEN = ["Anna", "Ben", "Chris", "Dana", "Emil"]   # ← eure Namen
+
+random.shuffle(NAMEN)
+print("Reihenfolge für heute:\\n")
+for platz, name in enumerate(NAMEN, 1):
+    print(f"  {platz}. {name}")
+\`\`\``;
+
+const TIMEBOX = `## ⏱ Timebox für die Agenda
+
+Jeder Punkt bekommt seine Zeit. Beim Wechsel meldet sich der Mac; stoppen jederzeit mit **■**.
+
+\`\`\`python
+import shutil, subprocess, time
+
+AGENDA = [("Ankommen", 5), ("Updates", 10), ("Thema der Woche", 20), ("Nächste Schritte", 5)]   # ← Punkt, Minuten
+
+def gong(text):
+    print(text, flush=True)
+    if shutil.which("osascript"):
+        subprocess.run(["osascript", "-e", f'display notification "{text}" with title "THE Note · Timebox"'])
+
+print(f"⏱ {len(AGENDA)} Punkte, {sum(m for _, m in AGENDA)} Minuten\\n", flush=True)
+for nummer, (punkt, minuten) in enumerate(AGENDA, 1):
+    gong(f"{nummer}. {punkt} · {minuten} min")
+    for rest in range(minuten, 0, -1):
+        print(f"     noch {rest} min", flush=True)
+        time.sleep(60)
+gong("Zeit ist um. Danke euch!")
+\`\`\``;
+
+const CRAZY_EIGHTS = `## ✏️ Crazy 8s
+
+Acht Ideen in acht Minuten, eine pro Minute. Blatt achtmal falten, Stift raus, Qualität egal.
+
+\`\`\`python
+import time
+
+IDEEN, SEKUNDEN = 8, 60   # ← Anzahl und Zeit pro Idee
+
+print("Thema laut vorlesen, dann geht's los.\\n", flush=True)
+time.sleep(5)
+for idee in range(1, IDEEN + 1):
+    print(f"  ✏️  Idee {idee} von {IDEEN}", flush=True)
+    time.sleep(SEKUNDEN)
+print("\\nStifte weg! Jede Person stellt ihre zwei liebsten Ideen vor.")
+\`\`\``;
+
+const RETRO = `## 🔁 Retrospektive
+
+Was beginnen wir, was lassen wir, was behalten wir? Erst sammeln, dann über die wichtigsten sprechen.
+
+| ▶ Start | ■ Stop | ↻ Weiter so |
+| --- | --- | --- |
+|  |  |  |
+|  |  |  |
+
+### Vereinbarungen
+
+- [ ] Wer · Was · Bis wann`;
+
+const DOT_VOTING = `## 🔴 Punkte-Abstimmung
+
+Jede Person verteilt drei Punkte. Die Tabelle zählt mit.
+
+| Idee | Anna | Ben | Chris | Punkte |
+| --- | --- | --- | --- | --- |
+| Idee 1 | 2 | 0 | 1 | =SUMME(B2:D2) |
+| Idee 2 | 1 | 2 | 0 | =SUMME(B3:D3) |
+| Idee 3 | 0 | 1 | 2 | =SUMME(B4:D4) |
+| **Alle** | =SUMME(B2:B4) | =SUMME(C2:C4) | =SUMME(D2:D4) | =SUMME(E2:E4) |`;
+
+const FIVE_WHYS = `## ❓ 5 × Warum
+
+Von einem Symptom zur Ursache: fünfmal nachfragen, jedes Mal auf die vorige Antwort.
+
+**Problem:** 
+
+1. Warum? 
+2. Warum? 
+3. Warum? 
+4. Warum? 
+5. Warum? 
+
+**Ursache:** 
+
+- [ ] Maßnahme`;
+
+const ROSE_BUD_THORN = `## 🌹 Rose · Knospe · Dorn
+
+Kurze Reflexion für Projekte, Wochen oder Workshops.
+
+- 🌹 **Rose:** Was lief gut?
+- 🌱 **Knospe:** Wo steckt Potenzial?
+- 🌵 **Dorn:** Was hat gehakt?`;
+
+const LEAN_COFFEE = `## ☕ Lean Coffee
+
+Themen sammeln, per Punkt abstimmen, dann der Reihe nach je 5 Minuten. Daumen hoch heißt: weiter, Daumen runter: nächstes Thema.
+
+| Zu besprechen | Läuft | Erledigt |
+| --- | --- | --- |
+|  |  |  |
+|  |  |  |
+
+**Erkenntnisse:** `;
+
+const ROTI = `## 📈 ROTI: Hat sich die Zeit gelohnt?
+
+Return on Time Invested: Jede Person gibt 1 (verschwendet) bis 5 (hat sich sehr gelohnt).
+
+| Person | Wert |
+| --- | --- |
+| Anna | 4 |
+| Ben | 3 |
+| Chris | 5 |
+| **Durchschnitt** | =RUNDEN(MITTELWERT(B2:B4); 1) |`;
+
 /** Snippet ids → the Markdown they insert (built on demand, so dates are current). */
 export const SNIPPETS = {
   focusTimer: () => FOCUS,
@@ -148,12 +296,30 @@ export const SNIPPETS = {
   pattern: () => exampleSection(playground, "Ein Muster entsteht"),
   mandelbrot: () => exampleSection(playground, "Mandelbrot"),
   aquarium: () => exampleSection(playground, "Aquarium"),
+  checkInQuestion: () => CHECKIN_QUESTION,
+  speakingOrder: () => SPEAKING_ORDER,
+  timebox: () => TIMEBOX,
+  crazyEights: () => CRAZY_EIGHTS,
+  retro: () => RETRO,
+  dotVoting: () => DOT_VOTING,
+  fiveWhys: () => FIVE_WHYS,
+  roseBudThorn: () => ROSE_BUD_THORN,
+  leanCoffee: () => LEAN_COFFEE,
+  roti: () => ROTI,
 } as const;
 export type SnippetId = keyof typeof SNIPPETS;
 
 /** AI quick actions: a prompt that runs right away with the note as context. */
 export const QUICK_PROMPTS = {
   summarize: "Fasse diese Notiz in 3 bis 5 prägnanten Stichpunkten zusammen. Antworte auf Deutsch in Markdown und beginne mit der Überschrift „## Zusammenfassung“.",
+  todos: "Sammle alle To-dos aus dieser Notiz als Markdown-Checkliste (- [ ] …) unter der Überschrift „## To-dos“. Wenn erkennbar, nenne wer und bis wann im Format „Aufgabe · Wer · Bis wann“. Antworte auf Deutsch und erfinde nichts dazu.",
+  questions: "Sammle die offenen Fragen und ungeklärten Punkte dieser Notiz als Markdown-Liste unter der Überschrift „## Offene Fragen“. Antworte auf Deutsch und erfinde nichts dazu.",
   nextSteps: "Leite aus dieser Notiz die konkreten nächsten Schritte ab. Antworte auf Deutsch als Markdown-Checkliste (- [ ] …) unter der Überschrift „## Nächste Schritte“. Nur Schritte, die sich aus der Notiz ergeben.",
 } as const;
 export type QuickPromptId = keyof typeof QUICK_PROMPTS;
+
+/** The Moderationskoffer template: every moderation method in one note. */
+export function facilitationNote(): string {
+  const methods = ["checkInQuestion", "speakingOrder", "timebox", "crazyEights", "dotVoting", "leanCoffee", "fiveWhys", "retro", "roseBudThorn", "roti"] as const;
+  return "# Der Moderationskoffer\n\nMethoden für Meetings und Workshops: ankommen, Ideen finden, entscheiden, zurückblicken. Jede gibt es auch einzeln über **/** in jeder Notiz.\n\n" + methods.map(id => SNIPPETS[id]()).join("\n\n") + "\n";
+}

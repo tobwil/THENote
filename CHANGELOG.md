@@ -5,7 +5,8 @@ The entries below reconstruct the development milestones from the conversation a
 ## Unreleased
 
 - **Building blocks in the slash menu:** focus timer (Pomodoro), box breathing, daily focus, three good things, 5-4-3-2-1 grounding, meeting notes, a decision matrix with formulas, the Werkzeugkasten helpers and the Spielplatz pieces insert into the open note (one undo step). Werkzeugkasten/Spielplatz sections are read from the example notes, so the code exists once.
-- **AI quick actions:** /zusammenfassen and „Nächste Schritte ableiten“ insert a prompt that starts right away with the note as context.
+- **AI quick actions:** „Notiz zusammenfassen“, „To-dos herausziehen“ (who · what · by when), „Nächste Schritte ableiten“ and „Offene Fragen sammeln“ insert a prompt that starts right away with the note as context. They have their own group in the slash menu.
+- **Moderation:** check-in question, random speaking order, agenda timebox with notifications, Crazy 8s, dot voting and ROTI (formula tables that count), Lean Coffee, 5 Whys, retrospective and rose · bud · thorn as slash blocks, and all of them as the „Moderationskoffer“ template.
 - **Templates moved to the tab bar:** „Neue Notiz aus Vorlage“ sits as ⌄ beside the +; the note toolbar no longer offers new notes.
 - **Teilen:** print and export (PDF, HTML, Word) from the note toolbar. Export dialogs start next to the note, and a notice says where the file went, with „Im Finder zeigen“ and „Öffnen“.
 

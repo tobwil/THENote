@@ -1,6 +1,7 @@
 import { fullText, loadDocument, openDocument, doc, setSidebarTab } from './store';
 import playground from '../examples/Spielplatz.md?raw';
 import toolbox from '../examples/Werkzeugkasten.md?raw';
+import { facilitationNote } from './snippets';
 export const WELCOME = `# Gedanken, die etwas bewegen.
 
 Ein ruhiger Ort zum Denken. Und die Werkzeuge, um aus einer Idee etwas zu machen. Willkommen in **THE Note**.
@@ -43,6 +44,7 @@ export const TEMPLATES = {
   runbook: '---\ncwd: .\nconfirm: true\nenv:\n  PROJECT: THE-Note\n---\n\n# Mein Runbook\n\nEin Ziel. Klare Schritte. Sichtbare Ergebnisse.\n\n## 01 · Kontext prüfen\n\n```sh\nprintf "Projekt: %s\\n" "$PROJECT"\npwd\n```\n\n## 02 · Daten verarbeiten\n\n```python\nwerte = [12, 18, 24, 30]\nprint(f"Mittelwert: {sum(werte) / len(werte):.1f}")\n```\n\n## 03 · Ergebnis festhalten\n\n- [ ] Ergebnisse geprüft\n- [ ] Nächsten Schritt dokumentiert\n',
   playground,
   toolbox,
+  get facilitation() { return facilitationNote(); },
   diagram: '# Eine Idee nimmt Form an\n\n## Der Ablauf\n\n```mermaid\nflowchart LR\n    A[Idee] --> B[Notiz]\n    B --> C[Experiment]\n    C --> D[Erkenntnis]\n    D --> B\n```\n\n## Die Annahme\n\nWas möchtest du herausfinden?\n',
 };
 export type TemplateId = keyof typeof TEMPLATES;

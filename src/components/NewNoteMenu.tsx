@@ -15,6 +15,7 @@ export const NOTE_TEMPLATES: readonly [TemplateId, string, string][] = [
   ["diagram", "Eine Idee skizzieren", "Ein Ablauf als Mermaid-Diagramm"],
   ["playground", "✦ Spielplatz", "Würfelorakel, Mandelbrot, Aquarium: einfach drücken"],
   ["toolbox", "⌘ Werkzeugkasten", "Ordner, Git, Kalender, CSV und JSON auf Knopfdruck"],
+  ["facilitation", "🗂 Moderationskoffer", "Check-in, Timebox, Crazy 8s, Abstimmen, Retro"],
 ];
 
 export default function NewNoteMenu() {
@@ -48,7 +49,7 @@ export default function NewNoteMenu() {
         <div ref={menu} class="template-menu floating" role="menu" aria-label="Neue Notiz aus Vorlage" style={{ top: `${pos().top}px`, left: `${pos().left}px` }}>
           <p class="template-menu-title">Neue Notiz aus Vorlage</p>
           <For each={NOTE_TEMPLATES}>{([key, title, description]) => (
-            <button role="menuitem" classList={{ "template-example": key === "playground" || key === "toolbox" }} onClick={() => { newNotebook(key); setAt(null); }}><b>{title}</b><small>{description}</small></button>
+            <button role="menuitem" classList={{ "template-example": key === "playground" || key === "toolbox" || key === "facilitation" }} onClick={() => { newNotebook(key); setAt(null); }}><b>{title}</b><small>{description}</small></button>
           )}</For>
           <p class="template-menu-hint">Bausteine wie Fokuszeit, Atemübung oder Werkzeuge holst du mit <kbd>/</kbd> direkt in die offene Notiz.</p>
         </div>

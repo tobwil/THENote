@@ -51,7 +51,8 @@ try {
   await templates.click();
   const menu = page.getByRole('menu', { name: 'Neue Notiz aus Vorlage' });
   await menu.waitFor();
-  assert.equal(await menu.getByRole('menuitem').count(), 6);
+  assert.equal(await menu.getByRole('menuitem').count(), 7);
+  assert.ok(await menu.getByRole('menuitem', { name: /Moderationskoffer/ }).isVisible(), 'the facilitation kit is a template');
   await page.keyboard.press('Escape');
   await menu.waitFor({ state: 'hidden' });
   await templates.click();
@@ -93,6 +94,16 @@ try {
   await page.evaluate(async () => (await import('/src/store.ts')).undo());
   assert.ok(!(await text()).includes('Git auf einen Blick'), 'one undo removes a building block');
 
+  // 2b. Moderation methods: dot voting and ROTI compute, the retro and Crazy 8s land in place.
+  await slash('punkte', 'Punkte-Abstimmung');
+  await slash('roti', 'ROTI-Feedback');
+  await slash('retro', 'Retrospektive');
+  await slash('crazy', 'Crazy 8s');
+  md = await text();
+  for (const heading of ['## 🔴 Punkte-Abstimmung', '## 📈 ROTI', '## 🔁 Retrospektive', '## ✏️ Crazy 8s']) assert.ok(md.includes(heading), heading);
+  assert.match(await page.locator('.rendered table').filter({ hasText: 'Chris' }).filter({ hasText: 'Idee 1' }).locator('tr').last().innerText(), /3\s+3\s+3\s+9/, 'dot votes are counted');
+  assert.match(await page.locator('.rendered table').filter({ hasText: 'Durchschnitt' }).innerText(), /Durchschnitt\s+4\b/, 'ROTI average');
+
   // 3. Quick action: /zusammenfassen sends the note right away and the summary can be accepted.
   await slash('zusammen', 'Notiz zusammenfassen');
   await page.waitForFunction(() => window.__ai.requests.length === 1);
@@ -102,6 +113,13 @@ try {
   await page.getByRole('button', { name: '✓ Übernehmen' }).click();
   await page.waitForFunction(async () => (await import('/src/store.ts')).fullText().includes('- Samstag backen'));
   assert.ok(!(await text()).includes('```ai'), 'the accepted summary is plain Markdown');
+  // /todos: the same quick start, with its own prompt.
+  await slash('todos', 'To-dos herausziehen');
+  await page.waitForFunction(() => window.__ai.requests.length === 2);
+  const todos = await page.evaluate(() => window.__ai.requests[1]);
+  assert.match(todos.messages.at(-1).content, /Sammle alle To-dos/);
+  assert.ok(todos.context.includes('Punkte-Abstimmung'), 'the current note is the context');
+  await page.getByRole('button', { name: '✓ Übernehmen' }).waitFor();
   await page.screenshot({ path: 'release/THE Note-slash-blocks-preview.png' });
 
   // 4. Teilen: print and export from the note toolbar; HTML lands next to the note and says where.
@@ -118,6 +136,12 @@ try {
   assert.match(await toast.innerText(), /\/Users\/demo\/Notizen\/Wochenende\.html/);
   await toast.getByRole('button', { name: 'Im Finder zeigen' }).click();
   await page.waitForFunction(() => window.__revealed === '/Users/demo/Notizen/Wochenende.html');
+  // 5. The Moderationskoffer template holds every method.
+  await page.getByRole('button', { name: 'Neue Notiz aus Vorlage' }).click();
+  await page.getByRole('menuitem', { name: /Moderationskoffer/ }).click();
+  await page.getByRole('heading', { name: 'Der Moderationskoffer' }).waitFor();
+  const kit = await text();
+  for (const heading of ['Check-in-Frage', 'Reihenfolge auslosen', 'Timebox', 'Crazy 8s', 'Punkte-Abstimmung', 'Lean Coffee', '5 × Warum', 'Retrospektive', 'Rose · Knospe · Dorn', 'ROTI']) assert.ok(kit.includes(heading), heading);
   assert.deepEqual(errors, []);
-  console.log('PASS slash blocks: template menu in the tab bar, breathing/focus/decision/oracle/git blocks inserted in place (computed matrix, one-step undo), /zusammenfassen runs with the note as context and is accepted, Teilen menu exports HTML next to the note with a reveal notice. Native IPC and provider mocked.');
+  console.log('PASS slash blocks: template menu in the tab bar, breathing/focus/decision/oracle/git blocks inserted in place (computed matrix, one-step undo), moderation methods (dot voting, ROTI, retro, Crazy 8s, Moderationskoffer template), /zusammenfassen and /todos run with the note as context, Teilen menu exports HTML next to the note with a reveal notice. Native IPC and provider mocked.');
 } finally { await browser?.close(); server.kill('SIGTERM'); }

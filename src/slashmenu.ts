@@ -28,8 +28,6 @@ export interface SlashItem {
 
 export const SLASH_ITEMS = [
   { id: "ai", label: "AI · Inline schreiben", group: "Assistent", icon: "codeBlock", aliases: ["ai", "ki", "prompt", "assistant"], hint: "/ai" },
-  { id: "summarize", label: "Notiz zusammenfassen", group: "Assistent", icon: "sparkle", aliases: ["zusammenfassen", "summary", "summarize", "tldr", "kurz", "ki"] },
-  { id: "nextSteps", label: "Nächste Schritte ableiten", group: "Assistent", icon: "sparkle", aliases: ["aufgaben", "action", "schritte", "ki"] },
   // ---- Basic: convert the current block ----
   { id: "text", label: "Text", group: "Basic", icon: "paragraph", aliases: ["paragraph", "plain", "body"] },
   { id: "h1", label: "Heading 1", group: "Basic", icon: "h1", aliases: ["h1", "title"], hint: "# " },
@@ -64,6 +62,12 @@ export const SLASH_ITEMS = [
   { id: "warning", label: "Warning", group: "Callout", icon: "alert", aliases: ["callout", "admonition"] },
   { id: "caution", label: "Caution", group: "Callout", icon: "alert", aliases: ["callout", "danger", "admonition"] },
 
+  // ---- AI quick actions: run at once with the note as context ----
+  { id: "summarize", label: "Notiz zusammenfassen", group: "KI-Schnellaktionen", icon: "sparkle", aliases: ["zusammenfassen", "summary", "summarize", "tldr", "kurz", "ki"] },
+  { id: "todos", label: "To-dos herausziehen", group: "KI-Schnellaktionen", icon: "listTask", aliases: ["todos", "to-dos", "aufgaben", "tasks", "ki"] },
+  { id: "nextSteps", label: "Nächste Schritte ableiten", group: "KI-Schnellaktionen", icon: "sparkle", aliases: ["schritte", "next", "action", "ki"] },
+  { id: "questions", label: "Offene Fragen sammeln", group: "KI-Schnellaktionen", icon: "sparkle", aliases: ["fragen", "questions", "unklar", "offen", "ki"] },
+
   // ---- Building blocks (snippets.ts): operative, calming and playful ----
   { id: "focusTimer", label: "Fokuszeit (Pomodoro)", group: "Fokus & Ruhe", icon: "timer", aliases: ["pomodoro", "timer", "fokus", "focus", "konzentration", "tomate"] },
   { id: "breathing", label: "Atemübung", group: "Fokus & Ruhe", icon: "breath", aliases: ["atmen", "breathe", "box", "ruhe", "stress", "entspannen"] },
@@ -79,6 +83,16 @@ export const SLASH_ITEMS = [
   { id: "json", label: "JSON prüfen", group: "Werkzeuge", icon: "codeBlock", aliases: ["json", "format", "validieren"] },
   { id: "passphrase", label: "Passphrase & ID", group: "Werkzeuge", icon: "codeBlock", aliases: ["passwort", "password", "uuid", "id", "zufall"] },
   { id: "runtimes", label: "Was ist installiert?", group: "Werkzeuge", icon: "codeBlock", aliases: ["system", "python", "node", "laufzeiten", "speicher"] },
+  { id: "checkInQuestion", label: "Check-in-Frage", group: "Moderation", icon: "users", aliases: ["checkin", "einstieg", "warmup", "frage", "runde", "moderation"] },
+  { id: "speakingOrder", label: "Reihenfolge auslosen", group: "Moderation", icon: "dice", aliases: ["reihenfolge", "los", "zufall", "redeliste", "moderation"] },
+  { id: "timebox", label: "Timebox für die Agenda", group: "Moderation", icon: "timer", aliases: ["timebox", "agenda", "zeit", "meeting", "moderation"] },
+  { id: "crazyEights", label: "Crazy 8s", group: "Moderation", icon: "pencil", aliases: ["crazy", "ideen", "brainstorming", "kreativ", "moderation"] },
+  { id: "dotVoting", label: "Punkte-Abstimmung", group: "Moderation", icon: "table", aliases: ["dot", "voting", "abstimmen", "punkte", "priorisieren", "moderation"] },
+  { id: "leanCoffee", label: "Lean Coffee", group: "Moderation", icon: "table", aliases: ["lean", "coffee", "themen", "moderation"] },
+  { id: "fiveWhys", label: "5 × Warum", group: "Moderation", icon: "listOrdered", aliases: ["warum", "why", "ursache", "root", "problem", "moderation"] },
+  { id: "retro", label: "Retrospektive", group: "Moderation", icon: "table", aliases: ["retro", "start", "stop", "rückblick", "moderation"] },
+  { id: "roseBudThorn", label: "Rose · Knospe · Dorn", group: "Moderation", icon: "leaf", aliases: ["rose", "reflexion", "feedback", "moderation"] },
+  { id: "roti", label: "ROTI-Feedback", group: "Moderation", icon: "table", aliases: ["roti", "feedback", "bewertung", "zeit", "moderation"] },
   { id: "countdown", label: "Countdown", group: "Spielplatz", icon: "sparkle", aliases: ["rakete", "start", "launch", "spiel"] },
   { id: "oracle", label: "Würfelorakel", group: "Spielplatz", icon: "dice", aliases: ["würfel", "orakel", "zufall", "entscheiden", "spiel"] },
   { id: "pattern", label: "Ein Muster entsteht", group: "Spielplatz", icon: "sparkle", aliases: ["muster", "sierpinski", "kunst", "spiel"] },
