@@ -2,7 +2,9 @@
 
 The entries below reconstruct the development milestones from the conversation and validated local versions. Versions 0.1.0–0.2.3 were developed on 2026-10-01 before the first source publication; they are **not fabricated historical Git commits or previous GitHub releases**.
 
-## Unreleased
+## 0.2.10 — 2026-10-05
+
+- Fix immediate slash-command execution leaving part of the typed query in the note. Refresh the query and caret before click, Enter or Tab execution; cover all three with a regression test.
 
 - **Browser version on GitHub Pages:** the editor is published at https://tobwil.github.io/THENote/app/ next to the website (`npm run build:webapp`, built by the Pages workflow on every change to the editor). Saving downloads the note; folders and running code stay in the Mac app. The website and both READMEs link it.
 - **New screenshots:** folders and inline date (`folders-and-date.png`, replacing `projects-and-date.png`), a gallery grid (`gallery.png`) and the image viewer (`image-viewer.png`), with painted demo photos (`scripts/demo-photos.js`). The website gains a story chapter on pictures and galleries.

@@ -97,9 +97,13 @@ export default function SlashMenu() {
   );
 
   const run = (item: SlashItem) => {
+    // Typing and execution can precede the scheduled animation-frame update.
+    // Read the latest caret/text before removing the query.
+    update();
     const r = range();
     close();
-    if (r) deleteRangeInBlock(r.start, r.end);
+    if (!r) return;
+    deleteRangeInBlock(r.start, r.end);
     // The block re-renders and restores the caret on the next frame; the item's
     // command reads that caret, so it has to run after.
     requestAnimationFrame(() => SLASH_ACTIONS[item.id as SlashItemId]?.());
@@ -108,6 +112,10 @@ export default function SlashMenu() {
   onMount(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if (!open()) return;
+      if (e.key === "Enter" || e.key === "Tab") {
+        update();
+        if (!open()) return;
+      }
       const list = items();
       if (e.key === "Escape") {
         e.preventDefault();
