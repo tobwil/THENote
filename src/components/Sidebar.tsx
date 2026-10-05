@@ -3,7 +3,7 @@ import { isMac, isTauri, type FileNode } from "../platform";
 import {
   outline, doc, folderPath, sidebarOpen, sidebarTab, setSidebarTab,
   sidebarWidth, setSidebarWidth, clampSidebar,
-  isFolderOpen, toggleFolder, openAncestors, collapseAllFolders, openFolders,
+  isFolderOpen, setFolderOpen, toggleFolder, openAncestors, collapseAllFolders, openFolders,
   isMissing,
 } from "../store";
 import {
@@ -120,6 +120,7 @@ const openPinMenu = (e: MouseEvent, path: string, isDir = false, recent = false)
 };
 
 const baseName = (p: string) => p.replace(/\\/g, "/").split("/").pop() ?? p;
+const parentDir = (p: string) => p.slice(0, Math.max(p.lastIndexOf("/"), p.lastIndexOf("\\")));
 /** Containing folder, shown beside the name so duplicate basenames differ. */
 const parentName = (p: string) => {
   const segs = p.replace(/\\/g, "/").split("/");
@@ -196,30 +197,54 @@ export default function Sidebar(props: Props) {
   const [dragging, setDragging] = createSignal<{ path: string; name: string; x: number; y: number } | null>(null);
   const [dropTarget, setDropTarget] = createSignal<string | null>(null);
   let suppressClick = false;
+  // Where a drop at (x, y) would move `path`: a folder row is that folder, a
+  // note row is the folder it lies in, the header or empty tree space is the
+  // notes folder itself. Null when the item would stay where it is.
+  const dropFolderAt = (x: number, y: number, path: string): string | null => {
+    const under = document.elementFromPoint(x, y);
+    const row = under?.closest<HTMLElement>(".tree-item");
+    let folder: string | null | undefined;
+    if (row?.classList.contains("dir")) folder = row.dataset.path;
+    else if (row) folder = parentDir(row.dataset.path ?? "");
+    else if (under?.closest(".side-ws-head, .side-tree")) folder = folderPath();
+    const sep = path.includes("\\") && !path.includes("/") ? "\\" : "/";
+    if (!folder || folder === path || folder === parentDir(path) || folder.startsWith(path + sep)) return null;
+    return folder;
+  };
+  let hoverOpen: ReturnType<typeof setTimeout> | undefined;
   const startDrag = (e: PointerEvent, path: string, name: string) => {
     if (e.button !== 0 || !folderPath()) return;
     const start = { x: e.clientX, y: e.clientY };
     const move = (ev: PointerEvent) => {
       if (!dragging() && Math.hypot(ev.clientX - start.x, ev.clientY - start.y) < 6) return;
+      if (!dragging()) window.getSelection()?.removeAllRanges();
+      ev.preventDefault();
       setDragging({ path, name, x: ev.clientX, y: ev.clientY });
-      const under = document.elementFromPoint(ev.clientX, ev.clientY);
-      const folder = under?.closest<HTMLElement>(".tree-item.dir")?.dataset.path
-        ?? (under?.closest(".side-ws-head") ? folderPath() : null);
-      setDropTarget(folder && folder !== path ? folder : null);
+      const folder = dropFolderAt(ev.clientX, ev.clientY, path);
+      if (folder !== dropTarget()) {
+        clearTimeout(hoverOpen);
+        // Resting on a closed folder opens it, so nested folders are reachable.
+        if (folder && folder !== folderPath() && !isFolderOpen(folder)) hoverOpen = setTimeout(() => setFolderOpen(folder, true), 600);
+      }
+      setDropTarget(folder);
     };
     const end = () => {
+      clearTimeout(hoverOpen);
       window.removeEventListener("pointermove", move);
       window.removeEventListener("pointerup", end);
       window.removeEventListener("pointercancel", cancel);
+      window.removeEventListener("keydown", escape, true);
       const target = dropTarget(), was = dragging();
       setDragging(null); setDropTarget(null);
       if (was) { suppressClick = true; setTimeout(() => { suppressClick = false; }); }
       if (was && target) void moveIntoFolder(path, target);
     };
     const cancel = () => { setDropTarget(null); end(); };
+    const escape = (ev: KeyboardEvent) => { if (ev.key === "Escape" && dragging()) { ev.preventDefault(); ev.stopPropagation(); cancel(); } };
     window.addEventListener("pointermove", move);
     window.addEventListener("pointerup", end);
     window.addEventListener("pointercancel", cancel);
+    window.addEventListener("keydown", escape, true);
   };
   const [filter, setFilter] = createSignal("");
   const [recentOpen, setRecentOpen] = createSignal(getSetting("recentOpen", true));
@@ -744,7 +769,7 @@ export default function Sidebar(props: Props) {
       </div>
 
       <Show when={dragging()}>
-        {(d) => <div class="tree-drag-ghost" style={{ left: `${d().x + 12}px`, top: `${d().y + 8}px` }} aria-hidden="true">{d().name}</div>}
+        {(d) => <div class="tree-drag-ghost" classList={{ "has-target": !!dropTarget() }} style={{ left: `${d().x + 12}px`, top: `${d().y + 8}px` }} aria-hidden="true">{d().name}<Show when={dropTarget()}>{(t) => <span> → {t() === folderPath() ? (props.folderName ?? "Notizen") : baseName(t())}</span>}</Show></div>}
       </Show>
       {/* ===== pin/unpin context menu ===== */}
       <Show when={pinMenu()}>

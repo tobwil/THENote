@@ -134,6 +134,35 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 .diagram-viewer-canvas svg{display:block;max-width:none!important;user-select:none}
 .diagram-viewer-hint{padding:8px 18px;border-top:1px solid var(--rule);background:var(--bg-page);color:var(--ink-soft);font-size:11.5px;text-align:center}
 @media print{.diagram-zoom-button,.diagram-viewer{display:none!important}}
+/* Image galleries: a paragraph of several images is a scrollable strip; a click opens the viewer. */
+.img-gallery-nav{position:absolute;top:calc(50% - 22px);width:34px;height:34px;border-radius:50%;border:1px solid var(--rule);background:color-mix(in srgb,var(--bg-page) 90%,transparent);backdrop-filter:blur(6px);color:var(--ink);font:500 20px/1 var(--font-ui);box-shadow:var(--shadow);cursor:pointer;opacity:0;transition:opacity .15s ease;display:none;align-items:center;justify-content:center;padding:0 0 2px}
+.img-gallery.overflowing .img-gallery-nav{display:inline-flex}
+.img-gallery:hover .img-gallery-nav:not(:disabled),.img-gallery-nav:focus-visible{opacity:1}
+.img-gallery-nav:hover{color:var(--accent)}
+.img-gallery-nav.prev{left:8px}.img-gallery-nav.next{right:8px}
+.img-gallery-count{position:absolute;right:10px;top:8px;padding:2px 8px;border-radius:999px;background:color-mix(in srgb,#000 55%,transparent);color:#fff;font:500 11px/1.6 var(--font-ui);font-variant-numeric:tabular-nums;pointer-events:none;opacity:.85}
+.rendered img:not([src=""]){cursor:zoom-in}
+.rendered a img{cursor:pointer}
+/* Full-window image viewer. */
+.image-viewer{position:fixed;inset:0;width:auto;height:auto;max-width:none!important;max-height:none!important;overflow:hidden!important;z-index:1200;background:rgba(10,12,11,.97);backdrop-filter:blur(10px);color:#f2f2ee;font:13px/1.5 var(--font-ui);outline:none}
+.image-viewer-inner{display:flex;flex-direction:column;height:100%}
+.image-viewer-bar{display:flex;align-items:center;gap:14px;padding:12px 18px}
+.image-viewer-bar b{flex:1;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;opacity:.85}
+.image-viewer-count{font-variant-numeric:tabular-nums;opacity:.7}
+.image-viewer-close{width:34px;height:34px;border-radius:50%;border:0;background:rgba(255,255,255,.1);color:inherit;font-size:20px;line-height:1;cursor:pointer}
+.image-viewer-close:hover{background:rgba(255,255,255,.2)}
+.image-viewer-stage{position:relative;flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:8px 64px}
+.image-viewer-stage>img{max-width:100%;max-height:100%;object-fit:contain;border-radius:6px;box-shadow:0 20px 60px rgba(0,0,0,.45);user-select:none}
+.image-viewer-nav{position:absolute;top:calc(50% - 24px);width:44px;height:44px;border-radius:50%;border:0;background:rgba(255,255,255,.12);color:#fff;font:400 28px/1 var(--font-ui);cursor:pointer;padding:0 0 3px}
+.image-viewer-nav:hover{background:rgba(255,255,255,.24)}
+.image-viewer-nav.prev{left:12px}.image-viewer-nav.next{right:12px}
+.image-viewer-thumbs{display:flex;gap:8px;justify-content:center;overflow-x:auto;padding:10px 18px 16px}
+.image-viewer-thumbs button{flex:none;width:64px;height:48px;padding:0;border:2px solid transparent;border-radius:8px;overflow:hidden;background:none;cursor:pointer;opacity:.55}
+.image-viewer-thumbs button.active{border-color:#fff;opacity:1}
+.image-viewer-thumbs button:hover{opacity:.9}
+.image-viewer-thumbs img{width:100%;height:100%;object-fit:cover;display:block}
+@media (max-width:640px){.img-gallery-track img{height:160px}.image-viewer-stage{padding:8px 12px}}
+@media print{.img-gallery-track{flex-wrap:wrap;overflow:visible}.img-gallery-track img{height:auto;max-width:48%}.img-gallery-nav,.img-gallery-count,.image-viewer{display:none!important}}
 /* Mermaid measures its HTML labels with its own line height; the note's roomy
    paragraph rhythm must not leak into them, or multi-line labels get clipped. */
 .mermaid-block foreignObject div,.mermaid-block foreignObject span,.mermaid-block foreignObject p{line-height:1.5!important;margin:0!important;color:inherit}
@@ -149,3 +178,9 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 .move-dialog .move-target:hover:not(:disabled){background:var(--tint)!important}
 .move-dialog .move-target:disabled{opacity:.45;cursor:default}
 .move-dialog .move-target small{color:var(--ink-soft)}
+/* Sidebar drag: rows never start a text selection or a native drag; the ghost names the target. */
+.side-tree .tree-item{-webkit-user-select:none;user-select:none;-webkit-user-drag:none}
+.tree-item.dragging{opacity:.45}
+.tree-drag-ghost span{color:var(--accent);font-weight:600}
+.move-dialog footer .move-new-folder{margin-right:auto}
+.img-gallery:not(.overflowing) .img-gallery-count{display:none}
