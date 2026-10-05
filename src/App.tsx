@@ -3,6 +3,7 @@ import NameDialog from "./components/NameDialog";
 import ChangesModal from "./components/ChangesModal";
 import DiagramViewer from "./components/DiagramViewer";
 import ImageViewer from "./components/ImageViewer";
+import Toast from "./components/Toast";
 import MoveDialog from "./components/MoveDialog";
 import { imageDropTarget, showImageDropTarget } from "./imagedrag";
 import AiSettings from "./components/AiSettings";
@@ -445,6 +446,7 @@ export default function App() {
       <ChangesModal />
       <DiagramViewer />
       <ImageViewer />
+      <Toast />
       <MoveDialog />
       <NameDialog />
       <DatePicker />

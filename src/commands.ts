@@ -1,7 +1,8 @@
 import { openNameDialog } from "./components/NameDialog";
-import { requestInlineFocus } from "./ai/focus";
+import { showToast } from "./components/Toast";
+import { requestInlineFocus, requestQuickRun } from "./ai/focus";
 import {
-  doc, fullText, fileName, retargetTabPath, cycleTab, setHeading, rewriteBlocks,
+  doc, fullText, fileName, retargetTabPath, cycleTab, setHeading, rewriteBlocks, insertMarkdownBlocks,
   setTabDraftName, setFolderOpen, openTabs, activeTabId, openDocument, findTabByPath, switchTab, removeTab, getTabDocument, markTabSaved, replaceTabDocument,
   sourceMode, setSourceMode, sidebarOpen, setSidebarOpen,
   theme, setTheme, THEMES, fileTree, setFileTree, setFolderName,
@@ -61,6 +62,8 @@ import {
 import { docDir, currentFrontMatter, docBaseName, stripFrontMatter } from "./images";
 import { imagesToCarry, rewriteImageSources } from "./imagecarry";
 import { insertImages } from "./gallerytext";
+import { SNIPPETS, QUICK_PROMPTS, type SnippetId, type QuickPromptId } from "./snippets";
+import { serializeAiPrompt } from "./ai/inline";
 import { setImageRootPath } from "./imageactions";
 // The app stylesheet as a string (bundled at build time), so exports embed it
 // reliably — a runtime fetch of a side-effect-imported CSS file is fragile in
@@ -598,10 +601,24 @@ async function doExport(format: ExportFormat, id: string, presetPath: string | n
     if (choice === null) return; // cancelled
     outline = choice;
   }
-  const out = presetPath ?? (await pickSavePath(`${exportBaseName()}.${EXT[format]}`));
+  // The save dialog starts next to the note (or in the notes folder), so exports land where the note lives.
+  const name = `${exportBaseName()}.${EXT[format]}`;
+  const near = docDir() ?? folderPath();
+  const out = presetPath ?? (await pickSavePath(near ? `${near.replace(/[\\/]+$/, "")}/${name}` : name));
   if (!out && isTauri) return;
-  const written = await runExport(format, out ?? `${exportBaseName()}.${EXT[format]}`, [], outline);
-  if (written) await setLastExport({ id, path: written });
+  const written = await runExport(format, out ?? name, [], outline);
+  if (!written) return;
+  await setLastExport({ id, path: written });
+  announceExport(written);
+}
+
+/** Say where an export went, with a way to get there. */
+function announceExport(path: string) {
+  if (!isTauri) { showToast({ text: "Export heruntergeladen", detail: path }); return; }
+  showToast({ text: `Exportiert: ${baseOf(path)}`, detail: path, actions: [
+    { label: "Im Finder zeigen", run: () => void revealInDir(path) },
+    { label: "Öffnen", run: () => void openExternal(path) },
+  ] });
 }
 
 export async function exportHtml() {
@@ -625,6 +642,7 @@ export async function runPreset(preset: ExportPreset) {
   const written = await runExport(preset.format, out, preset.pandocFlags ?? []);
   if (!written) return;
   await setLastExport({ id: `preset:${preset.name}`, path: written, presetName: preset.name });
+  if (preset.after !== "reveal" && preset.after !== "open") announceExport(written);
 
   switch (preset.after) {
     case "reveal":
@@ -1199,6 +1217,21 @@ export function renameTab(id: number) {
 /* ---------- slash menu ---------- */
 
 /** Insert a fenced block with a starter body, caret at the end of the body. */
+/** Insert a slash-menu building block (snippets.ts) at the target block; an empty block is replaced. */
+export function insertSnippet(id: SnippetId) {
+  const at = targetBlockIndex();
+  const target = at >= 0 ? at : doc.blocks.length - 1;
+  const index = insertMarkdownBlocks(target, SNIPPETS[id](), !doc.blocks[target]?.text.trim());
+  // Bring the inserted heading into view.
+  requestAnimationFrame(() => document.querySelectorAll(".editor .page > .block")[index]?.scrollIntoView({ block: "nearest", behavior: "smooth" }));
+}
+
+/** AI quick action: a prompt block that starts right away with the note as context. */
+export function insertQuickPrompt(id: QuickPromptId) {
+  const fence = serializeAiPrompt(QUICK_PROMPTS[id]);
+  insertBlock(fence, fence.length, requestQuickRun);
+}
+
 export function insertFencedBlock(lang: string, body: string) {
   const head = "```" + lang + "\n";
   insertBlock(head + body + "\n```", head.length + body.length, lang === "ai" ? requestInlineFocus : undefined);

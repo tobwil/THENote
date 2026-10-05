@@ -55,7 +55,7 @@ export const languages = {
     },
     ex: {
       eyebrow: 'ZUM LOSLEGEN', h2: 'Leere Seite<br>oder Vorlage.',
-      lead: 'Unter <strong>＋ Neue Notiz</strong> wartet eine leere Seite oder eine Vorlage. Zwei Beispielnotizen zeigen, was Codeblöcke in einer Notiz können. Jeder Block darin liest nur und verändert nichts.',
+      lead: 'Über <strong>⌄</strong> neben dem <strong>+</strong> der Tableiste wartet eine leere Seite oder eine Vorlage, mit <strong>/</strong> holst du Bausteine direkt in die Notiz. Zwei Beispielnotizen zeigen, was Codeblöcke in einer Notiz können. Jeder Block darin liest nur und verändert nichts.',
       templates: li(['Leere Notiz', 'Gedankenbuch', 'Runbook', 'Idee skizzieren']),
       playTag: 'Verspielt', playH: 'Der Spielplatz',
       playList: li(['🚀 Countdown mit Live-Ausgabe', '🎲 Würfelorakel für kleine Entscheidungen', '✦ Sierpinski-Dreieck aus <code>x &amp; y</code>', '🌀 Mandelbrot in Zeichen', '🐟 Aquarium zum Stoppen']),
@@ -143,7 +143,7 @@ export const languages = {
     },
     ex: {
       eyebrow: 'GET STARTED', h2: 'A blank page<br>or a template.',
-      lead: 'Under <strong>＋ Neue Notiz</strong> (new note) you get a blank page or a template. Two example notes show what code blocks can do inside a note. Every block in them only reads and changes nothing.',
+      lead: 'Via <strong>⌄</strong> next to the tab bar\'s <strong>+</strong> you get a blank page or a template, and <strong>/</strong> brings building blocks straight into the note. Two example notes show what code blocks can do inside a note. Every block in them only reads and changes nothing.',
       templates: li(['Blank note', 'Journal', 'Runbook', 'Sketch an idea']),
       playTag: 'Playful', playH: 'The playground',
       playList: li(['🚀 Countdown with live output', '🎲 A dice oracle for small decisions', '✦ A Sierpinski triangle from <code>x &amp; y</code>', '🌀 Mandelbrot in characters', '🐟 An aquarium to stop']),

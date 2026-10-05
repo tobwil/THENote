@@ -2,6 +2,14 @@
 
 The entries below reconstruct the development milestones from the conversation and validated local versions. Versions 0.1.0–0.2.3 were developed on 2026-10-01 before the first source publication; they are **not fabricated historical Git commits or previous GitHub releases**.
 
+## Unreleased
+
+- **Building blocks in the slash menu:** focus timer (Pomodoro), box breathing, daily focus, three good things, 5-4-3-2-1 grounding, meeting notes, a decision matrix with formulas, the Werkzeugkasten helpers and the Spielplatz pieces insert into the open note (one undo step). Werkzeugkasten/Spielplatz sections are read from the example notes, so the code exists once.
+- **AI quick actions:** „Notiz zusammenfassen“, „To-dos herausziehen“ (who · what · by when), „Nächste Schritte ableiten“ and „Offene Fragen sammeln“ insert a prompt that starts right away with the note as context. They have their own group in the slash menu.
+- **Moderation:** check-in question, random speaking order, agenda timebox with notifications, Crazy 8s, dot voting and ROTI (formula tables that count), Lean Coffee, 5 Whys, retrospective and rose · bud · thorn as slash blocks, and all of them as the „Moderationskoffer“ template.
+- **Templates moved to the tab bar:** „Neue Notiz aus Vorlage“ sits as ⌄ beside the +; the note toolbar no longer offers new notes.
+- **Teilen:** print and export (PDF, HTML, Word) from the note toolbar. Export dialogs start next to the note, and a notice says where the file went, with „Im Finder zeigen“ and „Öffnen“.
+
 ## 0.2.10 — 2026-10-05
 
 - Fix immediate slash-command execution leaving part of the typed query in the note. Refresh the query and caret before click, Enter or Tab execution; cover all three with a regression test.

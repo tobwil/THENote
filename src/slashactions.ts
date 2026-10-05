@@ -10,7 +10,7 @@ import { openDatePicker } from "./components/DatePicker";
  * second surface onto the Paragraph/Format menus, not a parallel implementation.
  */
 
-import { executeCommand, insertFencedBlock, setBlockKind } from "./commands";
+import { executeCommand, insertFencedBlock, insertQuickPrompt, insertSnippet, setBlockKind } from "./commands";
 import type { BlockKind } from "./blocktype";
 import type { SlashItemId } from "./slashmenu";
 
@@ -48,4 +48,38 @@ export const SLASH_ACTIONS: Record<SlashItemId, () => void> = {
   important: cmd("paragraph.alert.important"),
   warning: cmd("paragraph.alert.warning"),
   caution: cmd("paragraph.alert.caution"),
+
+  summarize: () => insertQuickPrompt("summarize"),
+  nextSteps: () => insertQuickPrompt("nextSteps"),
+  todos: () => insertQuickPrompt("todos"),
+  questions: () => insertQuickPrompt("questions"),
+  checkInQuestion: () => insertSnippet("checkInQuestion"),
+  speakingOrder: () => insertSnippet("speakingOrder"),
+  timebox: () => insertSnippet("timebox"),
+  crazyEights: () => insertSnippet("crazyEights"),
+  dotVoting: () => insertSnippet("dotVoting"),
+  leanCoffee: () => insertSnippet("leanCoffee"),
+  fiveWhys: () => insertSnippet("fiveWhys"),
+  retro: () => insertSnippet("retro"),
+  roseBudThorn: () => insertSnippet("roseBudThorn"),
+  roti: () => insertSnippet("roti"),
+  focusTimer: () => insertSnippet("focusTimer"),
+  breathing: () => insertSnippet("breathing"),
+  checkIn: () => insertSnippet("checkIn"),
+  gratitude: () => insertSnippet("gratitude"),
+  grounding: () => insertSnippet("grounding"),
+  meeting: () => insertSnippet("meeting"),
+  decision: () => insertSnippet("decision"),
+  folderOverview: () => insertSnippet("folderOverview"),
+  gitGlance: () => insertSnippet("gitGlance"),
+  calendar: () => insertSnippet("calendar"),
+  expenses: () => insertSnippet("expenses"),
+  json: () => insertSnippet("json"),
+  passphrase: () => insertSnippet("passphrase"),
+  runtimes: () => insertSnippet("runtimes"),
+  countdown: () => insertSnippet("countdown"),
+  oracle: () => insertSnippet("oracle"),
+  pattern: () => insertSnippet("pattern"),
+  mandelbrot: () => insertSnippet("mandelbrot"),
+  aquarium: () => insertSnippet("aquarium"),
 };

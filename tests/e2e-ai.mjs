@@ -29,7 +29,7 @@ try {
   assert.equal((await page.evaluate(()=>window.__aiTest.modelRequests)).length,3);
   await modal.getByRole('button',{name:'Intern',exact:true}).click();assert.equal(await modal.getByLabel('API-Key',{exact:false}).inputValue(),'');assert.equal(await modal.getByLabel('Modell-ID',{exact:true}).inputValue(),'');
   await modal.getByLabel('API-Endpoint',{exact:true}).fill('https://internal.example/v1/chat/completions');await modal.getByLabel('Modell-ID',{exact:true}).fill('internal-model');await modal.getByLabel('KI-Assistent aktivieren').check();await modal.getByRole('button',{name:'Einstellungen speichern'}).click();await modal.waitFor({state:'hidden'});
-  await page.getByRole('button',{name:/^＋ Neue Notiz/}).click();await page.getByRole('button',{name:/Leere Notiz/}).click();
+  await page.getByRole('button',{name:'Neue Notiz aus Vorlage'}).click();await page.getByRole('menuitem',{name:/Leere Notiz/}).click();
   await page.locator('.block .rendered').first().click();
   const source=page.getByRole('textbox',{name:'Edit Markdown block'});await source.pressSequentially('/ai');
   await page.locator('.slash-item').filter({hasText:'AI · Inline schreiben'}).waitFor(); await page.keyboard.press('Enter');
@@ -61,7 +61,7 @@ try {
   // Repeat actual keyboard insertion without filling/clicking the AI textarea.
   // Enter, Tab and menu click must all hand focus to the new field.
   for (const method of ['Enter','Tab','click','Enter','Tab','click']) {
-    await page.getByRole('button',{name:/^＋ Neue Notiz/}).click();await page.getByRole('button',{name:/Leere Notiz/}).click();
+    await page.getByRole('button',{name:'Neue Notiz aus Vorlage'}).click();await page.getByRole('menuitem',{name:/Leere Notiz/}).click();
     await page.locator('.block .rendered').first().click();
     await page.getByRole('textbox',{name:'Edit Markdown block'}).pressSequentially('/ai');
     const item=page.locator('.slash-item').filter({hasText:'AI · Inline schreiben'});await item.waitFor();

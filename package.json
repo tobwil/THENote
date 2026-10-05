@@ -26,6 +26,7 @@
     "test:diff:ui": "node tests/e2e-diff.mjs",
     "test:workspace:ui": "node tests/e2e-workspace.mjs",
     "test:paste:ui": "node tests/e2e-imagepaste.mjs",
+    "test:slash:ui": "node tests/e2e-slashblocks.mjs",
     "test:gallery:ui": "node tests/e2e-gallery.mjs && node tests/e2e-gallerydrag.mjs",
     "build:site": "node scripts/sync-distribution.mjs --check && node scripts/build-site.mjs",
     "build:webapp": "node scripts/build-web-app.mjs",

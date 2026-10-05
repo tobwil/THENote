@@ -202,3 +202,21 @@ body.img-dragging,body.img-dragging *{cursor:grabbing!important}
 .img-drop-target{outline:2px dashed var(--accent);outline-offset:4px;border-radius:12px}
 .rendered img.img-drop-before{box-shadow:-5px 0 0 var(--accent)!important}
 .rendered img.img-drop-after{box-shadow:5px 0 0 var(--accent)!important}
+/* "New note from a template" beside the tab bar's +. */
+.document-tab-new.document-tab-templates{width:20px;margin-left:0}
+.document-tab-templates[aria-expanded="true"]{background:var(--tint);color:var(--ink)}
+.template-menu.floating{position:fixed;right:auto;z-index:1150;box-shadow:var(--shadow)}
+.template-menu-title{margin:4px 12px 6px;font:600 10.5px/1.4 var(--font-ui);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft)}
+.template-menu-hint{margin:6px 12px 6px;padding-top:8px;border-top:1px solid var(--rule);font:12px/1.5 var(--font-ui);color:var(--ink-soft)}
+.template-menu-hint kbd{font:600 11px var(--font-mono,monospace);padding:0 4px;border:1px solid var(--rule);border-radius:4px}
+/* Teilen: print and export from the note toolbar. */
+.share-menu{top:40px;right:0;width:250px}
+/* Notice after an export, with "Im Finder zeigen". */
+.app-toast{position:fixed;left:50%;bottom:44px;transform:translateX(-50%);z-index:1250;display:flex;align-items:center;gap:10px;max-width:min(680px,calc(100vw - 32px));padding:10px 10px 10px 16px;border-radius:12px;background:var(--ink);color:var(--bg-page);box-shadow:0 12px 40px #0004;font:13px/1.4 var(--font-ui);animation:app-toast-in .2s ease}
+.app-toast-text{display:flex;flex-direction:column;min-width:0}
+.app-toast-text small{opacity:.7;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;direction:rtl;text-align:left}
+.app-toast button{flex:none;border:0;border-radius:8px;padding:6px 10px;background:color-mix(in srgb,var(--bg-page) 16%,transparent);color:inherit;font:600 12px var(--font-ui);cursor:pointer}
+.app-toast button:hover{background:color-mix(in srgb,var(--bg-page) 28%,transparent)}
+.app-toast .app-toast-close{background:none;font-size:16px;padding:4px 8px}
+@keyframes app-toast-in{from{opacity:0;transform:translate(-50%,8px)}}
+@media print{.app-toast{display:none!important}}
