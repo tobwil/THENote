@@ -2,7 +2,7 @@
 
 The entries below reconstruct the development milestones from the conversation and validated local versions. Versions 0.1.0–0.2.3 were developed on 2026-10-01 before the first source publication; they are **not fabricated historical Git commits or previous GitHub releases**.
 
-## Unreleased
+## 0.2.7 — 2026-10-05
 
 - **Paste images from the clipboard:** screenshots, images copied from apps or the browser and image files copied in Finder are saved next to the note (`assets/`, or the folder set by `copy-images-to` in the front matter) and linked relatively. Clipboard images get a dated name (`Bild-2026-10-05-143012.png`), copied files keep theirs. Works in the live editor and in Source mode; a note that is not saved yet stores the image in the notes folder; the browser editor embeds it. Text from Excel or Word stays text.
 
