@@ -34,11 +34,11 @@ import {
   confirmDialog, alertDialog, renameFile, deleteFile, openNewWindow,
   pandocImport, pandocExport, exportPdf, runCommand, revealInDir,
   clipboardWriteText, clipboardReadText, pathExists,
-  pickImageFile, copyAsset, saveImageData, relocateImages, searchInFolder,
+  pickImageFile, copyAsset, saveImageData, relocateImages, searchInFolder, readImageDataUrl,
   setWindowAlwaysOnTop, toggleFullscreen, minimizeWindow, toggleMaximizeWindow,
 } from "./platform";
 import {
-  renderMarkdown, joinBlocks, setPreserveBreaksOption, prepareRender,
+  renderMarkdown, joinBlocks, setPreserveBreaksOption, prepareRender, setImageResolver,
   setMathAltDelimiters as setMathAltDelimitersOpt,
   setMathFence as setMathFenceOpt,
   setEmojiEnabled as setEmojiEnabledOpt,
@@ -59,7 +59,7 @@ import {
   buildExportHtml, pageCss, readExportOverrides, pandocFlagsFor, resolveOutputPath,
   EXPORT_PRINT_CSS, PDF_PRINT_CSS, type ExportPreset, type ExportFormat,
 } from "./export";
-import { docDir, currentFrontMatter, docBaseName, stripFrontMatter } from "./images";
+import { docDir, currentFrontMatter, docBaseName, stripFrontMatter, imageFsPath, resolveImageSrc } from "./images";
 import { imagesToCarry, rewriteImageSources } from "./imagecarry";
 import { insertImages } from "./gallerytext";
 import { SNIPPETS, QUICK_PROMPTS, type SnippetId, type QuickPromptId } from "./snippets";
@@ -498,12 +498,39 @@ function loadExportCss(): string {
  * to <body> and clean them up themselves; injection targets each placeholder's
  * own innerHTML, so a detached host works.
  */
-async function renderBody(md: string): Promise<string> {
+async function renderBody(md: string, embedImages = false): Promise<string> {
   const div = document.createElement("div");
   // Front matter is document metadata, never part of the rendered body.
   const body = stripFrontMatter(md);
   await prepareRender(body); // grammars, KaTeX and emoji load lazily; exports need them now
-  div.innerHTML = renderMarkdown(body);
+  // In the app, local pictures resolve to asset:// links that only work inside it.
+  // Exports mark them while rendering and then embed the files as data: URLs.
+  const local = new Map<string, { path: string; src: string }>();
+  if (embedImages && isTauri) setImageResolver(src => {
+    // The renderer resolves raw <img> tags in a second pass; already marked ones stay as they are.
+    if (local.has(src)) return src;
+    const path = imageFsPath(src);
+    if (!path) return src;
+    const key = `the-note-image-${local.size}`;
+    local.set(key, { path, src });
+    return key;
+  });
+  try {
+    div.innerHTML = renderMarkdown(body);
+  } finally {
+    if (embedImages && isTauri) setImageResolver(resolveImageSrc);
+  }
+  const loaded = new Map<string, string>();
+  for (const img of div.querySelectorAll("img")) {
+    const ref = local.get(img.getAttribute("src") ?? "");
+    if (!ref) continue;
+    try {
+      if (!loaded.has(ref.path)) loaded.set(ref.path, await readImageDataUrl(ref.path));
+      img.setAttribute("src", loaded.get(ref.path)!);
+    } catch {
+      img.setAttribute("src", ref.src); // as written: still works when the export sits next to the note
+    }
+  }
   await renderMermaidIn(div);
   await renderD2In(div);
   return div.innerHTML;
@@ -520,7 +547,7 @@ async function fontCss(): Promise<string> {
 async function htmlDocument(withStyles: boolean, withOutline: boolean): Promise<string> {
   return buildExportHtml({
     title: exportBaseName(),
-    body: await renderBody(fullText()),
+    body: await renderBody(fullText(), true),
     css: withStyles ? loadExportCss() + (await fontCss()) : "",
     theme: theme(),
     withOutline,
@@ -532,7 +559,7 @@ async function htmlDocument(withStyles: boolean, withOutline: boolean): Promise<
 async function pdfDocument(): Promise<string> {
   return buildExportHtml({
     title: exportBaseName(),
-    body: await renderBody(fullText()),
+    body: await renderBody(fullText(), true),
     css: appCssText + PDF_PRINT_CSS + (await fontCss()),
     theme: theme(),
     withOutline: false,
@@ -584,7 +611,9 @@ async function runExport(
   if (!pf) return null;
   if (!(await ensurePandoc())) return null;
   try {
-    await pandocExport(fullText(), out, pf, [...pandocFlagsFor(pf), ...pandocFlags]);
+    // Pandoc reads a temp copy; point it at the note's folder so relative pictures are found.
+    const dir = docDir();
+    await pandocExport(fullText(), out, pf, [...pandocFlagsFor(pf), ...(dir ? [`--resource-path=${dir}`] : []), ...pandocFlags]);
     return out;
   } catch (e) {
     await alertDialog(`Pandoc export failed:\n${String(e)}`);

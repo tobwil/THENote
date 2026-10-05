@@ -261,6 +261,12 @@ export async function copyAsset(src: string, docDir: string, subfolder: string):
   return await invoke<string>("copy_asset", { src, docDir, subfolder });
 }
 
+/** An image file as a data: URL (for self-contained exports). */
+export async function readImageDataUrl(path: string): Promise<string> {
+  const { invoke } = await tauriCore();
+  return await invoke<string>("read_image_data_url", { path });
+}
+
 /** Write image bytes (base64) into `<docDir>/<subfolder>/`; returns the doc-relative path. */
 export async function saveImageData(docDir: string, subfolder: string, name: string, data: string): Promise<string> {
   const { invoke } = await tauriCore();
