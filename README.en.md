@@ -14,9 +14,15 @@ THE Note combines **Sarala's live Markdown editor** with **Ledge's executable no
 
 [**Discover THE Note, try it in your browser and install it →**](https://tobwil.github.io/THENote/en/) · [Download v0.2.9](https://github.com/tobwil/THENote/releases/tag/v0.2.9) · [Changelog](CHANGELOG.md)
 
+### No install: in the browser
+
+[**Open THE Note in your browser →**](https://tobwil.github.io/THENote/app/) The editor runs right on GitHub Pages, with no account and no server: live Markdown, tables with formulas, diagrams, galleries. **Save** downloads the `.md` file, pasted pictures are embedded in the note, settings stay in your browser. Opening folders and running code need the Mac app.
+
+### The Mac app
+
 Currently for **macOS 11+ on Apple Silicon**. Three ways lead to the same app:
 
-### Homebrew
+#### Homebrew
 
 ```sh
 brew tap tobwil/thenote https://github.com/tobwil/THENote
@@ -26,7 +32,7 @@ brew install --cask tobwil/thenote/the-note
 
 The tap lives in this repository. `brew trust` is required from Homebrew 6 on; skip that line on older versions. Updates: `brew update` and `brew upgrade --cask tobwil/thenote/the-note`.
 
-### Terminal with curl
+#### Terminal with curl
 
 ```sh
 curl -fsSL https://tobwil.github.io/THENote/install.sh | bash
@@ -38,7 +44,7 @@ Installs into `~/Applications` without `sudo`. The installer verifies the SHA-25
 curl -fsSL https://tobwil.github.io/THENote/install.sh | bash -s -- --check
 ```
 
-### Download the DMG
+#### Download the DMG
 
 Open the [DMG for macOS Apple Silicon](https://github.com/tobwil/THENote/releases/download/v0.2.9/THE.Note-macOS-arm64.dmg) and drag **THE Note.app** to **Applications**. Eject the disk image, then open the app from Applications.
 
@@ -62,9 +68,17 @@ Ideas, a checklist and open questions come first; a small code block works out t
 
 ![The same note in dark forest green](docs/screenshots/note-dark.png)
 
-### Projects, nested notes and inline dates
+### Folders, nested notes and inline dates
 
-![THE Note: project folders, Markdown notes and a date picker at the caret](docs/screenshots/projects-and-date.png)
+![THE Note: the folder Kuchen with sub folders, notes and a date picker at the caret](docs/screenshots/folders-and-date.png)
+
+### Pictures and galleries
+
+Paste screenshots with ⌘V: they are saved next to the note and show right away. Several pictures in a row become a gallery, as a strip or a grid; drag pictures in or into a new order. A click opens the full-size view.
+
+![A travel note "Lissabon – Fotos" with six pictures as a gallery grid](docs/screenshots/gallery.png)
+
+![Full-size view of a picture with thumbnails of the whole gallery](docs/screenshots/image-viewer.png)
 
 ### Changes before saving
 
@@ -74,7 +88,7 @@ Ideas, a checklist and open questions come first; a small code block works out t
 
 ![Inline AI with a prompt and a Markdown draft](docs/screenshots/inline-ai.png)
 
-The screenshots show example and test notes. All code output was produced locally with `bash`, `python3` and `node`; the AI answer is a reproducible demo, no external provider was contacted. Regenerate them with `node scripts/screenshots.mjs`.
+The screenshots show example and test notes; the photos are painted demo scenes. All code output was produced locally with `bash`, `python3` and `node`; the AI answer is a reproducible demo, no external provider was contacted. Regenerate them with `node scripts/screenshots.mjs`.
 
 ## What was merged
 

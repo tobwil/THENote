@@ -12,9 +12,15 @@ THE Note verbindet **Saralas Live-Markdown-Editor** mit **Ledges ausführbaren N
 
 [**THE Note entdecken, im Browser ausprobieren und installieren →**](https://tobwil.github.io/THENote/) ([English](https://tobwil.github.io/THENote/en/)) · [Download v0.2.9](https://github.com/tobwil/THENote/releases/tag/v0.2.9) · [Changelog](CHANGELOG.md)
 
+### Ohne Installation: im Browser
+
+[**THE Note im Browser öffnen →**](https://tobwil.github.io/THENote/app/) Der Editor läuft direkt auf GitHub Pages, ohne Konto und ohne Server: Live-Markdown, Tabellen mit Formeln, Diagramme, Galerien. **Speichern** lädt die `.md`-Datei herunter, eingefügte Bilder werden in die Notiz eingebettet, Einstellungen bleiben in deinem Browser. Ordner öffnen und Code ausführen gibt es nur in der Mac-App.
+
+### Die Mac-App
+
 Aktuell für **macOS 11+ auf Apple Silicon**. Drei Wege führen zur gleichen App:
 
-### Homebrew
+#### Homebrew
 
 ```sh
 brew tap tobwil/thenote https://github.com/tobwil/THENote
@@ -24,7 +30,7 @@ brew install --cask tobwil/thenote/the-note
 
 Der eigene Tap liegt in diesem Repository. `brew trust` wird ab Homebrew 6 benötigt; bei älteren Versionen diese Zeile auslassen. Updates: `brew update` und `brew upgrade --cask tobwil/thenote/the-note`.
 
-### Terminal mit curl
+#### Terminal mit curl
 
 ```sh
 curl -fsSL https://tobwil.github.io/THENote/install.sh | bash
@@ -36,7 +42,7 @@ Installiert nach `~/Applications`, ohne `sudo`. Der Installer prüft SHA-256, Ap
 curl -fsSL https://tobwil.github.io/THENote/install.sh | bash -s -- --check
 ```
 
-### DMG herunterladen
+#### DMG herunterladen
 
 [DMG für macOS Apple Silicon](https://github.com/tobwil/THENote/releases/download/v0.2.9/THE.Note-macOS-arm64.dmg) öffnen und **THE Note.app** auf **Applications** ziehen. Danach das Image auswerfen und die App im Programme-Ordner öffnen.
 
@@ -62,7 +68,15 @@ Zuerst Ideen, Checkliste und offene Fragen; ein kleiner Codeblock rechnet nebenb
 
 ### Ordner, verschachtelte Notizen und Datum inline
 
-![THE Note: Ordner, Markdown-Notizen und ein Datumspicker an der Schreibstelle](docs/screenshots/projects-and-date.png)
+![THE Note: Ordner Kuchen mit Unterordnern, Notizen und einem Datumspicker an der Schreibstelle](docs/screenshots/folders-and-date.png)
+
+### Bilder und Galerien
+
+Screenshots mit ⌘V einfügen: Sie landen neben der Notiz und sind sofort zu sehen. Mehrere Bilder hintereinander werden zur Galerie, als Leiste oder als Raster; Bilder ziehst du hinein oder in eine neue Reihenfolge. Ein Klick öffnet die Großansicht.
+
+![Eine Reisenotiz „Lissabon – Fotos“ mit sechs Bildern als Galerie-Raster](docs/screenshots/gallery.png)
+
+![Großansicht eines Bildes mit Vorschaubildern der ganzen Galerie](docs/screenshots/image-viewer.png)
 
 ### Änderungen vor dem Speichern
 
@@ -72,7 +86,7 @@ Zuerst Ideen, Checkliste und offene Fragen; ein kleiner Codeblock rechnet nebenb
 
 ![Inline-KI mit Prompt und Markdown-Entwurf](docs/screenshots/inline-ai.png)
 
-Die Screenshots zeigen Beispiel- und Testnotizen. Alle Code-Ausgaben wurden lokal mit `bash`, `python3` und `node` erzeugt; die KI-Antwort ist eine reproduzierbare Demo, dafür wurde kein externer Anbieter kontaktiert. Neu erzeugen: `node scripts/screenshots.mjs`.
+Die Screenshots zeigen Beispiel- und Testnotizen; die Fotos sind gezeichnete Demo-Motive. Alle Code-Ausgaben wurden lokal mit `bash`, `python3` und `node` erzeugt; die KI-Antwort ist eine reproduzierbare Demo, dafür wurde kein externer Anbieter kontaktiert. Neu erzeugen: `node scripts/screenshots.mjs`.
 
 ## Was zusammengeführt wurde
 

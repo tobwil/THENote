@@ -4,6 +4,8 @@ The entries below reconstruct the development milestones from the conversation a
 
 ## Unreleased
 
+- **Browser version on GitHub Pages:** the editor is published at https://tobwil.github.io/THENote/app/ next to the website (`npm run build:webapp`, built by the Pages workflow on every change to the editor). Saving downloads the note; folders and running code stay in the Mac app. The website and both READMEs link it.
+- **New screenshots:** folders and inline date (`folders-and-date.png`, replacing `projects-and-date.png`), a gallery grid (`gallery.png`) and the image viewer (`image-viewer.png`), with painted demo photos (`scripts/demo-photos.js`). The website gains a story chapter on pictures and galleries.
 - **Pasted pictures show right away:** after pasting or inserting an image in the live view, the caret sits after it, so the picture appears instead of its `![](…)` path.
 - **Drag pictures into galleries:** drag a picture from anywhere in the note (a text paragraph or its own block) onto a gallery or a single picture; it lands before or after the picture under the pointer, a bar marks the spot. Dragging inside a gallery reorders it; one undo step reverts a move, Esc cancels. Image files dragged from Finder onto a gallery join it at that spot.
 
