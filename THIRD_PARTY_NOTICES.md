@@ -1,4 +1,4 @@
-# Third-party notices · THE Note 0.2.14
+# Third-party notices · THE Note 0.2.15
 
 THE Note combines the [Sarala](https://github.com/solancer/sarala) editor (GPL-3.0-or-later) with [Ledge](https://github.com/ledgesh/ledge) concepts and its Apache-2.0 frontmatter parser. See [NOTICE.md](NOTICE.md) and [LICENSING.md](LICENSING.md) for their exact provenance. Existing emoji and Unicode notices also remain in [licenses](licenses).
 
