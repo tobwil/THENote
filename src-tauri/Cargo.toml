@@ -1,6 +1,6 @@
 [package]
 name = "the-note"
-version = "0.2.10"
+version = "0.2.11"
 description = "A calm workspace for notes that run"
 authors = ["Srinivas Gowda"]
 license = "GPL-3.0-or-later"

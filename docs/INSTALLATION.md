@@ -2,13 +2,13 @@
 
 [Website](https://tobwil.github.io/THENote/) · [Releases](https://github.com/tobwil/THENote/releases)
 
-Das veröffentlichte Paket ist **v0.2.10 für Apple Silicon (arm64), macOS 11 oder neuer**. Die Mindestversion folgt dem gebauten Programm; die tatsächlichen Funktionstests wurden auf dem aktuellen Entwicklungs-Mac durchgeführt. Intel-Macs, Windows und Linux haben noch keine verifizierten Pakete.
+Das veröffentlichte Paket ist **v0.2.11 für Apple Silicon (arm64), macOS 11 oder neuer**. Die Mindestversion folgt dem gebauten Programm; die tatsächlichen Funktionstests wurden auf dem aktuellen Entwicklungs-Mac durchgeführt. Intel-Macs, Windows und Linux haben noch keine verifizierten Pakete.
 
 Die Preview ist mit **Developer ID signiert und Apple-notarisiert**. App und DMG enthalten angeheftete Notarisierungstickets. Beim ersten Start kann macOS die übliche Bestätigung für eine aus dem Internet geladene App anzeigen. Kein Installationsweg deaktiviert Gatekeeper oder entfernt Quarantäneattribute ausdrücklich.
 
 ## DMG herunterladen
 
-[DMG für macOS Apple Silicon herunterladen](https://github.com/tobwil/THENote/releases/download/v0.2.10/THE.Note-macOS-arm64.dmg), öffnen und **THE Note.app** auf **Applications** ziehen. Danach das Image auswerfen und THE Note im Programme-Ordner öffnen. Vor dem Ersetzen einer vorhandenen App offene Notizen speichern und die App beenden.
+[DMG für macOS Apple Silicon herunterladen](https://github.com/tobwil/THENote/releases/download/v0.2.11/THE.Note-macOS-arm64.dmg), öffnen und **THE Note.app** auf **Applications** ziehen. Danach das Image auswerfen und THE Note im Programme-Ordner öffnen. Vor dem Ersetzen einer vorhandenen App offene Notizen speichern und die App beenden.
 
 Das DMG enthält dieselbe Developer-ID-signierte und notarisierte App wie ZIP, Homebrew und curl sowie die Lizenztexte. `SHA256SUMS` enthält die Prüfsummen beider Pakete. Das DMG und `SHA256SUMS` in denselben Ordner laden und dort nur die DMG-Zeile prüfen:
 
@@ -83,7 +83,7 @@ Deinstallieren: App schließen und `~/Applications/THE Note.app` im Finder in de
 
 ## ZIP und manuelle Prüfung
 
-Das [Release](https://github.com/tobwil/THENote/releases/tag/v0.2.10) enthält ZIP, DMG und `SHA256SUMS`. Nach dem Download des ZIPs und von `SHA256SUMS` in denselben Ordner nur die ZIP-Zeile prüfen:
+Das [Release](https://github.com/tobwil/THENote/releases/tag/v0.2.11) enthält ZIP, DMG und `SHA256SUMS`. Nach dem Download des ZIPs und von `SHA256SUMS` in denselben Ordner nur die ZIP-Zeile prüfen:
 
 ```sh
 grep '  THE.Note-macOS-arm64.zip$' SHA256SUMS | shasum -a 256 -c -
