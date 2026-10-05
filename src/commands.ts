@@ -59,9 +59,9 @@ import {
   buildExportHtml, pageCss, readExportOverrides, pandocFlagsFor, resolveOutputPath,
   EXPORT_PRINT_CSS, PDF_PRINT_CSS, type ExportPreset, type ExportFormat,
 } from "./export";
-import { docDir, currentFrontMatter, docBaseName, stripFrontMatter, imageFsPath, resolveImageSrc } from "./images";
+import { docDir, currentFrontMatter, docBaseName, stripFrontMatter, imageFsPath, resolveImageSrc, findImages } from "./images";
 import { imagesToCarry, rewriteImageSources } from "./imagecarry";
-import { insertImages } from "./gallerytext";
+import { insertImages, stripImages } from "./gallerytext";
 import { SNIPPETS, QUICK_PROMPTS, type SnippetId, type QuickPromptId } from "./snippets";
 import { serializeAiPrompt } from "./ai/inline";
 import { setImageRootPath } from "./imageactions";
@@ -69,7 +69,7 @@ import { setImageRootPath } from "./imageactions";
 // reliably — a runtime fetch of a side-effect-imported CSS file is fragile in
 // packaged builds.
 import appCssText from "./styles/app.css?inline";
-import { askHtmlOutline } from "./components/ExportHtmlDialog";
+import { askExportOptions } from "./components/ExportHtmlDialog";
 import { openFind, findNext } from "./components/FindBar";
 import { openTableDialog } from "./components/TableDialog";
 import { openAbout } from "./components/AboutModal";
@@ -544,10 +544,10 @@ async function fontCss(): Promise<string> {
 }
 
 /** Build the exported HTML document (outline sidebar when there are headings). */
-async function htmlDocument(withStyles: boolean, withOutline: boolean): Promise<string> {
+async function htmlDocument(withStyles: boolean, withOutline: boolean, images = true): Promise<string> {
   return buildExportHtml({
     title: exportBaseName(),
-    body: await renderBody(fullText(), true),
+    body: await renderBody(images ? fullText() : stripImages(fullText()), images),
     css: withStyles ? loadExportCss() + (await fontCss()) : "",
     theme: theme(),
     withOutline,
@@ -556,10 +556,10 @@ async function htmlDocument(withStyles: boolean, withOutline: boolean): Promise<
 }
 
 /** Build the print HTML for PDF: matches the editor theme, full-width, no outline. */
-async function pdfDocument(): Promise<string> {
+async function pdfDocument(images = true): Promise<string> {
   return buildExportHtml({
     title: exportBaseName(),
-    body: await renderBody(fullText(), true),
+    body: await renderBody(images ? fullText() : stripImages(fullText()), images),
     css: appCssText + PDF_PRINT_CSS + (await fontCss()),
     theme: theme(),
     withOutline: false,
@@ -587,13 +587,14 @@ async function runExport(
   out: string,
   pandocFlags: string[] = [],
   outline = true,
+  images = getSetting("exportImages", true),
 ): Promise<string | null> {
   if (format === "html" || format === "html_plain") {
-    await writeTextFile(out, await htmlDocument(format === "html", format === "html" && outline));
+    await writeTextFile(out, await htmlDocument(format === "html", format === "html" && outline, images));
     return out;
   }
   if (format === "pdf") {
-    const html = await pdfDocument();
+    const html = await pdfDocument(images);
     try {
       await exportPdf(html, out);
       return out;
@@ -613,7 +614,7 @@ async function runExport(
   try {
     // Pandoc reads a temp copy; point it at the note's folder so relative pictures are found.
     const dir = docDir();
-    await pandocExport(fullText(), out, pf, [...pandocFlagsFor(pf), ...(dir ? [`--resource-path=${dir}`] : []), ...pandocFlags]);
+    await pandocExport(images ? fullText() : stripImages(fullText()), out, pf, [...pandocFlagsFor(pf), ...(dir ? [`--resource-path=${dir}`] : []), ...pandocFlags]);
     return out;
   } catch (e) {
     await alertDialog(`Pandoc export failed:\n${String(e)}`);
@@ -623,19 +624,21 @@ async function runExport(
 
 /** Menu export (HTML / PDF / a pandoc format): prompt for path, export, remember. */
 async function doExport(format: ExportFormat, id: string, presetPath: string | null = null) {
-  // Styled HTML export asks whether to include the outline sidebar.
-  let outline = true;
-  if (format === "html" && !presetPath) {
-    const choice = await askHtmlOutline();
-    if (choice === null) return; // cancelled
-    outline = choice;
+  // Ask what goes in: pictures (when the note has any) and, for styled HTML, the outline.
+  let outline = true, images = getSetting("exportImages", true);
+  const pictures = findImages(fullText()).length;
+  if (!presetPath && (format === "html" || pictures > 0)) {
+    const kind = format === "html" || format === "pdf" || format === "docx" ? format : "other";
+    const choice = await askExportOptions(kind, pictures);
+    if (!choice) return; // cancelled
+    ({ outline, images } = choice);
   }
   // The save dialog starts next to the note (or in the notes folder), so exports land where the note lives.
   const name = `${exportBaseName()}.${EXT[format]}`;
   const near = docDir() ?? folderPath();
   const out = presetPath ?? (await pickSavePath(near ? `${near.replace(/[\\/]+$/, "")}/${name}` : name));
   if (!out && isTauri) return;
-  const written = await runExport(format, out ?? name, [], outline);
+  const written = await runExport(format, out ?? name, [], outline, images);
   if (!written) return;
   await setLastExport({ id, path: written });
   announceExport(written);
