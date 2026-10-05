@@ -267,6 +267,12 @@ export async function saveImageData(docDir: string, subfolder: string, name: str
   return await invoke<string>("save_image_data", { docDir, subfolder, name, data });
 }
 
+/** Move (or copy) a moved note's images into its new folder; each image's new relative path, or null. */
+export async function relocateImages(fromDir: string, toDir: string, items: { rel: string; copy: boolean }[]): Promise<(string | null)[]> {
+  const { invoke } = await tauriCore();
+  return await invoke<(string | null)[]>("relocate_images", { fromDir, toDir, items });
+}
+
 export async function renameFile(from: string, to: string): Promise<void> {
   const { invoke } = await tauriCore();
   await invoke("rename_file", { from, to });

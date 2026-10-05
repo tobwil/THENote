@@ -508,6 +508,83 @@ fn save_image_data(doc_dir: String, subfolder: String, name: String, data: Strin
     Ok(format!("{subfolder}/{file_name}"))
 }
 
+/// One image a moved note takes along: its path relative to the note's old
+/// folder, and whether other notes use it too (then it is copied, not moved).
+#[derive(serde::Deserialize)]
+struct ImageMove {
+    rel: String,
+    copy: bool,
+}
+
+/// Move (or copy) a note's images from its old folder to its new one, keeping
+/// their relative paths so `![](assets/x.png)` still resolves. Returns each
+/// image's new relative path (renamed `x-1.png` if a different file is already
+/// there), or None when it was left alone.
+#[tauri::command]
+fn relocate_images(from_dir: String, to_dir: String, items: Vec<ImageMove>) -> Vec<Option<String>> {
+    items
+        .iter()
+        .map(|item| relocate_image(Path::new(&from_dir), Path::new(&to_dir), item).ok())
+        .collect()
+}
+
+fn relocate_image(from_dir: &Path, to_dir: &Path, item: &ImageMove) -> Result<String, String> {
+    use std::path::Component;
+    let rel = Path::new(&item.rel);
+    if rel.as_os_str().is_empty() || rel.components().any(|c| !matches!(c, Component::Normal(_))) {
+        return Err("not below the note's folder".into());
+    }
+    let src = from_dir.join(rel);
+    if !src.is_file() {
+        return Err("missing".into());
+    }
+    let parent: Vec<String> = rel
+        .parent()
+        .map(|p| p.components().map(|c| c.as_os_str().to_string_lossy().to_string()).collect())
+        .unwrap_or_default();
+    let dest_dir = parent.iter().fold(to_dir.to_path_buf(), |dir, part| dir.join(part));
+    fs::create_dir_all(&dest_dir).map_err(|e| e.to_string())?;
+    let file_name = rel.file_name().map(|n| n.to_string_lossy().to_string()).unwrap_or_default();
+    let stem = rel.file_stem().map(|n| n.to_string_lossy().to_string()).unwrap_or_default();
+    let ext = rel.extension().map(|n| format!(".{}", n.to_string_lossy())).unwrap_or_default();
+    let bytes = fs::read(&src).map_err(|e| e.to_string())?;
+    let mut name = file_name;
+    let mut k = 1;
+    loop {
+        let dest = dest_dir.join(&name);
+        if dest.exists() {
+            // The same picture is already there: reuse it.
+            if fs::read(&dest).map(|b| b == bytes).unwrap_or(false) {
+                if !item.copy {
+                    fs::remove_file(&src).map_err(|e| e.to_string())?;
+                }
+                break;
+            }
+            name = format!("{stem}-{k}{ext}");
+            k += 1;
+            continue;
+        }
+        if item.copy {
+            fs::copy(&src, &dest).map_err(|e| e.to_string())?;
+        } else if fs::rename(&src, &dest).is_err() {
+            fs::copy(&src, &dest).map_err(|e| e.to_string())?;
+            fs::remove_file(&src).map_err(|e| e.to_string())?;
+        }
+        break;
+    }
+    if !item.copy {
+        // Tidy up the image folders the move left empty (never the note's folder itself).
+        let mut dir = src.parent();
+        while let Some(d) = dir {
+            if d == from_dir || !d.starts_with(from_dir) || fs::remove_dir(d).is_err() {
+                break;
+            }
+            dir = d.parent();
+        }
+    }
+    Ok(parent.into_iter().chain(std::iter::once(name)).collect::<Vec<_>>().join("/"))
+}
+
 /// Reveal a file in the OS file manager (Finder / Explorer / default).
 #[tauri::command]
 fn reveal_in_dir(path: String) -> Result<(), String> {
@@ -1224,6 +1301,7 @@ fn main() {
             delete_file,
             copy_asset,
             save_image_data,
+            relocate_images,
             reveal_in_dir,
             copy_file_to,
             has_pandoc,
@@ -1244,8 +1322,40 @@ fn main() {
 #[cfg(test)]
 mod tests {
     use super::{
-        decode_bytes, encode_contents, enumerate_system_fonts, font_faces_b64, search_in_folder,
+        decode_bytes, encode_contents, enumerate_system_fonts, font_faces_b64, relocate_images, search_in_folder, ImageMove,
     };
+
+    #[test]
+    fn relocate_images_moves_copies_dedupes_and_tidies() {
+        let root = std::env::temp_dir().join(format!("relocate-{}", std::process::id()));
+        let (from, to) = (root.join("notes"), root.join("notes/Reise"));
+        std::fs::create_dir_all(from.join("assets")).unwrap();
+        std::fs::create_dir_all(to.join("assets")).unwrap();
+        std::fs::write(from.join("assets/a.png"), b"a").unwrap();
+        std::fs::write(from.join("assets/b.png"), b"b").unwrap();
+        std::fs::write(from.join("assets/c.png"), b"c").unwrap();
+        std::fs::write(to.join("assets/c.png"), b"other").unwrap();
+        std::fs::write(root.join("outside.png"), b"x").unwrap();
+        let item = |rel: &str, copy: bool| ImageMove { rel: rel.into(), copy };
+        let placed = relocate_images(
+            from.to_string_lossy().into(),
+            to.to_string_lossy().into(),
+            vec![item("assets/a.png", false), item("assets/b.png", true), item("assets/c.png", false), item("../outside.png", false), item("assets/missing.png", false)],
+        );
+        assert_eq!(placed, vec![Some("assets/a.png".into()), Some("assets/b.png".into()), Some("assets/c-1.png".into()), None, None]);
+        assert!(!from.join("assets/a.png").exists(), "moved");
+        assert!(from.join("assets/b.png").exists(), "shared pictures are copied");
+        assert_eq!(std::fs::read(to.join("assets/c-1.png")).unwrap(), b"c", "a different picture of the same name is kept");
+        assert!(root.join("outside.png").exists(), "nothing outside the note's folder is touched");
+        std::fs::remove_file(from.join("assets/b.png")).unwrap();
+        let placed = relocate_images(from.to_string_lossy().into(), root.to_string_lossy().into(), vec![]);
+        assert!(placed.is_empty());
+        // The emptied folder of the last moved picture is removed, the note's folder never.
+        std::fs::write(from.join("assets/d.png"), b"d").unwrap();
+        relocate_images(from.to_string_lossy().into(), to.to_string_lossy().into(), vec![item("assets/d.png", false)]);
+        assert!(!from.join("assets").exists() && from.exists());
+        std::fs::remove_dir_all(root).ok();
+    }
 
     #[test]
     fn system_fonts_enumerate_and_embed() {

@@ -17,6 +17,7 @@ import {
 } from "../store";
 import { renderMermaidIn } from "../mermaid";
 import { renderD2In } from "../d2";
+import { decorateGalleries, openImageViewer } from "./ImageViewer";
 import { executeCommand, registerBlockApi, unregisterBlockApi, imageInsertRef, followLink, type BlockApi, pasteImageBlob } from "../commands";
 import { parseTable, cellRanges } from "../tabletools";
 import { findImages } from "../images";
@@ -146,6 +147,7 @@ export default function Block(props: Props) {
   // eslint-disable-next-line solid/reactivity -- a Block's id never changes
   const fillDiagrams = (host: HTMLElement) => queueMicrotask(() => {
     if (!host.isConnected) return;
+    decorateGalleries(host);
     void renderMermaidIn(host, String(props.id), true);
     void renderD2In(host, String(props.id));
   });
@@ -675,6 +677,13 @@ export default function Block(props: Props) {
   // Here we cancel the native toggle and drive state from the markdown source.
   const onRenderedCheckboxClick = (e: MouseEvent) => {
     const t = e.target as HTMLElement;
+    // A click on a picture (not a linked one) opens it large, with its gallery.
+    const img = t.closest("img");
+    if (img && !img.closest("a") && e.button === 0 && openImageViewer(img as HTMLImageElement)) {
+      e.preventDefault();
+      setImgTool(null);
+      return;
+    }
     if (!(t instanceof HTMLInputElement && t.type === "checkbox")) return;
     e.preventDefault();
     const host = e.currentTarget as HTMLElement;
@@ -722,6 +731,8 @@ export default function Block(props: Props) {
       void fillEmptyImage();
       return;
     }
+    // Gallery ‹ › buttons scroll the strip; they never enter edit mode.
+    if (t.closest(".img-gallery-nav")) { e.preventDefault(); return; }
     // A checkbox is handled on click. Do NOT preventDefault here: in WebKit (the
     // macOS Tauri webview) preventDefault on a form control's mousedown can
     // suppress the following click, which is where the toggle lives. The early

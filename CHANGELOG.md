@@ -5,6 +5,9 @@ The entries below reconstruct the development milestones from the conversation a
 ## Unreleased
 
 - **Paste images from the clipboard:** screenshots, images copied from apps or the browser and image files copied in Finder are saved next to the note (`assets/`, or the folder set by `copy-images-to` in the front matter) and linked relatively. Clipboard images get a dated name (`Bild-2026-10-05-143012.png`), copied files keep theirs. Works in the live editor and in Source mode; a note that is not saved yet stores the image in the notes folder; the browser editor embeds it. Text from Excel or Word stays text.
+- **Image galleries:** a paragraph of two or more images shows as a scrollable strip with ‹ › and a counter; clicking any picture opens a full-window viewer with thumbnails (← → to browse, Esc closes). The Markdown stays plain images.
+- **Pictures move with their note:** moving a note into another folder takes the pictures it links below its folder along (`assets/…`, also absolute links from pasting into an unsaved note, which become relative). Pictures other notes use too are copied; a different file of the same name is kept and the link points to `name-1.png`. Picture folders (`assets`) no longer show in the sidebar.
+- **Easier sorting:** drop a note onto a folder or onto any note inside it, see the target in the drag label, open a closed folder by resting on it, cancel with Esc. „In Ordner verschieben …“ can create a new folder and move the note there in one step.
 
 ## 0.2.6 — 2026-10-02
 

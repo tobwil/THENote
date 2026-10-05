@@ -515,6 +515,17 @@ marked.use({
     checkbox(token: Tokens.Checkbox) {
       return `<input type="checkbox"${token.checked ? " checked" : ""}>`;
     },
+    // A paragraph of nothing but two or more images (side by side or one per
+    // line) shows as a gallery strip instead of a stack of full-width pictures.
+    // The Markdown stays plain images, so other editors still show them.
+    paragraph(token: Tokens.Paragraph) {
+      const parts = (token.tokens ?? []).filter(t => !(t.type === "br" || (t.type === "text" && !t.raw.trim())));
+      const isImage = (t: Tokens.Generic) => t.type === "image" || (t.type === "html" && /^<img\b[^>]*>$/i.test(t.raw.trim()));
+      if (parts.length >= 2 && parts.every(isImage)) {
+        return `<div class="img-gallery" data-count="${parts.length}"><div class="img-gallery-track">${this.parser.parseInline(parts)}</div></div>\n`;
+      }
+      return `<p>${this.parser.parseInline(token.tokens)}</p>\n`;
+    },
     // Own the code renderer so ```mermaid and ```math fences are intercepted;
     // everything else is Shiki-highlighted (stashed past DOMPurify, which would
     // strip Shiki's inline-style color spans), with a plain fallback until

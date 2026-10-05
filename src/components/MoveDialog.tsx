@@ -6,7 +6,7 @@
 import { For, Show, createSignal } from "solid-js";
 import ModalFrame from "./ModalFrame";
 import { fileTree, folderName, folderPath } from "../store";
-import { moveIntoFolder } from "../commands";
+import { moveIntoFolder, moveIntoNewFolder } from "../commands";
 import type { FileNode } from "../platform";
 
 const [moving, setMoving] = createSignal<string | null>(null);
@@ -43,7 +43,10 @@ function Dialog(props: { path: string; onClose: () => void }) {
           )}</For>
         </div>
         <Show when={error()}><p class="name-error">{error()}</p></Show>
-        <footer><button type="button" onClick={() => props.onClose()}>Abbrechen</button></footer>
+        <footer>
+          <button type="button" class="move-new-folder" onClick={() => { const path = props.path; props.onClose(); moveIntoNewFolder(path); }}>＋ Neuer Ordner …</button>
+          <button type="button" onClick={() => props.onClose()}>Abbrechen</button>
+        </footer>
       </ModalFrame>
     </div>
   );

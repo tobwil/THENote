@@ -4,7 +4,7 @@ import {
   doc, fullText, fileName, retargetTabPath, cycleTab, setHeading,
   setTabDraftName, setFolderOpen, openTabs, activeTabId, openDocument, findTabByPath, switchTab, removeTab, getTabDocument, markTabSaved, replaceTabDocument,
   sourceMode, setSourceMode, sidebarOpen, setSidebarOpen,
-  theme, setTheme, THEMES, setFileTree, setFolderName,
+  theme, setTheme, THEMES, fileTree, setFileTree, setFolderName,
   folderPath, setFolderPath, setQuickOpenVisible, setCommandPaletteVisible,
   moveBlock, removeBlock, updateBlock, insertBlockAfter, appendBlock,
   targetBlockIndex, requestCaret, requestSelection, undo, redo, setCaretProvider,
@@ -28,12 +28,12 @@ import { applyBlockKind, type BlockKind } from "./blocktype";
 import { fontEmbedCss } from "./fonts";
 import {
   createEntry, isTauri, pickFolder, pickMarkdownFile, pickSavePath, pickImportFile,
-  readFileEncoded, reopenWithEncoding, writeTextFile, type EncodedDoc,
+  readFileEncoded, reopenWithEncoding, writeTextFile, type EncodedDoc, type FileNode,
   watchFile, clearShadow, listDirectory, openExternal,
   confirmDialog, alertDialog, renameFile, deleteFile, openNewWindow,
   pandocImport, pandocExport, exportPdf, runCommand, revealInDir,
   clipboardWriteText, clipboardReadText, pathExists,
-  pickImageFile, copyAsset, saveImageData,
+  pickImageFile, copyAsset, saveImageData, relocateImages, searchInFolder,
   setWindowAlwaysOnTop, toggleFullscreen, minimizeWindow, toggleMaximizeWindow,
 } from "./platform";
 import {
@@ -59,6 +59,7 @@ import {
   EXPORT_PRINT_CSS, PDF_PRINT_CSS, type ExportPreset, type ExportFormat,
 } from "./export";
 import { docDir, currentFrontMatter, docBaseName, stripFrontMatter } from "./images";
+import { imagesToCarry, rewriteImageSources } from "./imagecarry";
 import { setImageRootPath } from "./imageactions";
 // The app stylesheet as a string (bundled at build time), so exports embed it
 // reliably — a runtime fetch of a side-effect-imported CSS file is fragile in
@@ -118,9 +119,18 @@ const heading = (level: number) => () => {
 
 // ---------- Workspace ----------
 
+/** Picture folders (assets/) hold no notes, so the sidebar leaves them out. */
+function withoutImageFolders(nodes: FileNode[]): FileNode[] {
+  const imageFolder = copyImagesToFolder() || "assets";
+  const hasNotes = (node: FileNode): boolean => !node.is_dir || (node.children ?? []).some(hasNotes);
+  return nodes
+    .filter(node => !(node.is_dir && (node.name === imageFolder || node.name === "assets") && !hasNotes(node)))
+    .map(node => node.is_dir ? { ...node, children: withoutImageFolders(node.children ?? []) } : node);
+}
+
 export async function refreshTree() {
   const root = folderPath();
-  if (root) setFileTree(await listDirectory(root));
+  if (root) setFileTree(withoutImageFolders(await listDirectory(root)));
 }
 
 export async function openFolder() {
@@ -128,7 +138,7 @@ export async function openFolder() {
   if (path) await openWorkspace(path);
 }
 async function openWorkspace(path: string) {
-  const tree = await listDirectory(path);
+  const tree = withoutImageFolders(await listDirectory(path));
   setFolderPath(path);
   setSidebarTab("files");
   setFolderName(path.replace(/\\/g, "/").split("/").pop() ?? path);
@@ -174,6 +184,47 @@ const baseOf = (path: string) => path.slice(Math.max(path.lastIndexOf("/"), path
 const separatorOf = (path: string) => (path.includes("\\") && !path.includes("/") ? "\\" : "/");
 
 /** Move a note or folder into `folder`; open tabs follow their files. */
+function findNode(nodes: FileNode[], path: string): FileNode | undefined {
+  for (const node of nodes) {
+    if (node.path === path) return node;
+    const inner = node.is_dir ? findNode(node.children ?? [], path) : undefined;
+    if (inner) return inner;
+  }
+  return undefined;
+}
+
+/** A moved note takes the pictures it links below its old folder along (assets/…), so its links keep working. Pictures other notes use too are copied. */
+async function carryImages(from: string, to: string) {
+  if (!isTauri) return;
+  try {
+    const tabId = findTabByPath(to);
+    const open = tabId !== undefined ? getTabDocument(tabId) : undefined;
+    const disk = open ? null : await readFileEncoded(to);
+    const text = open ? joinBlocks(open.blocks.map(b => b.text)) : disk!.content;
+    const fromDir = parentOf(from), toDir = parentOf(to);
+    const items = imagesToCarry(text, fromDir);
+    if (!items.length) return;
+    const sep = separatorOf(from), root = folderPath();
+    const scope = root && (fromDir === root || fromDir.startsWith(root + sep)) ? root : fromDir;
+    const shared = await Promise.all(items.map(async item => {
+      const hits = await searchInFolder(scope, baseOf(item.rel), { regex: false, caseSensitive: true, wholeWord: false });
+      return hits.some(hit => hit.path !== to && hit.path !== from);
+    }));
+    const placed = await relocateImages(fromDir, toDir, items.map((item, i) => ({ rel: item.rel, copy: shared[i] })));
+    const changes = new Map<string, string>();
+    items.forEach((item, i) => { const rel = placed[i]; if (rel && rel !== item.src) changes.set(item.src, rel); });
+    if (changes.size) {
+      const next = rewriteImageSources(text, changes);
+      const meta = open ? { encoding: open.encoding, hadBom: open.hadBom } : { encoding: disk!.encoding, hadBom: disk!.hadBom };
+      await writeTextFile(to, open ? textForDisk(next) : next, meta.encoding, meta.hadBom);
+      if (tabId !== undefined) { replaceTabDocument(tabId, next, to, meta); await watchFile(to); }
+    }
+    bumpRenderEpoch();
+  } catch (e) {
+    await alertDialog(`Die Notiz wurde verschoben, ihre Bilder aber nicht: ${String(e)}`);
+  }
+}
+
 export async function moveIntoFolder(path: string, folder: string): Promise<boolean> {
   const sep = separatorOf(path);
   if (parentOf(path) === folder || folder === path || folder.startsWith(path + sep)) return false;
@@ -181,6 +232,8 @@ export async function moveIntoFolder(path: string, folder: string): Promise<bool
   const inside = (p: string | null) => !!p && (p === path || p.startsWith(path + sep));
   const moved = openTabs().filter(tab => inside(tab.filePath)).map(tab => tab.filePath!);
   if (moved.some(p => findTabByPath(to + p.slice(path.length)) !== undefined)) { await alertDialog("Am Ziel ist bereits eine Datei mit diesem Namen geöffnet."); return false; }
+  const node = findNode(fileTree(), path);
+  const isNote = node ? !node.is_dir : /\.(md|markdown|mdown|mkdn|mkd|mdx|txt)$/i.test(path);
   try {
     await renameFile(path, to);
   } catch (e) {
@@ -193,6 +246,7 @@ export async function moveIntoFolder(path: string, folder: string): Promise<bool
     await watchFile(target);
     await removeRecentFile(from); await addRecentFile(target);
   }
+  if (isNote) await carryImages(path, to);
   setFolderOpen(folder, true); void saveOpenFolders();
   await refreshTree();
   return true;
@@ -1110,6 +1164,16 @@ export function createFolderIn(parent = folderPath()) {
   if (!parent) { void ensureNotebook().then(root => { if (root) createFolderIn(root); }); return; }
   openNameDialog({ title: "Ordner erstellen", initial: "Neuer Ordner", description: `In ${parent}`, submit: async name => {
     await createEntry(parent, name, true); setFolderOpen(parent, true); setSidebarTab("files"); await refreshTree();
+  } });
+}
+/** "In Ordner verschieben ▸ Neuer Ordner …": create a folder in the notes folder and move `path` into it. */
+export function moveIntoNewFolder(path: string) {
+  const parent = folderPath();
+  if (!parent) return;
+  openNameDialog({ title: "Neuer Ordner", initial: "Neuer Ordner", description: `${baseOf(path)} wird in den neuen Ordner verschoben.`, submit: async name => {
+    const folder = await createEntry(parent, name, true);
+    await refreshTree();
+    if (!(await moveIntoFolder(path, folder))) throw new Error("Verschieben war nicht möglich.");
   } });
 }
 export function renameTab(id: number) {
